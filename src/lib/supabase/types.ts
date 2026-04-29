@@ -1,4 +1,25 @@
 export type AppRole = 'super_admin' | 'admin' | 'responsable' | 'redacteur' | 'membre'
+export type CategorieMateriel = 'microphone' | 'enceinte' | 'amplificateur' | 'mixette' | 'cable' | 'effet' | 'instrument' | 'accessoire' | 'autre'
+export type StatutMateriel = 'disponible' | 'emprunte' | 'en_maintenance' | 'hors_service'
+
+export interface MaterielSono {
+  id: number
+  nom: string
+  marque: string | null
+  modele: string | null
+  reference: string | null
+  numero_serie: string | null
+  categorie: CategorieMateriel
+  statut: StatutMateriel
+  localisation: string | null
+  date_acquisition: string | null
+  valeur_achat: number | null
+  notes: string | null
+  image_url: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
 export type StatutPublication = 'brouillon' | 'en_revision' | 'planifie' | 'publie' | 'archive'
 export type CanalDiffusion = 'site_web' | 'reseaux_sociaux' | 'email' | 'affichage' | 'bulletin' | 'autre'
 export type StatutEvenement = 'planifie' | 'en_cours' | 'termine' | 'annule'
@@ -117,20 +138,29 @@ export interface Annonce {
   updated_at: string
 }
 
+type TableDef<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
+  Row: Row
+  Insert: Insert
+  Update: Update
+  Relationships: []
+}
+
 // Type générique de la base de données pour le client Supabase typé
 export type Database = {
   public: {
     Tables: {
-      profiles: { Row: Profile; Insert: Omit<Profile, 'created_at' | 'updated_at'>; Update: Partial<Omit<Profile, 'id'>> }
-      user_roles: { Row: UserRole; Insert: Omit<UserRole, 'id' | 'created_at'>; Update: Partial<Pick<UserRole, 'role'>> }
-      equipes: { Row: Equipe; Insert: Omit<Equipe, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<Equipe, 'id'>> }
-      equipe_membres: { Row: EquipeMembre; Insert: Omit<EquipeMembre, 'id' | 'created_at'>; Update: Partial<EquipeMembre> }
-      categories: { Row: Categorie; Insert: Omit<Categorie, 'id' | 'created_at'>; Update: Partial<Omit<Categorie, 'id'>> }
-      medias: { Row: Media; Insert: Omit<Media, 'id' | 'created_at'>; Update: Partial<Omit<Media, 'id'>> }
-      publications: { Row: Publication; Insert: Omit<Publication, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<Publication, 'id'>> }
-      evenements: { Row: Evenement; Insert: Omit<Evenement, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<Evenement, 'id'>> }
-      annonces: { Row: Annonce; Insert: Omit<Annonce, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<Annonce, 'id'>> }
+      profiles:        TableDef<Profile,       Omit<Profile,       'created_at' | 'updated_at'>,    Partial<Omit<Profile,       'id'>>>
+      user_roles:      TableDef<UserRole,      Omit<UserRole,      'id' | 'created_at'>,            Partial<Pick<UserRole,      'role'>>>
+      equipes:         TableDef<Equipe,        Omit<Equipe,        'id' | 'created_at' | 'updated_at'>, Partial<Omit<Equipe,   'id'>>>
+      equipe_membres:  TableDef<EquipeMembre,  Omit<EquipeMembre,  'id' | 'created_at'>,            Partial<EquipeMembre>>
+      categories:      TableDef<Categorie,     Omit<Categorie,     'id' | 'created_at'>,            Partial<Omit<Categorie,    'id'>>>
+      medias:          TableDef<Media,         Omit<Media,         'id' | 'created_at'>,            Partial<Omit<Media,        'id'>>>
+      publications:    TableDef<Publication,   Omit<Publication,   'id' | 'created_at' | 'updated_at'>, Partial<Omit<Publication, 'id'>>>
+      evenements:      TableDef<Evenement,     Omit<Evenement,     'id' | 'created_at' | 'updated_at'>, Partial<Omit<Evenement,  'id'>>>
+      annonces:        TableDef<Annonce,       Omit<Annonce,       'id' | 'created_at' | 'updated_at'>, Partial<Omit<Annonce,    'id'>>>
+      materiel_sono:   TableDef<MaterielSono,  Omit<MaterielSono,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono, 'id'>>>
     }
+    Views: Record<string, never>
     Functions: {
       get_my_role: { Args: Record<never, never>; Returns: AppRole }
       has_role: { Args: { required_role: AppRole }; Returns: boolean }
@@ -141,6 +171,9 @@ export type Database = {
       canal_diffusion: CanalDiffusion
       statut_evenement: StatutEvenement
       type_media: TypeMedia
+      categorie_materiel: CategorieMateriel
+      statut_materiel: StatutMateriel
     }
+    CompositeTypes: Record<string, never>
   }
 }
