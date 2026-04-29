@@ -70,6 +70,6 @@ where user_id = (
 ## Variables d'environnement requises
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://togolugdffbfatpiemug.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
