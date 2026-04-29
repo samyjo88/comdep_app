@@ -16,6 +16,8 @@ export interface MaterielSono {
   quantite_total: number
   quantite_disponible: number
   en_reparation: boolean
+  description_reparation: string | null
+  date_envoi_reparation: string | null
   dernier_nettoyage: string | null
   prochain_nettoyage: string | null
   localisation: string | null
