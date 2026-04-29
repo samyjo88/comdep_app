@@ -1,6 +1,7 @@
 export type AppRole = 'super_admin' | 'admin' | 'responsable' | 'redacteur' | 'membre'
 export type CategorieMateriel = 'microphone' | 'enceinte' | 'amplificateur' | 'mixette' | 'cable' | 'effet' | 'instrument' | 'accessoire' | 'autre'
 export type StatutMateriel = 'disponible' | 'emprunte' | 'en_maintenance' | 'hors_service'
+export type EtatMateriel = 'neuf' | 'bon' | 'use' | 'en_panne'
 
 export interface MaterielSono {
   id: number
@@ -11,6 +12,12 @@ export interface MaterielSono {
   numero_serie: string | null
   categorie: CategorieMateriel
   statut: StatutMateriel
+  etat: EtatMateriel
+  quantite_total: number
+  quantite_disponible: number
+  en_reparation: boolean
+  dernier_nettoyage: string | null
+  prochain_nettoyage: string | null
   localisation: string | null
   date_acquisition: string | null
   valeur_achat: number | null
