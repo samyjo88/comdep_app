@@ -116,17 +116,72 @@ function StatCards({ stats }: { stats: Stats }) {
 
 // ── Tableau ────────────────────────────────────────────────────────────────
 
-function MaterielTableau({ items }: { items: MaterielSono[] }) {
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-        <span className="text-5xl">🎛️</span>
-        <p className="font-semibold text-lg">Aucun équipement trouvé</p>
-        <p className="text-sm text-muted-foreground">Ajoutez du matériel ou modifiez les filtres.</p>
-      </div>
-    )
-  }
+// ── Vue cartes (mobile) ────────────────────────────────────────────────────
 
+function MaterielCartes({ items }: { items: MaterielSono[] }) {
+  return (
+    <div className="space-y-3">
+      {items.map(item => {
+        const etatCfg         = ETAT_CONFIG[item.etat]
+        const urgentNettoyage = isNettoyageUrgent(item.prochain_nettoyage)
+
+        return (
+          <div key={item.id} className="rounded-xl border bg-card p-4 space-y-3">
+            {/* Ligne 1 : nom + badges */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-semibold leading-snug">{item.nom}</p>
+                {(item.marque || item.modele) && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {[item.marque, item.modele].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+              <Badge variant="outline" className={`text-xs font-medium shrink-0 ${etatCfg.className}`}>
+                {etatCfg.label}
+              </Badge>
+            </div>
+
+            {/* Ligne 2 : meta */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground border-t pt-2">
+              <span className="flex items-center gap-1">
+                <Package className="h-3.5 w-3.5" />
+                <span className="font-semibold text-foreground">{item.quantite_disponible}</span>
+                <span>/{item.quantite_total}</span>
+              </span>
+              <span>{CATEGORIE_LABEL[item.categorie]}</span>
+              {item.prochain_nettoyage && (
+                <span className={urgentNettoyage ? 'text-amber-600 font-semibold' : ''}>
+                  Nettoyage : {formatDate(item.prochain_nettoyage)}
+                </span>
+              )}
+            </div>
+
+            {/* Alertes */}
+            {(item.en_reparation || urgentNettoyage) && (
+              <div className="flex flex-wrap gap-2">
+                {item.en_reparation && (
+                  <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                    <Wrench className="h-3 w-3" /> En réparation
+                  </span>
+                )}
+                {urgentNettoyage && (
+                  <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                    <AlertCircle className="h-3 w-3" /> Nettoyage urgent
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Vue tableau (desktop) ──────────────────────────────────────────────────
+
+function MaterielTableauDesktop({ items }: { items: MaterielSono[] }) {
   return (
     <Table>
       <TableHeader>
@@ -143,12 +198,11 @@ function MaterielTableau({ items }: { items: MaterielSono[] }) {
       </TableHeader>
       <TableBody>
         {items.map(item => {
-          const etatCfg = ETAT_CONFIG[item.etat]
+          const etatCfg         = ETAT_CONFIG[item.etat]
           const urgentNettoyage = isNettoyageUrgent(item.prochain_nettoyage)
 
           return (
             <TableRow key={item.id} className="group">
-              {/* Nom */}
               <TableCell>
                 <div className="font-medium">{item.nom}</div>
                 {(item.marque || item.modele) && (
@@ -157,60 +211,39 @@ function MaterielTableau({ items }: { items: MaterielSono[] }) {
                   </div>
                 )}
               </TableCell>
-
-              {/* Catégorie */}
               <TableCell className="text-sm text-muted-foreground">
                 {CATEGORIE_LABEL[item.categorie]}
               </TableCell>
-
-              {/* Quantité */}
               <TableCell className="text-center">
                 <span className="font-semibold">{item.quantite_disponible}</span>
                 <span className="text-muted-foreground text-xs">/{item.quantite_total}</span>
               </TableCell>
-
-              {/* État */}
               <TableCell>
-                <Badge
-                  variant="outline"
-                  className={`text-xs font-medium ${etatCfg.className}`}
-                >
+                <Badge variant="outline" className={`text-xs font-medium ${etatCfg.className}`}>
                   {etatCfg.label}
                 </Badge>
               </TableCell>
-
-              {/* Dernier nettoyage */}
               <TableCell className="text-sm text-muted-foreground">
                 {formatDate(item.dernier_nettoyage)}
               </TableCell>
-
-              {/* Prochain nettoyage */}
               <TableCell>
                 <span className={`text-sm ${urgentNettoyage ? 'font-semibold text-amber-600' : 'text-muted-foreground'}`}>
                   {formatDate(item.prochain_nettoyage)}
                 </span>
               </TableCell>
-
-              {/* Alertes */}
               <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-1.5">
                   {item.en_reparation && (
-                    <span title="En réparation">
-                      <Wrench className="h-4 w-4 text-red-500" />
-                    </span>
+                    <span title="En réparation"><Wrench className="h-4 w-4 text-red-500" /></span>
                   )}
                   {urgentNettoyage && (
-                    <span title="Nettoyage urgent (≤ 7 jours)">
-                      <AlertCircle className="h-4 w-4 text-amber-500" />
-                    </span>
+                    <span title="Nettoyage urgent (≤ 7 jours)"><AlertCircle className="h-4 w-4 text-amber-500" /></span>
                   )}
                   {!item.en_reparation && !urgentNettoyage && (
                     <span className="text-muted-foreground/40 text-xs">—</span>
                   )}
                 </div>
               </TableCell>
-
-              {/* Actions */}
               <TableCell className="text-right">
                 <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                   Modifier
@@ -221,6 +254,33 @@ function MaterielTableau({ items }: { items: MaterielSono[] }) {
         })}
       </TableBody>
     </Table>
+  )
+}
+
+// ── Tableau principal (responsive) ────────────────────────────────────────
+
+function MaterielTableau({ items }: { items: MaterielSono[] }) {
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+        <span className="text-5xl">🎛️</span>
+        <p className="font-semibold text-lg">Aucun équipement trouvé</p>
+        <p className="text-sm text-muted-foreground">Ajoutez du matériel ou modifiez les filtres.</p>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      {/* Mobile : cartes empilées */}
+      <div className="md:hidden">
+        <MaterielCartes items={items} />
+      </div>
+      {/* Desktop : tableau */}
+      <div className="hidden md:block">
+        <MaterielTableauDesktop items={items} />
+      </div>
+    </>
   )
 }
 

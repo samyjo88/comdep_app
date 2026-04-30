@@ -15,6 +15,9 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetBody, SheetFooter,
+} from '@/components/ui/sheet'
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -22,6 +25,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 
+import { useIsMobile } from '@/hooks/use-media-query'
 import {
   creerMembre, modifierMembre, modifierActiveMembre,
 } from '@/lib/sonorisation/membres-actions'
@@ -50,7 +54,7 @@ function getInitials(prenom: string, nom: string): string {
   return `${(prenom[0] ?? '').toUpperCase()}${(nom[0] ?? '').toUpperCase()}`
 }
 
-// ── Schéma validation ──────────────────────────────────────────────────────
+// ── Schéma ─────────────────────────────────────────────────────────────────
 
 const schema = z.object({
   prenom:    z.string().min(1, 'Prénom obligatoire'),
@@ -58,43 +62,102 @@ const schema = z.object({
   telephone: z.string().optional().nullable(),
   email:     z.string()
     .refine(v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: 'Email invalide' })
-    .optional()
-    .nullable(),
+    .optional().nullable(),
   role:      z.enum(['responsable', 'technicien', 'assistant']),
 })
 
 type FormValues = z.infer<typeof schema>
 
-const defaultValues: FormValues = {
-  prenom:    '',
-  nom:       '',
-  telephone: null,
-  email:     null,
-  role:      'technicien',
-}
+const defaultValues: FormValues = { prenom: '', nom: '', telephone: null, email: null, role: 'technicien' }
 
 function toFormValues(m: MembreSon): FormValues {
-  return {
-    prenom:    m.prenom,
-    nom:       m.nom,
-    telephone: m.telephone,
-    email:     m.email,
-    role:      m.role,
-  }
+  return { prenom: m.prenom, nom: m.nom, telephone: m.telephone, email: m.email, role: m.role }
+}
+
+// ── Contenu du formulaire (partagé) ────────────────────────────────────────
+
+function MembreFormBody({
+  form,
+  formId,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  form: any
+  formId?: string
+}) {
+  return (
+    <form id={formId} onSubmit={form.handleSubmit ? undefined : undefined} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={form.control} name="prenom" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Prénom <span className="text-destructive">*</span></FormLabel>
+            <FormControl><Input placeholder="Jean" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="nom" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Nom <span className="text-destructive">*</span></FormLabel>
+            <FormControl><Input placeholder="Dupont" {...field} /></FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>
+
+      <FormField control={form.control} name="role" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Rôle <span className="text-destructive">*</span></FormLabel>
+          <Select onValueChange={field.onChange} value={field.value}>
+            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+            <SelectContent>
+              <SelectItem value="responsable">👑 Responsable</SelectItem>
+              <SelectItem value="technicien">🔧 Technicien</SelectItem>
+              <SelectItem value="assistant">🎧 Assistant</SelectItem>
+            </SelectContent>
+          </Select>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      <FormField control={form.control} name="telephone" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Téléphone</FormLabel>
+          <FormControl>
+            <Input type="tel" placeholder="+228 90 00 00 00" {...field} value={field.value ?? ''} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      <FormField control={form.control} name="email" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Email</FormLabel>
+          <FormControl>
+            <Input type="email" placeholder="jean@exemple.com" {...field} value={field.value ?? ''} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      {form.formState.errors.root && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {form.formState.errors.root.message}
+        </div>
+      )}
+    </form>
+  )
 }
 
 // ── Modal add/edit ─────────────────────────────────────────────────────────
 
 function MembreModal({
-  open,
-  onOpenChange,
-  membre,
+  open, onOpenChange, membre,
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   membre: MembreSon | null
 }) {
   const isEdit = !!membre
+  const isMobile = useIsMobile()
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<FormValues>({
@@ -107,6 +170,12 @@ function MembreModal({
     if (open) form.reset(membre ? toFormValues(membre) : defaultValues)
   }, [open, membre, form])
 
+  const title = isEdit ? 'Modifier le membre' : 'Ajouter un membre'
+  const description = isEdit
+    ? `Modification de ${membre?.prenom} ${membre?.nom}`
+    : "Nouveau membre de l'équipe sonorisation"
+  const submitLabel = isEdit ? 'Enregistrer' : 'Ajouter'
+
   function onSubmit(values: FormValues) {
     startTransition(async () => {
       const payload = {
@@ -116,122 +185,59 @@ function MembreModal({
         email:     values.email || null,
         role:      values.role as RoleSon,
       }
-
       const result = isEdit
         ? await modifierMembre(membre!.id, payload)
         : await creerMembre(payload)
-
-      if (!result.success) {
-        form.setError('root', { message: result.error })
-        return
-      }
+      if (!result.success) { form.setError('root', { message: result.error }); return }
       onOpenChange(false)
     })
+  }
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>{title}</SheetTitle>
+            <SheetDescription>{description}</SheetDescription>
+          </SheetHeader>
+          <SheetBody>
+            <Form {...form}>
+              <MembreFormBody form={form} formId="membre-form" />
+              <form id="membre-form" onSubmit={form.handleSubmit(onSubmit)} className="hidden" />
+            </Form>
+          </SheetBody>
+          <SheetFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending} className="min-h-[44px]">
+              Annuler
+            </Button>
+            <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending} className="min-h-[44px]">
+              {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {submitLabel}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    )
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? 'Modifier le membre' : 'Ajouter un membre'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? `Modification de ${membre?.prenom} ${membre?.nom}`
-              : 'Nouveau membre de l\'équipe sonorisation'}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="prenom" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prénom <span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Jean" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="nom" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nom <span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dupont" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            <FormField control={form.control} name="role" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rôle <span className="text-destructive">*</span></FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="responsable">👑 Responsable</SelectItem>
-                    <SelectItem value="technicien">🔧 Technicien</SelectItem>
-                    <SelectItem value="assistant">🎧 Assistant</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            <FormField control={form.control} name="telephone" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Téléphone</FormLabel>
-                <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder="+228 90 00 00 00"
-                    {...field}
-                    value={field.value ?? ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            <FormField control={form.control} name="email" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="jean@exemple.com"
-                    {...field}
-                    value={field.value ?? ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            {form.formState.errors.root && (
-              <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {form.formState.errors.root.message}
-              </div>
-            )}
-
+            <MembreFormBody form={form} />
             <DialogFooter>
-              <Button
-                type="button" variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 Annuler
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isEdit ? 'Enregistrer' : 'Ajouter'}
+                {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {submitLabel}
               </Button>
             </DialogFooter>
           </form>
@@ -243,13 +249,7 @@ function MembreModal({
 
 // ── Carte membre ───────────────────────────────────────────────────────────
 
-function MembreCard({
-  membre,
-  onEdit,
-}: {
-  membre: MembreSon
-  onEdit: () => void
-}) {
+function MembreCard({ membre, onEdit }: { membre: MembreSon; onEdit: () => void }) {
   const [actifLocal, setActifLocal] = useState(membre.actif)
   const [isPending, startTransition] = useTransition()
 
@@ -265,41 +265,29 @@ function MembreCard({
   }
 
   function handleDesactiver() {
-    if (actifLocal) {
-      if (!confirm(`Désactiver ${membre.prenom} ${membre.nom} ?`)) return
-    }
+    if (actifLocal && !confirm(`Désactiver ${membre.prenom} ${membre.nom} ?`)) return
     handleToggleActif(!actifLocal)
   }
 
   return (
-    <Card className={cn(
-      'flex flex-col transition-all duration-200',
-      !actifLocal && 'opacity-60 bg-muted/20'
-    )}>
+    <Card className={cn('flex flex-col transition-all duration-200', !actifLocal && 'opacity-60 bg-muted/20')}>
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
-          {/* Cercle initiales */}
           <div className={cn(
             'flex items-center justify-center w-12 h-12 rounded-full',
             'text-white font-bold text-lg shrink-0 select-none',
-            avatarColor
+            avatarColor,
           )}>
             {initials}
           </div>
-
-          {/* Nom + rôle */}
           <div className="flex-1 min-w-0">
-            <p className="font-semibold leading-tight">
-              {membre.prenom} {membre.nom}
-            </p>
+            <p className="font-semibold leading-tight truncate">{membre.prenom} {membre.nom}</p>
             <div className="mt-1.5">
               <Badge variant="outline" className={cn('text-xs font-medium', roleCfg.className)}>
                 {roleCfg.label}
               </Badge>
             </div>
           </div>
-
-          {/* Toggle actif / inactif */}
           <Switch
             checked={actifLocal}
             onCheckedChange={handleToggleActif}
@@ -310,57 +298,41 @@ function MembreCard({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-2 flex-1">
-        {/* Téléphone */}
         {membre.telephone ? (
-          <a
-            href={`tel:${membre.telephone}`}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
-          >
+          <a href={`tel:${membre.telephone}`}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
             <Phone className="h-3.5 w-3.5 shrink-0 group-hover:text-primary" />
             <span className="truncate">{membre.telephone}</span>
           </a>
         ) : (
           <span className="flex items-center gap-2 text-sm text-muted-foreground/40 italic">
-            <Phone className="h-3.5 w-3.5 shrink-0" />
-            Non renseigné
+            <Phone className="h-3.5 w-3.5 shrink-0" />Non renseigné
           </span>
         )}
 
-        {/* Email */}
         {membre.email ? (
-          <a
-            href={`mailto:${membre.email}`}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
-          >
+          <a href={`mailto:${membre.email}`}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group">
             <Mail className="h-3.5 w-3.5 shrink-0 group-hover:text-primary" />
             <span className="truncate">{membre.email}</span>
           </a>
         ) : (
           <span className="flex items-center gap-2 text-sm text-muted-foreground/40 italic">
-            <Mail className="h-3.5 w-3.5 shrink-0" />
-            Non renseigné
+            <Mail className="h-3.5 w-3.5 shrink-0" />Non renseigné
           </span>
         )}
 
-        {/* Actions */}
         <div className="flex gap-2 pt-3 mt-auto border-t">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={onEdit}
-            disabled={isPending}
-          >
+          <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={onEdit} disabled={isPending}>
             Modifier
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
+            variant="ghost" size="sm"
             className={cn(
-              'flex-1 gap-1 text-xs',
+              'flex-1 min-h-[44px] gap-1 text-xs',
               actifLocal
                 ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
-                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
+                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
             )}
             onClick={handleDesactiver}
             disabled={isPending}
@@ -407,38 +379,29 @@ export function EquipeClient({ membres }: { membres: MembreSon[] }) {
     { value: 'inactifs', label: 'Inactifs', count: membres.filter(m => !m.actif).length },
   ]
 
-  function openAdd() {
-    setMembreEnEdition(null)
-    setModalOpen(true)
-  }
-
-  function openEdit(m: MembreSon) {
-    setMembreEnEdition(m)
-    setModalOpen(true)
-  }
+  function openAdd() { setMembreEnEdition(null); setModalOpen(true) }
+  function openEdit(m: MembreSon) { setMembreEnEdition(m); setModalOpen(true) }
 
   return (
     <div className="space-y-6">
-      {/* Filtre + bouton ajouter */}
+      {/* Filtre + bouton */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-1 bg-muted rounded-lg p-1 self-start">
+        <div className="flex gap-1 bg-muted rounded-lg p-1 self-start overflow-x-auto">
           {filtres.map(f => (
             <button
               key={f.value}
               onClick={() => setFiltre(f.value)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all',
+                'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap min-h-[36px]',
                 filtre === f.value
                   ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
               )}
             >
               {f.label}
               <span className={cn(
                 'text-xs px-1.5 py-0.5 rounded-full tabular-nums',
-                filtre === f.value
-                  ? 'bg-muted text-muted-foreground'
-                  : 'bg-muted/60 text-muted-foreground/60'
+                filtre === f.value ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/60',
               )}>
                 {f.count}
               </span>
@@ -446,7 +409,7 @@ export function EquipeClient({ membres }: { membres: MembreSon[] }) {
           ))}
         </div>
 
-        <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto">
+        <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto min-h-[44px]">
           <Plus className="h-4 w-4" />
           Ajouter un membre
         </Button>
@@ -457,59 +420,41 @@ export function EquipeClient({ membres }: { membres: MembreSon[] }) {
         <div className="flex flex-col items-center justify-center py-20 gap-3 rounded-xl border border-dashed text-center">
           <Users className="h-10 w-10 text-muted-foreground/30" />
           <p className="font-medium text-muted-foreground">
-            {filtre === 'inactifs'
-              ? 'Aucun membre inactif'
-              : 'Aucun membre dans l\'équipe'}
+            {filtre === 'inactifs' ? 'Aucun membre inactif' : "Aucun membre dans l'équipe"}
           </p>
           {filtre === 'tous' && (
-            <Button variant="outline" size="sm" onClick={openAdd} className="gap-1.5">
+            <Button variant="outline" size="sm" onClick={openAdd} className="gap-1.5 min-h-[44px]">
               <Plus className="h-4 w-4" />
               Ajouter le premier membre
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {membresFiltres.map(m => (
             <MembreCard key={m.id} membre={m} onEdit={() => openEdit(m)} />
           ))}
         </div>
       )}
 
-      {/* Résumé bas de page */}
+      {/* Résumé */}
       {membres.length > 0 && (
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-4 border-t text-sm text-muted-foreground">
-          <span>
-            <span className="font-semibold text-foreground">{stats.actifs}</span>{' '}
-            membre{stats.actifs !== 1 ? 's' : ''} actif{stats.actifs !== 1 ? 's' : ''}
-          </span>
+          <span><span className="font-semibold text-foreground">{stats.actifs}</span> membre{stats.actifs !== 1 ? 's' : ''} actif{stats.actifs !== 1 ? 's' : ''}</span>
           <span className="text-muted-foreground/30">·</span>
-          <span>
-            <span className="font-semibold text-foreground">{stats.techniciens}</span>{' '}
-            technicien{stats.techniciens !== 1 ? 's' : ''}
-          </span>
+          <span><span className="font-semibold text-foreground">{stats.techniciens}</span> technicien{stats.techniciens !== 1 ? 's' : ''}</span>
           <span className="text-muted-foreground/30">·</span>
-          <span>
-            <span className="font-semibold text-foreground">{stats.responsables}</span>{' '}
-            responsable{stats.responsables !== 1 ? 's' : ''}
-          </span>
+          <span><span className="font-semibold text-foreground">{stats.responsables}</span> responsable{stats.responsables !== 1 ? 's' : ''}</span>
           {stats.assistants > 0 && (
             <>
               <span className="text-muted-foreground/30">·</span>
-              <span>
-                <span className="font-semibold text-foreground">{stats.assistants}</span>{' '}
-                assistant{stats.assistants !== 1 ? 's' : ''}
-              </span>
+              <span><span className="font-semibold text-foreground">{stats.assistants}</span> assistant{stats.assistants !== 1 ? 's' : ''}</span>
             </>
           )}
         </div>
       )}
 
-      <MembreModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        membre={membreEnEdition}
-      />
+      <MembreModal open={modalOpen} onOpenChange={setModalOpen} membre={membreEnEdition} />
     </div>
   )
 }

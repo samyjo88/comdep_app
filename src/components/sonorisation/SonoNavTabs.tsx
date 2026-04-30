@@ -40,7 +40,10 @@ export function SonoNavTabs() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex -mb-px" aria-label="Modules sonorisation">
+    <nav
+      className="flex -mb-px overflow-x-auto scrollbar-none"
+      aria-label="Modules sonorisation"
+    >
       {TABS.map(({ label, href, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         return (
@@ -48,13 +51,14 @@ export function SonoNavTabs() {
             key={href}
             href={href}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0',
+              'min-h-[44px]',
               isActive
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className="h-4 w-4 shrink-0" />
             {label}
           </Link>
         )

@@ -13,6 +13,9 @@ import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetBody, SheetFooter,
+} from '@/components/ui/sheet'
+import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -21,6 +24,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 
+import { useIsMobile } from '@/hooks/use-media-query'
 import { creerAchat, modifierStatutAchat, supprimerAchat } from '@/lib/sonorisation/achats-actions'
 import type { AchatPlanifie, PrioriteAchat, StatutAchat } from '@/lib/supabase/types'
 
@@ -44,7 +48,7 @@ function formatBudget(val: number | null): string {
   return new Intl.NumberFormat('fr-FR').format(val) + ' FCFA'
 }
 
-// ── Schéma modal ───────────────────────────────────────────────────────────
+// ── Schéma ─────────────────────────────────────────────────────────────────
 
 const schema = z.object({
   nom:           z.string().min(1, 'Le nom est obligatoire'),
@@ -56,23 +60,86 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-const defaultValues: FormValues = {
-  nom:           '',
-  quantite:      1,
-  budget_estime: null,
-  priorite:      'normal',
-  notes:         null,
+const defaultValues: FormValues = { nom: '', quantite: 1, budget_estime: null, priorite: 'normal', notes: null }
+
+// ── Contenu du formulaire ──────────────────────────────────────────────────
+
+function AchatFormBody({ form }: { form: ReturnType<typeof useForm<FormValues>> }) {
+  return (
+    <div className="space-y-4">
+      <FormField control={form.control} name="nom" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Nom du matériel <span className="text-destructive">*</span></FormLabel>
+          <FormControl>
+            <Input placeholder="ex : Microphone Shure SM58" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={form.control} name="quantite" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Quantité <span className="text-destructive">*</span></FormLabel>
+            <FormControl>
+              <Input type="number" min={1} {...field}
+                onChange={e => field.onChange(e.target.value === '' ? 1 : parseInt(e.target.value, 10))} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="priorite" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Priorité <span className="text-destructive">*</span></FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+              <SelectContent>
+                <SelectItem value="urgent">🔴 Urgent</SelectItem>
+                <SelectItem value="normal">🟠 Normal</SelectItem>
+                <SelectItem value="faible">🟢 Faible</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>
+
+      <FormField control={form.control} name="budget_estime" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Budget estimé (FCFA)</FormLabel>
+          <FormControl>
+            <Input type="number" min={0} step={500} placeholder="ex : 45 000"
+              {...field} value={field.value ?? ''}
+              onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      <FormField control={form.control} name="notes" render={({ field }) => (
+        <FormItem>
+          <FormLabel>Notes</FormLabel>
+          <FormControl>
+            <Textarea placeholder="Justification, lien produit, fournisseur…" rows={2}
+              {...field} value={field.value ?? ''} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+
+      {form.formState.errors.root && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {form.formState.errors.root.message}
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── Modal nouvel achat ─────────────────────────────────────────────────────
 
-function NouvelAchatModal({
-  open,
-  onOpenChange,
-}: {
-  open: boolean
-  onOpenChange: (v: boolean) => void
-}) {
+function NouvelAchatModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const isMobile = useIsMobile()
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<FormValues>({
@@ -81,9 +148,7 @@ function NouvelAchatModal({
     defaultValues,
   })
 
-  useEffect(() => {
-    if (open) form.reset(defaultValues)
-  }, [open, form])
+  useEffect(() => { if (open) form.reset(defaultValues) }, [open, form])
 
   function onSubmit(values: FormValues) {
     startTransition(async () => {
@@ -94,14 +159,38 @@ function NouvelAchatModal({
         priorite:      values.priorite as PrioriteAchat,
         notes:         values.notes ?? null,
       })
-
-      if (!result.success) {
-        form.setError('root', { message: result.error })
-        return
-      }
-
+      if (!result.success) { form.setError('root', { message: result.error }); return }
       onOpenChange(false)
     })
+  }
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Nouvel achat planifié</SheetTitle>
+            <SheetDescription>Ajoutez un équipement à la liste des achats prévus.</SheetDescription>
+          </SheetHeader>
+          <SheetBody>
+            <Form {...form}>
+              <form id="achat-form" onSubmit={form.handleSubmit(onSubmit)}>
+                <AchatFormBody form={form} />
+              </form>
+            </Form>
+          </SheetBody>
+          <SheetFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending} className="min-h-[44px]">
+              Annuler
+            </Button>
+            <Button type="submit" form="achat-form" disabled={isPending} className="min-h-[44px]">
+              {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Ajouter
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+    )
   }
 
   return (
@@ -109,102 +198,17 @@ function NouvelAchatModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Nouvel achat planifié</DialogTitle>
-          <DialogDescription>
-            Ajoutez un équipement à la liste des achats prévus.
-          </DialogDescription>
+          <DialogDescription>Ajoutez un équipement à la liste des achats prévus.</DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
-            <FormField control={form.control} name="nom" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nom du matériel <span className="text-destructive">*</span></FormLabel>
-                <FormControl>
-                  <Input placeholder="ex : Microphone Shure SM58" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="quantite" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quantité <span className="text-destructive">*</span></FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number" min={1} {...field}
-                      onChange={e => field.onChange(e.target.value === '' ? 1 : parseInt(e.target.value, 10))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="priorite" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priorité <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="urgent">🔴 Urgent</SelectItem>
-                      <SelectItem value="normal">🟠 Normal</SelectItem>
-                      <SelectItem value="faible">🟢 Faible</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            <FormField control={form.control} name="budget_estime" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Budget estimé (FCFA)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number" min={0} step={500} placeholder="ex : 45 000"
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            <FormField control={form.control} name="notes" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notes</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Justification, lien produit, fournisseur…"
-                    rows={2}
-                    {...field}
-                    value={field.value ?? ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            {form.formState.errors.root && (
-              <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {form.formState.errors.root.message}
-              </div>
-            )}
-
+            <AchatFormBody form={form} />
             <DialogFooter>
-              <Button
-                type="button" variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
                 Annuler
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 Ajouter
               </Button>
             </DialogFooter>
@@ -229,9 +233,7 @@ function AchatCard({ achat }: { achat: AchatPlanifie }) {
   function handleStatutChange(newStatut: string) {
     const s = newStatut as StatutAchat
     setStatutLocal(s)
-    startTransition(async () => {
-      await modifierStatutAchat(achat.id, s)
-    })
+    startTransition(async () => { await modifierStatutAchat(achat.id, s) })
   }
 
   function handleDelete() {
@@ -244,10 +246,7 @@ function AchatCard({ achat }: { achat: AchatPlanifie }) {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <p className="font-semibold text-base leading-snug">{achat.nom}</p>
-          <Badge
-            variant="outline"
-            className={`text-xs font-medium shrink-0 ${prioriteCfg.className}`}
-          >
+          <Badge variant="outline" className={`text-xs font-medium shrink-0 ${prioriteCfg.className}`}>
             {prioriteCfg.label}
           </Badge>
         </div>
@@ -269,15 +268,10 @@ function AchatCard({ achat }: { achat: AchatPlanifie }) {
           </p>
         )}
 
-        {/* Statut + actions */}
         <div className="flex items-center gap-2 border-t pt-3 mt-auto">
-          <Badge
-            variant="outline"
-            className={`text-xs font-medium shrink-0 ${statutCfg.className}`}
-          >
+          <Badge variant="outline" className={`text-xs font-medium shrink-0 ${statutCfg.className}`}>
             {statutCfg.label}
           </Badge>
-
           <div className="flex-1 min-w-0">
             <Select onValueChange={handleStatutChange} value={statutLocal} disabled={isPending}>
               <SelectTrigger className="h-7 text-xs">
@@ -291,16 +285,13 @@ function AchatCard({ achat }: { achat: AchatPlanifie }) {
               </SelectContent>
             </Select>
           </div>
-
           <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={handleDelete}
-            disabled={isPending}
+            variant="ghost" size="icon"
+            className="h-9 w-9 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={handleDelete} disabled={isPending}
             title="Supprimer cet achat"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
@@ -320,8 +311,7 @@ export function AchatsSection({ achats }: { achats: AchatPlanifie[] }) {
 
   return (
     <section className="space-y-5">
-      {/* En-tête section */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold tracking-tight">Achats planifiés</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -333,13 +323,13 @@ export function AchatsSection({ achats }: { achats: AchatPlanifie[] }) {
             )}
           </p>
         </div>
-        <Button onClick={() => setModalOpen(true)} size="sm" className="gap-1.5">
+        <Button onClick={() => setModalOpen(true)} size="sm" className="gap-1.5 shrink-0 min-h-[44px]">
           <Plus className="h-4 w-4" />
-          Nouvel achat
+          <span className="hidden xs:inline">Nouvel achat</span>
+          <span className="xs:hidden">Ajouter</span>
         </Button>
       </div>
 
-      {/* Grille de cartes */}
       {achats.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3 rounded-xl border border-dashed text-center">
           <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
@@ -349,7 +339,7 @@ export function AchatsSection({ achats }: { achats: AchatPlanifie[] }) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {achats.map(achat => (
             <AchatCard key={achat.id} achat={achat} />
           ))}
