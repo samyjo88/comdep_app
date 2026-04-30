@@ -2,16 +2,17 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { MaterielForm } from '@/components/sonorisation/materiel-form'
 import { MaterielFiltres } from '@/components/sonorisation/materiel-filtres'
+import { AchatsSection } from '@/components/sonorisation/AchatsSection'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { CATEGORIES, CATEGORIE_LABEL } from '@/lib/sonorisation/constants'
+import { CATEGORIE_LABEL } from '@/lib/sonorisation/constants'
 import {
   Package, ShieldCheck, Wrench, AlertTriangle, AlertCircle,
 } from 'lucide-react'
-import type { MaterielSono, EtatMateriel, CategorieMateriel } from '@/lib/supabase/types'
+import type { MaterielSono, AchatPlanifie, EtatMateriel, CategorieMateriel } from '@/lib/supabase/types'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -267,6 +268,13 @@ async function PageContent({ searchParams }: Props) {
     nettoyage_urgent: allData.filter(i => isNettoyageUrgent(i.prochain_nettoyage)).length,
   }
 
+  // Achats planifiés
+  const { data: rawAchats } = await (supabase as any)
+    .from('achats_planifies')
+    .select('*')
+    .order('created_at', { ascending: false })
+  const achats = (rawAchats ?? []) as AchatPlanifie[]
+
   return (
     <>
       <StatCards stats={stats} />
@@ -279,6 +287,10 @@ async function PageContent({ searchParams }: Props) {
           </p>
         </div>
         <MaterielTableau items={items} />
+      </div>
+
+      <div className="border-t pt-6">
+        <AchatsSection achats={achats} />
       </div>
     </>
   )

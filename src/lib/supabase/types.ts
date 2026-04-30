@@ -1,4 +1,19 @@
 export type AppRole = 'super_admin' | 'admin' | 'responsable' | 'redacteur' | 'membre'
+export type PrioriteAchat = 'urgent' | 'normal' | 'faible'
+export type StatutAchat   = 'en_attente' | 'approuve' | 'commande' | 'recu'
+
+export interface AchatPlanifie {
+  id: number
+  nom: string
+  quantite: number
+  budget_estime: number | null
+  priorite: PrioriteAchat
+  statut: StatutAchat
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
 export type CategorieMateriel = 'microphone' | 'enceinte' | 'amplificateur' | 'mixette' | 'cable' | 'effet' | 'instrument' | 'accessoire' | 'autre'
 export type StatutMateriel = 'disponible' | 'emprunte' | 'en_maintenance' | 'hors_service'
 export type EtatMateriel = 'neuf' | 'bon' | 'use' | 'en_panne'
@@ -167,7 +182,8 @@ export type Database = {
       publications:    TableDef<Publication,   Omit<Publication,   'id' | 'created_at' | 'updated_at'>, Partial<Omit<Publication, 'id'>>>
       evenements:      TableDef<Evenement,     Omit<Evenement,     'id' | 'created_at' | 'updated_at'>, Partial<Omit<Evenement,  'id'>>>
       annonces:        TableDef<Annonce,       Omit<Annonce,       'id' | 'created_at' | 'updated_at'>, Partial<Omit<Annonce,    'id'>>>
-      materiel_sono:   TableDef<MaterielSono,  Omit<MaterielSono,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono, 'id'>>>
+      materiel_sono:      TableDef<MaterielSono,    Omit<MaterielSono,    'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono,    'id'>>>
+      achats_planifies:   TableDef<AchatPlanifie,  Omit<AchatPlanifie,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<AchatPlanifie,  'id'>>>
     }
     Views: Record<string, never>
     Functions: {
@@ -182,6 +198,8 @@ export type Database = {
       type_media: TypeMedia
       categorie_materiel: CategorieMateriel
       statut_materiel: StatutMateriel
+      priorite_achat: PrioriteAchat
+      statut_achat: StatutAchat
     }
     CompositeTypes: Record<string, never>
   }
