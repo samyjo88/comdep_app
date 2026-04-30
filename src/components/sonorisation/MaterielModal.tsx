@@ -393,7 +393,7 @@ export function MaterielModal({ open, onOpenChange, materiel, onSuccess }: Props
               name="valeur_achat"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valeur d&apos;achat (FCFA)</FormLabel>
+                  <FormLabel>Valeur d&apos;achat (F CFA)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
