@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import {
   CalendarDays, List, ChevronLeft, ChevronRight,
-  Plus, Trash2, Loader2, UserX,
+  Plus, Trash2, Loader2, UserX, Bell, CheckCircle2, AlertCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -538,6 +538,29 @@ export function PlanningClient({
   const [culteIdSel, setCulteIdSel]           = useState<number | null>(null)
   const [dateSel, setDateSel]                 = useState('')
 
+  // Envoi des rappels
+  type RappelEtat = 'idle' | 'loading' | 'success' | 'error'
+  const [rappelEtat, setRappelEtat] = useState<RappelEtat>('idle')
+  const [rappelMsg,  setRappelMsg]  = useState('')
+
+  async function envoyerRappels() {
+    setRappelEtat('loading')
+    try {
+      const res  = await fetch('/api/notifications/rappel-culte')
+      const json = await res.json() as { success?: boolean; sent?: number; message?: string; error?: string }
+      if (!res.ok) throw new Error(json.error ?? 'Erreur serveur')
+      const msg = (json.sent ?? 0) === 0
+        ? json.message ?? 'Aucun culte dans les 48 prochaines heures.'
+        : `${json.sent} rappel${(json.sent ?? 0) > 1 ? 's' : ''} envoyé${(json.sent ?? 0) > 1 ? 's' : ''} avec succès !`
+      setRappelMsg(msg)
+      setRappelEtat('success')
+    } catch (err) {
+      setRappelMsg(err instanceof Error ? err.message : 'Erreur inconnue')
+      setRappelEtat('error')
+    }
+    setTimeout(() => setRappelEtat('idle'), 6000)
+  }
+
   // Compteur du mois affiché
   const year  = moisAffiche.getFullYear()
   const month = moisAffiche.getMonth()
@@ -601,15 +624,49 @@ export function PlanningClient({
           </p>
         </div>
 
-        <Button
-          size="sm"
-          className="gap-1.5 self-start sm:self-auto"
-          onClick={() => { setDatePrefilled(null); setModalAddOpen(true) }}
-        >
-          <Plus className="h-4 w-4" />
-          Ajouter un culte
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {/* Bouton rappels */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={envoyerRappels}
+            disabled={rappelEtat === 'loading'}
+            title="Envoyer un rappel par email aux membres assignés au prochain culte (48h)"
+          >
+            {rappelEtat === 'loading'
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Bell className="h-4 w-4" />
+            }
+            Envoyer rappels
+          </Button>
+
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => { setDatePrefilled(null); setModalAddOpen(true) }}
+          >
+            <Plus className="h-4 w-4" />
+            Ajouter un culte
+          </Button>
+        </div>
       </div>
+
+      {/* Notification rappel */}
+      {rappelEtat !== 'idle' && rappelEtat !== 'loading' && (
+        <div className={cn(
+          'flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium',
+          rappelEtat === 'success'
+            ? 'bg-green-50 text-green-800 border border-green-200'
+            : 'bg-red-50 text-red-800 border border-red-200',
+        )}>
+          {rappelEtat === 'success'
+            ? <CheckCircle2 className="h-4 w-4 shrink-0" />
+            : <AlertCircle className="h-4 w-4 shrink-0" />
+          }
+          {rappelMsg}
+        </div>
+      )}
 
       {/* Vue active */}
       {vue === 'liste' ? (
