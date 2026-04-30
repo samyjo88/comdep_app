@@ -1,6 +1,21 @@
 export type AppRole = 'super_admin' | 'admin' | 'responsable' | 'redacteur' | 'membre'
+export type RoleSon = 'responsable' | 'technicien' | 'assistant'
 export type PrioriteAchat = 'urgent' | 'normal' | 'faible'
 export type StatutAchat   = 'en_attente' | 'approuve' | 'commande' | 'recu'
+
+export interface MembreSon {
+  id: number
+  prenom: string
+  nom: string
+  telephone: string | null
+  email: string | null
+  role: RoleSon
+  actif: boolean
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
 
 export interface AchatPlanifie {
   id: number
@@ -184,6 +199,7 @@ export type Database = {
       annonces:        TableDef<Annonce,       Omit<Annonce,       'id' | 'created_at' | 'updated_at'>, Partial<Omit<Annonce,    'id'>>>
       materiel_sono:      TableDef<MaterielSono,    Omit<MaterielSono,    'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono,    'id'>>>
       achats_planifies:   TableDef<AchatPlanifie,  Omit<AchatPlanifie,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<AchatPlanifie,  'id'>>>
+      membres_son:        TableDef<MembreSon,      Omit<MembreSon,      'id' | 'created_at' | 'updated_at'>, Partial<Omit<MembreSon,      'id'>>>
     }
     Views: Record<string, never>
     Functions: {
@@ -200,6 +216,7 @@ export type Database = {
       statut_materiel: StatutMateriel
       priorite_achat: PrioriteAchat
       statut_achat: StatutAchat
+      role_son: RoleSon
     }
     CompositeTypes: Record<string, never>
   }
