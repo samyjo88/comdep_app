@@ -11,7 +11,8 @@ import {
   Loader2, AlertTriangle, CheckCircle2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { publierAnnonce, validerRubriqueGeneree } from './actions'
+import { publierAnnonce } from './actions'
+import type { SseEvent } from '@/app/api/annonces/generer-tout/route'
 import type { RubriqueAnnonce, Culte } from '@/lib/annonces'
 import type { CodeRubrique } from '@/types/annonces'
 
@@ -58,7 +59,7 @@ export default function ApercuClient({
   const pret  = rubriques.filter(r => r.texte_final).length
   const total = rubriques.length
 
-  // ── Générer toutes les rubriques manquantes ──────────────────────────────
+  // ── Générer toutes les rubriques manquantes (SSE) ───────────────────────
 
   const handleGenererTout = useCallback(async () => {
     const manquantes = rubriques.filter(r => !r.texte_final)
@@ -69,35 +70,68 @@ export default function ApercuClient({
 
     setGenerating({ current: 0, total: manquantes.length })
 
-    for (let i = 0; i < manquantes.length; i++) {
-      const rb = manquantes[i]
-      setGenerating({ current: i + 1, total: manquantes.length })
-      try {
-        let donnees = {}
-        try { if (rb.donnees_brutes) donnees = JSON.parse(rb.donnees_brutes) } catch { /* */ }
+    try {
+      const response = await fetch('/api/annonces/generer-tout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ annonce_id: annonceId }),
+      })
 
-        const res = await fetch('/api/annonces/generer', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            rubriqueId:   rb.id,
-            codeRubrique: rb.code_rubrique,
-            donnees,
-          }),
-        })
-        const json = await res.json() as { texte_genere?: string; error?: string }
-        if (json.texte_genere) {
-          await validerRubriqueGeneree(rb.id, json.texte_genere)
-          setRubriques(prev =>
-            prev.map(r => r.id === rb.id ? { ...r, texte_final: json.texte_genere!, valide: true } : r)
-          )
+      if (!response.ok || !response.body) {
+        toast.error('Erreur lors de la génération.')
+        setGenerating(null)
+        return
+      }
+
+      const reader  = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const event = JSON.parse(line.slice(6)) as SseEvent
+
+            if (event.type === 'progress') {
+              setGenerating({ current: event.index, total: event.total })
+              if (event.succes) {
+                setRubriques(prev =>
+                  prev.map(r => r.id === event.rubriqueId
+                    ? { ...r, texte_final: event.texte, valide: true }
+                    : r
+                  )
+                )
+              }
+            }
+
+            if (event.type === 'done') {
+              setGenerating(null)
+              const n = event.succes
+              toast.success(
+                `✨ ${n} rubrique${n > 1 ? 's' : ''} générée${n > 1 ? 's' : ''} avec succès`
+              )
+            }
+
+            if (event.type === 'error') {
+              toast.error(`Erreur : ${event.message}`)
+              setGenerating(null)
+            }
+          } catch { /* ligne SSE malformée, on ignore */ }
         }
-      } catch { /* continue avec la suivante */ }
+      }
+    } catch {
+      toast.error('Erreur lors de la génération.')
+      setGenerating(null)
     }
-
-    setGenerating(null)
-    toast.success('Génération terminée !')
-  }, [rubriques])
+  }, [annonceId, rubriques])
 
   // ── Valider et publier ────────────────────────────────────────────────────
 
