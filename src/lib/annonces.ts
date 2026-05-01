@@ -248,6 +248,32 @@ export async function getAnnonceAvecCulte(annonceId: string): Promise<DbResult<A
   }
 }
 
+// ── getCultesAvenir ────────────────────────────────────────────────────────
+// Tous les cultes a_venir triés par date croissante, avec leurs annonces.
+
+export async function getCultesAvenir(): Promise<DbResult<CulteAvecAnnonce[]>> {
+  try {
+    const db = await getDb()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (db as any)
+      .from('cultes')
+      .select(`
+        *,
+        annonces (
+          *,
+          rubriques_annonce ( * )
+        )
+      `)
+      .eq('statut', 'a_venir')
+      .order('date_culte', { ascending: true })
+
+    if (error) return { data: null, error: error.message }
+    return { data: data as CulteAvecAnnonce[], error: null }
+  } catch (e) {
+    return { data: null, error: String(e) }
+  }
+}
+
 // ── getAnnoncePrecedente ───────────────────────────────────────────────────
 // Most recent culte with statut='passe' including its annonce and rubriques.
 
