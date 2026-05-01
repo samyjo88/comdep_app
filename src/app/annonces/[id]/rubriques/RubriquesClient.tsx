@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -8,10 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
   ChevronDown, Sparkles, CheckCircle2, Loader2,
-  Plus, Trash2, Save,
+  Plus, Trash2, Save, RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { sauvegarderRubrique } from './actions'
+import { sauvegarderRubrique, validerTexteIA } from './actions'
 import type { RubriqueAnnonce } from '@/lib/annonces'
 import type { Culte } from '@/lib/annonces'
 import {
@@ -73,19 +74,95 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
   )
 }
 
+// ── Types IA ───────────────────────────────────────────────────────────────
+
+interface IaState {
+  loading:  boolean
+  texte:    string | null
+  tokens:   number | null
+  genereLe: Date | null
+  valide:   boolean
+}
+
+const DEFAULT_IA: IaState = { loading: false, texte: null, tokens: null, genereLe: null, valide: false }
+
 // ── Bouton IA ──────────────────────────────────────────────────────────────
 
-function BoutonIA() {
+function BoutonIA({ onClick, loading }: { onClick: () => void; loading: boolean }) {
   return (
     <Button
       type="button"
-      disabled
       variant="outline"
-      className="gap-2 border-violet-200 text-violet-500 hover:text-violet-600 hover:border-violet-300 bg-violet-50/50 opacity-70 cursor-not-allowed"
+      onClick={onClick}
+      disabled={loading}
+      className="gap-2 border-violet-200 text-violet-600 hover:text-violet-700 hover:border-violet-300 bg-violet-50/50"
     >
-      <Sparkles className="h-4 w-4" />
-      Générer avec l&apos;IA
+      {loading
+        ? <><Loader2 className="h-4 w-4 animate-spin" /> Génération en cours…</>
+        : <><Sparkles className="h-4 w-4" /> Générer avec l&apos;IA →</>
+      }
     </Button>
+  )
+}
+
+// ── Zone texte IA ──────────────────────────────────────────────────────────
+
+function ZoneIA({
+  texte, tokens, genereLe, loading,
+  onChange, onRegenerate, onValider,
+}: {
+  texte:        string
+  tokens:       number | null
+  genereLe:     Date | null
+  loading:      boolean
+  onChange:     (t: string) => void
+  onRegenerate: () => void
+  onValider:    () => void
+}) {
+  return (
+    <div className="rounded-xl border border-violet-200 bg-violet-50/40 p-4 space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
+        <span className="text-sm font-semibold text-violet-700">Texte généré par l&apos;IA</span>
+        {genereLe && (
+          <span className="ml-auto text-xs text-muted-foreground">
+            Généré à {genereLe.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            {tokens ? ` · ~${tokens} tokens utilisés` : ''}
+          </span>
+        )}
+      </div>
+      <Textarea
+        value={texte}
+        onChange={e => onChange(e.target.value)}
+        rows={6}
+        className="bg-white border-violet-200 focus-visible:ring-violet-300 text-sm"
+      />
+      <div className="flex items-center gap-2 justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onRegenerate}
+          disabled={loading}
+          className="gap-1.5 text-violet-600 border-violet-200 hover:border-violet-300"
+        >
+          {loading
+            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            : <RefreshCw className="h-3.5 w-3.5" />
+          }
+          Regénérer
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={onValider}
+          className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+        >
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          Valider ce texte
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -140,14 +217,19 @@ function BoutonSupprimer({ onClick }: { onClick: () => void }) {
 // ── Accordéon panneau ──────────────────────────────────────────────────────
 
 function PanneauRubrique({
-  titre, icone, rempli, open, onToggle, saveStatus, children,
+  titre, icone, rempli, iaValide, open, onToggle, saveStatus,
+  iaContent, onGenerate, iaLoading, children,
 }: {
   titre:      string
   icone:      string
   rempli:     boolean
+  iaValide:   boolean
   open:       boolean
   onToggle:   () => void
   saveStatus: SaveStatus
+  iaContent:  React.ReactNode
+  onGenerate: () => void
+  iaLoading:  boolean
   children:   React.ReactNode
 }) {
   return (
@@ -165,6 +247,11 @@ function PanneauRubrique({
         <span className="flex-1 font-semibold text-sm leading-snug">{titre}</span>
         <div className="flex items-center gap-2 shrink-0">
           <SaveIndicator status={saveStatus} />
+          {iaValide && (
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs gap-1">
+              <Sparkles className="h-3 w-3" /> IA validé
+            </Badge>
+          )}
           {rempli ? (
             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs gap-1">
               <CheckCircle2 className="h-3 w-3" /> Rempli
@@ -189,9 +276,10 @@ function PanneauRubrique({
         <div className="overflow-hidden">
           <div className="px-4 pb-5 pt-1 space-y-5 border-t">
             {children}
+            {iaContent}
             {/* Bouton IA en bas */}
             <div className="flex justify-end pt-2 border-t">
-              <BoutonIA />
+              <BoutonIA onClick={onGenerate} loading={iaLoading} />
             </div>
           </div>
         </div>
@@ -631,12 +719,40 @@ interface Props {
 
 // ── Composant principal ────────────────────────────────────────────────────
 
+function checkRemplie(code: string, data: unknown): boolean {
+  if (!data) return false
+  switch (code) {
+    case 'salutation':      return isSalutationRemplie({ ...DEFAULT_SALUTATION,       ...(data as SalutationData) })
+    case 'culte_precedent': return isCultePrecedentRempli({ ...DEFAULT_CULTE_PRECEDENT, ...(data as CultePrecedentData) })
+    case 'culte_jour':      return isCulteJourRempli({ ...DEFAULT_CULTE_JOUR,          ...(data as CulteJourData) })
+    case 'conference':      return isConferenceRemplie({ ...DEFAULT_CONFERENCE,         ...(data as ConferenceData) })
+    case 'district':        return isDistrictRempli({ ...DEFAULT_DISTRICT,             ...(data as DistrictData) })
+    case 'circuit':         return isDistrictRempli({ ...DEFAULT_CIRCUIT,              ...(data as CircuitData) })
+    case 'eglise_local':    return isEgliseLocaleRemplie({ ...DEFAULT_EGLISE_LOCALE,   ...(data as EgliseLocaleData) })
+    default:                return false
+  }
+}
+
 export default function RubriquesClient({ annonceId: _annonceId, culte, rubriques }: Props) {
   const [openItem, setOpenItem] = useState<string | null>(rubriques[0]?.id ?? null)
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({})
+  const [iaState, setIaState] = useState<Record<string, IaState>>({})
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
+  // Données courantes de chaque rubrique (mises à jour à chaque frappe, avant debounce)
+  const latestData = useRef<Record<string, unknown>>(
+    Object.fromEntries(
+      rubriques
+        .filter(r => r.donnees_brutes)
+        .map(r => {
+          try { return [r.id, JSON.parse(r.donnees_brutes!)] } catch { return [r.id, null] }
+        })
+        .filter(([, v]) => v !== null)
+    )
+  )
+
   const scheduleSave = useCallback((rubriqueId: string, data: unknown) => {
+    latestData.current[rubriqueId] = data
     // Annuler le timer précédent
     if (timers.current[rubriqueId]) clearTimeout(timers.current[rubriqueId])
     setSaveStatus(s => ({ ...s, [rubriqueId]: 'pending' }))
@@ -651,6 +767,60 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
         setTimeout(() => setSaveStatus(s => ({ ...s, [rubriqueId]: 'idle' })), 3000)
       }
     }, 2000)
+  }, [])
+
+  const handleGenerate = useCallback(async (rubrique: RubriqueAnnonce) => {
+    const data = latestData.current[rubrique.id]
+    if (!checkRemplie(rubrique.code_rubrique, data)) {
+      toast.error('Remplis d\'abord les informations de cette rubrique')
+      return
+    }
+
+    setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA, loading: true } }))
+
+    try {
+      const res = await fetch('/api/annonces/generer', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rubriqueId:   rubrique.id,
+          codeRubrique: rubrique.code_rubrique,
+          donnees:      data ?? {},
+        }),
+      })
+
+      const json = await res.json()
+
+      if (!res.ok || json.error) {
+        toast.error('Erreur de génération. Vérifie ta clé API.')
+        setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
+        return
+      }
+
+      setIaState(s => ({
+        ...s,
+        [rubrique.id]: {
+          loading:  false,
+          texte:    json.texte_genere as string,
+          tokens:   json.tokens_utilises as number,
+          genereLe: new Date(),
+          valide:   false,
+        },
+      }))
+    } catch {
+      toast.error('Erreur de génération. Vérifie ta clé API.')
+      setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
+    }
+  }, [])
+
+  const handleValider = useCallback(async (rubriqueId: string, texte: string) => {
+    const result = await validerTexteIA(rubriqueId, texte)
+    if (result.error) {
+      toast.error('Erreur lors de la validation du texte')
+      return
+    }
+    setIaState(s => ({ ...s, [rubriqueId]: { ...s[rubriqueId], valide: true } }))
+    toast.success('Texte validé !')
   }, [])
 
   // Trouver une rubrique par code
@@ -720,6 +890,19 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
           const rubrique = r(code)
           if (!rubrique) return null
           const open = openItem === rubrique.id
+          const ia   = iaState[rubrique.id] ?? DEFAULT_IA
+
+          const iaContent = ia.texte !== null ? (
+            <ZoneIA
+              texte={ia.texte}
+              tokens={ia.tokens}
+              genereLe={ia.genereLe}
+              loading={ia.loading}
+              onChange={t => setIaState(s => ({ ...s, [rubrique.id]: { ...s[rubrique.id], texte: t } }))}
+              onRegenerate={() => handleGenerate(rubrique)}
+              onValider={() => handleValider(rubrique.id, ia.texte!)}
+            />
+          ) : null
 
           return (
             <PanneauRubrique
@@ -727,9 +910,13 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
               titre={titre}
               icone={icone}
               rempli={isRemplie(rubrique)}
+              iaValide={ia.valide}
               open={open}
               onToggle={() => setOpenItem(open ? null : rubrique.id)}
               saveStatus={saveStatus[rubrique.id] ?? 'idle'}
+              iaContent={iaContent}
+              onGenerate={() => handleGenerate(rubrique)}
+              iaLoading={ia.loading}
             >
               {code === 'salutation' && (
                 <RubriqueSalutation

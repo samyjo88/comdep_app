@@ -10,3 +10,12 @@ export async function sauvegarderRubrique(
   if (result.error) return { error: result.error }
   return {}
 }
+
+export async function validerTexteIA(
+  rubriqueId: string,
+  texteFinal: string,
+): Promise<{ error?: string }> {
+  const result = await updateRubrique(rubriqueId, { texte_final: texteFinal, valide: true })
+  if (result.error) return { error: result.error }
+  return {}
+}
