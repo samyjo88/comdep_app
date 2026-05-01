@@ -56,6 +56,7 @@ export default function ApercuClient({
   const [publiePending, setPubliePending] = useState(false)
   const [statut, setStatut]             = useState(initialStatut)
 
+  const estPasse = culte.statut === 'passe'
   const pret  = rubriques.filter(r => r.texte_final).length
   const total = rubriques.length
 
@@ -155,12 +156,17 @@ export default function ApercuClient({
 
       {/* ── Barre d'actions ── */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2.5 sticky top-4 z-10 shadow-sm">
-        <Link href={`/annonces/${annonceId}/rubriques`}>
+        <Link href={estPasse ? '/annonces/historique' : `/annonces/${annonceId}/rubriques`}>
           <Button variant="ghost" size="sm" className="gap-1.5">
             <ArrowLeft className="h-4 w-4" />
-            Retour à la saisie
+            {estPasse ? 'Retour à l\'historique' : 'Retour à la saisie'}
           </Button>
         </Link>
+        {estPasse && (
+          <Badge variant="outline" className="text-xs text-muted-foreground gap-1.5">
+            Mode archives — lecture seule
+          </Badge>
+        )}
 
         <div className="flex-1" />
 
@@ -171,18 +177,20 @@ export default function ApercuClient({
           {pret}/{total} rubriques prêtes
         </span>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleGenererTout}
-          disabled={!!generating || pret === total}
-          className="gap-1.5 border-violet-200 text-violet-600 hover:border-violet-300 hover:text-violet-700"
-        >
-          {generating
-            ? <><Loader2 className="h-4 w-4 animate-spin" /> {generating.current}/{generating.total}</>
-            : <><Sparkles className="h-4 w-4" /> Générer les rubriques manquantes</>
-          }
-        </Button>
+        {!estPasse && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenererTout}
+            disabled={!!generating || pret === total}
+            className="gap-1.5 border-violet-200 text-violet-600 hover:border-violet-300 hover:text-violet-700"
+          >
+            {generating
+              ? <><Loader2 className="h-4 w-4 animate-spin" /> {generating.current}/{generating.total}</>
+              : <><Sparkles className="h-4 w-4" /> Générer les rubriques manquantes</>
+            }
+          </Button>
+        )}
 
         <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
           <FileText className="h-4 w-4" /> Exporter PDF
@@ -192,23 +200,25 @@ export default function ApercuClient({
           <FileCheck className="h-4 w-4" /> Exporter Word
         </Button>
 
-        {statut !== 'valide' ? (
-          <Button
-            size="sm"
-            onClick={handlePublier}
-            disabled={publiePending || !!generating}
-            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            {publiePending
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <CheckCircle2 className="h-4 w-4" />
-            }
-            Valider et publier
-          </Button>
-        ) : (
-          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1.5 px-3 py-1.5 text-sm">
-            <CheckCircle2 className="h-3.5 w-3.5" /> Publiée
-          </Badge>
+        {!estPasse && (
+          statut !== 'valide' ? (
+            <Button
+              size="sm"
+              onClick={handlePublier}
+              disabled={publiePending || !!generating}
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {publiePending
+                ? <Loader2 className="h-4 w-4 animate-spin" />
+                : <CheckCircle2 className="h-4 w-4" />
+              }
+              Valider et publier
+            </Button>
+          ) : (
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1.5 px-3 py-1.5 text-sm">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Publiée
+            </Badge>
+          )
         )}
       </div>
 
