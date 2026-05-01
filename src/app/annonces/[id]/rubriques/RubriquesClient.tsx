@@ -736,7 +736,19 @@ function checkRemplie(code: string, data: unknown): boolean {
 export default function RubriquesClient({ annonceId: _annonceId, culte, rubriques }: Props) {
   const [openItem, setOpenItem] = useState<string | null>(rubriques[0]?.id ?? null)
   const [saveStatus, setSaveStatus] = useState<Record<string, SaveStatus>>({})
-  const [iaState, setIaState] = useState<Record<string, IaState>>({})
+  const [iaState, setIaState] = useState<Record<string, IaState>>(() =>
+    Object.fromEntries(
+      rubriques
+        .filter(r => r.texte_final || r.valide)
+        .map(r => [r.id, {
+          loading:  false,
+          texte:    r.texte_final ?? null,
+          tokens:   null,
+          genereLe: null,
+          valide:   r.valide,
+        }])
+    )
+  )
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
 
   // Données courantes de chaque rubrique (mises à jour à chaque frappe, avant debounce)
