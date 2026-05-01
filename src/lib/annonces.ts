@@ -12,6 +12,11 @@ import type {
 
 export type { Culte, Annonce, RubriqueAnnonce, AnnonceAvecRubriques, CulteAvecAnnonce }
 
+export interface AnnonceAvecCulte extends Annonce {
+  cultes:           Culte
+  rubriques_annonce: RubriqueAnnonce[]
+}
+
 export type DbResult<T> =
   | { data: T; error: null }
   | { data: null; error: string }
@@ -193,6 +198,30 @@ export async function updateStatutReconduite(
   statut: StatutReconduite,
 ): Promise<DbResult<RubriqueAnnonce>> {
   return updateRubrique(id, { reconduire: statut })
+}
+
+// ── getAnnonceAvecCulte ────────────────────────────────────────────────────
+// Fetch one annonce by its ID, including parent culte and all rubriques.
+
+export async function getAnnonceAvecCulte(annonceId: string): Promise<DbResult<AnnonceAvecCulte>> {
+  try {
+    const db = await getDb()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (db as any)
+      .from('annonces')
+      .select(`
+        *,
+        cultes ( * ),
+        rubriques_annonce ( * )
+      `)
+      .eq('id', annonceId)
+      .single()
+
+    if (error) return { data: null, error: error.message }
+    return { data: data as AnnonceAvecCulte, error: null }
+  } catch (e) {
+    return { data: null, error: String(e) }
+  }
 }
 
 // ── getAnnoncePrecedente ───────────────────────────────────────────────────
