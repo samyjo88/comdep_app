@@ -315,6 +315,7 @@ async function PageContent({ searchParams }: Props) {
 
   // Stats calculées sur la liste complète (sans filtre) si on a des filtres actifs
   // Pour les stats globales on re-fetch sans filtre
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: allItems } = await (supabase as any)
     .from('materiel_sono')
     .select('etat, en_reparation, prochain_nettoyage')
@@ -329,6 +330,7 @@ async function PageContent({ searchParams }: Props) {
   }
 
   // Achats planifiés
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: rawAchats } = await (supabase as any)
     .from('achats_planifies')
     .select('*')
