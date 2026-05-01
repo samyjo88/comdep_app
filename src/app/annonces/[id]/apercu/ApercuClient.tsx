@@ -1,0 +1,248 @@
+'use client'
+
+import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  ArrowLeft, Sparkles, FileText, FileCheck,
+  Loader2, AlertTriangle, CheckCircle2,
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { publierAnnonce, validerRubriqueGeneree } from './actions'
+import type { RubriqueAnnonce, Culte } from '@/lib/annonces'
+import type { CodeRubrique } from '@/types/annonces'
+
+// ── Constantes ────────────────────────────────────────────────────────────────
+
+const LABELS: Record<CodeRubrique, string> = {
+  salutation:      'Salutation',
+  culte_precedent: 'Culte précédent',
+  culte_jour:      'Culte du jour',
+  conference:      'Conférence',
+  district:        'District',
+  circuit:         'Circuit',
+  eglise_local:    'Église locale',
+}
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
+  return d.charAt(0).toUpperCase() + d.slice(1)
+}
+
+// ── Props ─────────────────────────────────────────────────────────────────────
+
+interface Props {
+  annonceId: string
+  culte:     Culte
+  rubriques: RubriqueAnnonce[]
+  nomEglise: string
+  statut:    string
+}
+
+// ── Composant ─────────────────────────────────────────────────────────────────
+
+export default function ApercuClient({
+  annonceId, culte, rubriques: initial, nomEglise, statut: initialStatut,
+}: Props) {
+  const router = useRouter()
+  const [rubriques, setRubriques]       = useState(initial)
+  const [generating, setGenerating]     = useState<{ current: number; total: number } | null>(null)
+  const [publiePending, setPubliePending] = useState(false)
+  const [statut, setStatut]             = useState(initialStatut)
+
+  const pret  = rubriques.filter(r => r.texte_final).length
+  const total = rubriques.length
+
+  // ── Générer toutes les rubriques manquantes ──────────────────────────────
+
+  const handleGenererTout = useCallback(async () => {
+    const manquantes = rubriques.filter(r => !r.texte_final)
+    if (!manquantes.length) {
+      toast.info('Toutes les rubriques ont déjà un texte.')
+      return
+    }
+
+    setGenerating({ current: 0, total: manquantes.length })
+
+    for (let i = 0; i < manquantes.length; i++) {
+      const rb = manquantes[i]
+      setGenerating({ current: i + 1, total: manquantes.length })
+      try {
+        let donnees = {}
+        try { if (rb.donnees_brutes) donnees = JSON.parse(rb.donnees_brutes) } catch { /* */ }
+
+        const res = await fetch('/api/annonces/generer', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rubriqueId:   rb.id,
+            codeRubrique: rb.code_rubrique,
+            donnees,
+          }),
+        })
+        const json = await res.json() as { texte_genere?: string; error?: string }
+        if (json.texte_genere) {
+          await validerRubriqueGeneree(rb.id, json.texte_genere)
+          setRubriques(prev =>
+            prev.map(r => r.id === rb.id ? { ...r, texte_final: json.texte_genere!, valide: true } : r)
+          )
+        }
+      } catch { /* continue avec la suivante */ }
+    }
+
+    setGenerating(null)
+    toast.success('Génération terminée !')
+  }, [rubriques])
+
+  // ── Valider et publier ────────────────────────────────────────────────────
+
+  const handlePublier = useCallback(async () => {
+    setPubliePending(true)
+    const result = await publierAnnonce(annonceId)
+    setPubliePending(false)
+    if (result.error) {
+      toast.error('Erreur lors de la publication.')
+      return
+    }
+    setStatut('valide')
+    toast.success('Annonce validée et publiée !')
+    router.refresh()
+  }, [annonceId, router])
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="space-y-5">
+
+      {/* ── Barre d'actions ── */}
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2.5 sticky top-4 z-10 shadow-sm">
+        <Link href={`/annonces/${annonceId}/rubriques`}>
+          <Button variant="ghost" size="sm" className="gap-1.5">
+            <ArrowLeft className="h-4 w-4" />
+            Retour à la saisie
+          </Button>
+        </Link>
+
+        <div className="flex-1" />
+
+        <span className={cn(
+          'text-sm font-semibold tabular-nums px-2',
+          pret === total ? 'text-emerald-600' : 'text-amber-600',
+        )}>
+          {pret}/{total} rubriques prêtes
+        </span>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleGenererTout}
+          disabled={!!generating || pret === total}
+          className="gap-1.5 border-violet-200 text-violet-600 hover:border-violet-300 hover:text-violet-700"
+        >
+          {generating
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> {generating.current}/{generating.total}</>
+            : <><Sparkles className="h-4 w-4" /> Générer les rubriques manquantes</>
+          }
+        </Button>
+
+        <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
+          <FileText className="h-4 w-4" /> Exporter PDF
+        </Button>
+
+        <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
+          <FileCheck className="h-4 w-4" /> Exporter Word
+        </Button>
+
+        {statut !== 'valide' ? (
+          <Button
+            size="sm"
+            onClick={handlePublier}
+            disabled={publiePending || !!generating}
+            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+          >
+            {publiePending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <CheckCircle2 className="h-4 w-4" />
+            }
+            Valider et publier
+          </Button>
+        ) : (
+          <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1.5 px-3 py-1.5 text-sm">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Publiée
+          </Badge>
+        )}
+      </div>
+
+      {/* ── Barre de progression génération ── */}
+      {generating && (
+        <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3 space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-violet-700 font-medium flex items-center gap-1.5">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Génération en cours…
+            </span>
+            <span className="text-violet-500 tabular-nums">
+              {generating.current}/{generating.total}
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-violet-100 overflow-hidden">
+            <div
+              className="h-full bg-violet-500 rounded-full transition-all duration-500"
+              style={{ width: `${(generating.current / generating.total) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ── Document aperçu ── */}
+      <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+
+        {/* En-tête */}
+        <div className="bg-primary text-primary-foreground text-center px-8 py-7 space-y-1.5">
+          <p className="text-xs font-semibold tracking-[0.25em] uppercase opacity-70">
+            {nomEglise}
+          </p>
+          <h1 className="text-3xl font-bold tracking-[0.3em] uppercase">
+            Annonces
+          </h1>
+          <p className="text-sm opacity-80">{formatDate(culte.date_culte)}</p>
+        </div>
+
+        {/* Rubriques */}
+        <div className="divide-y">
+          {rubriques.map((rubrique) => (
+            <section key={rubrique.id} className="px-8 py-6 space-y-3">
+              <h2 className="text-[11px] font-bold tracking-[0.2em] uppercase text-muted-foreground border-b pb-2">
+                {LABELS[rubrique.code_rubrique as CodeRubrique] ?? rubrique.code_rubrique}
+              </h2>
+
+              {rubrique.texte_final ? (
+                <p className="text-sm leading-7 whitespace-pre-wrap text-foreground">
+                  {rubrique.texte_final}
+                </p>
+              ) : (
+                <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+                  <span className="text-sm text-amber-700 font-medium">
+                    Rubrique non complétée
+                  </span>
+                  <Link
+                    href={`/annonces/${annonceId}/rubriques`}
+                    className="ml-auto text-xs text-amber-600 hover:underline shrink-0"
+                  >
+                    Compléter →
+                  </Link>
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

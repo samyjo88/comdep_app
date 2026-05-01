@@ -8,6 +8,7 @@ import type {
   AnnonceAvecRubriques,
   CulteAvecAnnonce,
   StatutReconduite,
+  StatutAnnonce,
 } from '@/types/annonces'
 
 export type { Culte, Annonce, RubriqueAnnonce, AnnonceAvecRubriques, CulteAvecAnnonce }
@@ -153,6 +154,29 @@ export async function createAnnonce(culteId: string): Promise<DbResult<AnnonceAv
       data: { ...annonce, rubriques_annonce: rubriques as RubriqueAnnonce[] } as AnnonceAvecRubriques,
       error: null,
     }
+  } catch (e) {
+    return { data: null, error: String(e) }
+  }
+}
+
+// ── updateAnnonce ──────────────────────────────────────────────────────────
+
+export async function updateAnnonce(
+  id: string,
+  data: { statut_global?: StatutAnnonce },
+): Promise<DbResult<Annonce>> {
+  try {
+    const db = await getDb()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updated, error } = await (db as any)
+      .from('annonces')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) return { data: null, error: error.message }
+    return { data: updated as Annonce, error: null }
   } catch (e) {
     return { data: null, error: String(e) }
   }
