@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   const body = await request.json().catch(() => ({}))
   const { annonce_id, date_culte } = body as { annonce_id?: string; date_culte?: string }
 

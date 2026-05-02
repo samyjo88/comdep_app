@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { genererTexteRubrique } from '@/lib/generation'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 import type { CodeRubrique } from '@/types/annonces'
 
 // ── Types SSE ─────────────────────────────────────────────────────────────────
@@ -14,6 +15,9 @@ export type SseEvent =
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   const body = await request.json().catch(() => ({}))
   const { annonce_id } = body as { annonce_id?: string }
 

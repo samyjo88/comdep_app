@@ -1,11 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { genererTexteRubrique, PROMPTS_SYSTEME } from '@/lib/generation'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 import type { CodeRubrique } from '@/types/annonces'
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   try {
     const body = await request.json()
     const { rubriqueId, codeRubrique, donnees, annoncePrecedente } = body as {

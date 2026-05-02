@@ -2,10 +2,14 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement, type ReactElement } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import AnnoncePDF from '@/components/annonces/AnnoncePDF'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 import type { Culte, RubriqueAnnonce } from '@/types/annonces'
 import type { DocumentProps } from '@react-pdf/renderer'
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   const body = await request.json().catch(() => ({}))
   const { annonce_id } = body as { annonce_id?: string }
 
