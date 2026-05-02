@@ -71,16 +71,25 @@ export interface PlanningAvecMembre extends PlanningCaptation {
 }
 
 export interface PlanningCulteComplet {
-  culte:        import('@/types/annonces').Culte
-  assignments:  PlanningAvecMembre[]
+  culte:         import('@/types/annonces').Culte
+  assignments:   PlanningAvecMembre[]
   dossier_drive: DossierDrive | null
-  livraisons:   LivraisonCaptation[]
+  livraisons:    LivraisonCaptation[]
 }
 
 export interface StatistiquesEquipe {
   nb_cultes_couverts: number
   roles_joues:        { role: RoleCaptation; nb: number }[]
 }
+
+// ── Stats équipe (tableau participation) ──────────────────────────────────
+
+export type StatsParMembre = Record<string, {
+  cameraman:     number
+  photographe:   number
+  infographiste: number
+  total:         number
+}>
 
 // ── Configuration des rôles ────────────────────────────────────────────────
 

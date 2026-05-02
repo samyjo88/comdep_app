@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { EquipeCaptationClient } from '@/components/captation/EquipeCaptationClient'
-import type { MembreCaptation, RoleCaptation } from '@/types/captation'
+import type { MembreCaptation, RoleCaptation, StatsParMembre } from '@/types/captation'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Équipe' }
@@ -24,13 +24,6 @@ function bornesTrimestreActuel(): { debut: string; fin: string; label: string } 
     label: `${labels[trimestre]} ${annee}`,
   }
 }
-
-export type StatsParMembre = Record<string, {
-  cameraman:     number
-  photographe:   number
-  infographiste: number
-  total:         number
-}>
 
 // ── Données ────────────────────────────────────────────────────────────────
 

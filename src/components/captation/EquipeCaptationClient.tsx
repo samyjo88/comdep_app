@@ -32,7 +32,7 @@ import { useIsMobile } from '@/hooks/use-media-query'
 
 import { ROLES_CONFIG } from '@/types/captation'
 import type { MembreCaptation, RoleCaptation } from '@/types/captation'
-import type { StatsParMembre } from '@/app/captation/equipe/page'
+import type { StatsParMembre } from '@/types/captation'
 import {
   creerMembreCaptationAction,
   modifierMembreCaptationAction,
