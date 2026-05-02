@@ -60,8 +60,8 @@ export default function HistoriqueClient({ cultes }: Props) {
   const router = useRouter()
 
   const [search, setSearch]             = useState('')
-  const [anneeFilter, setAnneeFilter]   = useState('')
-  const [statutFilter, setStatutFilter] = useState('')
+  const [anneeFilter, setAnneeFilter]   = useState('all')
+  const [statutFilter, setStatutFilter] = useState('all')
   const [dupModal, setDupModal]         = useState<DupliquerModal | null>(null)
   const [nouvelleDate, setNouvelleDate] = useState('')
   const [duplicating, setDuplicating]   = useState(false)
@@ -76,8 +76,8 @@ export default function HistoriqueClient({ cultes }: Props) {
     const q = search.toLowerCase().trim()
     return cultes.filter(c => {
       const annonce = c.annonces?.[0]
-      if (anneeFilter && !c.date_culte.startsWith(anneeFilter)) return false
-      if (statutFilter && annonce?.statut_global !== statutFilter) return false
+      if (anneeFilter !== 'all' && !c.date_culte.startsWith(anneeFilter)) return false
+      if (statutFilter !== 'all' && annonce?.statut_global !== statutFilter) return false
       if (q) {
         const haystack = [c.theme, c.predicateur].filter(Boolean).join(' ').toLowerCase()
         if (!haystack.includes(q)) return false
@@ -134,7 +134,7 @@ export default function HistoriqueClient({ cultes }: Props) {
             <SelectValue placeholder="Année" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes</SelectItem>
+            <SelectItem value="all">Toutes</SelectItem>
             {annees.map(a => (
               <SelectItem key={a} value={a}>{a}</SelectItem>
             ))}
@@ -146,7 +146,7 @@ export default function HistoriqueClient({ cultes }: Props) {
             <SelectValue placeholder="Statut" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="brouillon">Brouillon</SelectItem>
             <SelectItem value="valide">Validé</SelectItem>
             <SelectItem value="publie">Publié</SelectItem>
@@ -157,7 +157,7 @@ export default function HistoriqueClient({ cultes }: Props) {
       {/* ── Compteur ── */}
       <p className="text-sm text-muted-foreground">
         {filtered.length} culte{filtered.length !== 1 ? 's' : ''}
-        {(anneeFilter || statutFilter || search) && ' correspondant aux filtres'}
+        {(anneeFilter !== 'all' || statutFilter !== 'all' || search) && ' correspondant aux filtres'}
       </p>
 
       {/* ── Liste ── */}
