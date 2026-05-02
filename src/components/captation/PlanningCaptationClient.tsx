@@ -3,9 +3,10 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import {
   ChevronLeft, ChevronRight, Plus, List, CalendarDays,
-  Camera, ImageIcon, Palette, Loader2, AlertCircle,
+  Camera, ImageIcon, Palette, Loader2, AlertCircle, Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button }                from '@/components/ui/button'
@@ -201,6 +202,36 @@ function CulteCard({
   const statut = statutGlobal(item)
   const cfg    = STATUT_GLOBAL_CONFIG[statut]
 
+  const [rappelPending, setRappelPending] = useState(false)
+
+  async function envoyerRappels() {
+    if (rappelPending) return
+    setRappelPending(true)
+    try {
+      const res  = await fetch('/api/captation/rappel', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ culte_id: culte.id }),
+      })
+      const json = await res.json() as { envoyes?: number; erreurs?: string[]; error?: string; message?: string }
+      if (!res.ok || json.error) {
+        toast.error(json.error ?? 'Erreur lors de l\'envoi des rappels')
+      } else if (json.envoyes === 0) {
+        toast.info(json.message ?? 'Aucun membre avec email à notifier')
+      } else {
+        const nb = json.envoyes ?? 0
+        toast.success(`Rappels envoyés à ${nb} membre${nb > 1 ? 's' : ''}`)
+        if (json.erreurs && json.erreurs.length > 0) {
+          toast.warning(`${json.erreurs.length} envoi(s) échoué(s)`)
+        }
+      }
+    } catch {
+      toast.error('Impossible de contacter le serveur')
+    } finally {
+      setRappelPending(false)
+    }
+  }
+
   const byRole = Object.fromEntries(
     assignments.map(a => [a.role_du_jour, a])
   ) as Record<RoleCaptation, PlanningAvecMembre | undefined>
@@ -268,7 +299,20 @@ function CulteCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-1 border-t">
+        <div className="flex items-center justify-between pt-1 border-t">
+          <Button
+            variant="ghost" size="sm"
+            className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+            onClick={envoyerRappels}
+            disabled={rappelPending || assignments.length === 0}
+          >
+            {rappelPending
+              ? <Loader2 className="h-3 w-3 animate-spin" />
+              : <Mail className="h-3 w-3" />
+            }
+            Rappel
+          </Button>
+
           <Link href={`/captation/planning/${culte.id}`}>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground">
               Voir détail
