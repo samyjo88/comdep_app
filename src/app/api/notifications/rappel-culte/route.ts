@@ -4,7 +4,12 @@ import { createClient } from '@supabase/supabase-js'
 
 // ── Clients ────────────────────────────────────────────────────────────────
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY non configurée — voir .env.local')
+  }
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 function getSupabaseAdmin() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -137,15 +142,12 @@ function buildEmailHtml(prenom: string, role: string, dateFr: string): string {
 // ── Route GET ──────────────────────────────────────────────────────────────
 
 export async function GET() {
-  // Validation config
-  if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ error: 'RESEND_API_KEY non configurée' }, { status: 500 })
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let supabase: any
+  let resend: Resend
   try {
     supabase = getSupabaseAdmin()
+    resend = getResend()
   } catch (e) {
     return NextResponse.json(
       { error: (e as Error).message },
