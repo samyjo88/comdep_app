@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -55,6 +55,8 @@ export default function ApercuClient({
   const [generating, setGenerating]     = useState<{ current: number; total: number } | null>(null)
   const [publiePending, setPubliePending] = useState(false)
   const [statut, setStatut]             = useState(initialStatut)
+  const [pdfPending, setPdfPending]     = useState(false)
+  const dlLinkRef = useRef<HTMLAnchorElement>(null)
 
   const estPasse = culte.statut === 'passe'
   const pret  = rubriques.filter(r => r.texte_final).length
@@ -149,6 +151,34 @@ export default function ApercuClient({
     router.refresh()
   }, [annonceId, router])
 
+  // ── Exporter PDF ─────────────────────────────────────────────────────────
+
+  const handleExportPDF = useCallback(async () => {
+    setPdfPending(true)
+    try {
+      const res = await fetch('/api/annonces/export-pdf', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ annonce_id: annonceId }),
+      })
+      if (!res.ok) {
+        toast.error('Erreur lors de la génération du PDF.')
+        return
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = dlLinkRef.current!
+      a.href     = url
+      a.download = `Annonces_${culte.date_culte}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Erreur lors de la génération du PDF.')
+    } finally {
+      setPdfPending(false)
+    }
+  }, [annonceId, culte.date_culte])
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -192,9 +222,20 @@ export default function ApercuClient({
           </Button>
         )}
 
-        <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
-          <FileText className="h-4 w-4" /> Exporter PDF
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportPDF}
+          disabled={pdfPending || !!generating}
+          className="gap-1.5"
+        >
+          {pdfPending
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Génération…</>
+            : <><FileText className="h-4 w-4" /> Exporter PDF</>
+          }
         </Button>
+        {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+        <a ref={dlLinkRef} className="hidden" />
 
         <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
           <FileCheck className="h-4 w-4" /> Exporter Word
