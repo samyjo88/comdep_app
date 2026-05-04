@@ -313,7 +313,7 @@ function CulteCard({
             Rappel
           </Button>
 
-          <Link href={`/captation/planning/${culte.id}`}>
+          <Link href={`/captation/culte/${culte.id}`}>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground">
               Voir détail
               <ChevronRight className="h-3 w-3" />
