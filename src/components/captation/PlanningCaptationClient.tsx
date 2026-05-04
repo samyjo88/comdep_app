@@ -262,9 +262,9 @@ function CulteCard({
             const RoleIcon   = ROLE_ICON[role.code]
             const assignment = byRole[role.code]
             return (
-              <div key={role.code} className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+              <div key={role.code} className="flex flex-col gap-1.5 xs:grid xs:grid-cols-[auto_1fr_auto] xs:items-center xs:gap-3 min-[380px]:grid min-[380px]:grid-cols-[auto_1fr_auto] min-[380px]:items-center min-[380px]:gap-3">
                 {/* Icône + label */}
-                <div className="flex items-center gap-1.5 w-32 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 min-[380px]:w-32">
                   <RoleIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-xs font-medium text-muted-foreground">{role.label}</span>
                 </div>
@@ -280,7 +280,7 @@ function CulteCard({
                 />
 
                 {/* Badge statut (si assigné) */}
-                <div className="w-28 flex justify-end">
+                <div className="flex justify-start min-[380px]:w-28 min-[380px]:justify-end">
                   {assignment ? (
                     <CelleStatut
                       assignment={assignment}
