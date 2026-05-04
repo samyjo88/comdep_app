@@ -623,8 +623,8 @@ export function CulteDetailClient({
             <p className="text-xs text-muted-foreground/60">Cliquez sur « Ajouter » pour créer le premier livrable.</p>
           </div>
         ) : (
-          <div className="rounded-lg border overflow-hidden">
-            <Table>
+          <div className="rounded-lg border overflow-x-auto">
+            <Table className="min-w-[480px]">
               <TableHeader>
                 <TableRow className="bg-muted/40">
                   <TableHead className="text-xs">Type</TableHead>
