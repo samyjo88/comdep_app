@@ -151,7 +151,6 @@ export async function GET() {
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
-  const resend = new Resend(process.env.RESEND_API_KEY)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let supabase: any
