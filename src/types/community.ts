@@ -53,6 +53,7 @@ export interface PlanningCM {
   membre_id:     string | null
   statut:        StatutPlanning
   notes:         string | null
+  notes_json:    Record<string, unknown> | null
   created_at:    string
 }
 
