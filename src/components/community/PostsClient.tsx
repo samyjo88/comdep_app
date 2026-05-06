@@ -2,9 +2,6 @@
 
 import { useState, useTransition, useOptimistic, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import {
   DragDropContext,
   Droppable,
@@ -15,8 +12,6 @@ import { ChevronLeft, ChevronRight, Plus, LayoutList, Columns, Trash2, Pencil, E
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -24,13 +19,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +28,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Table,
   TableBody,
   TableCell,
@@ -47,28 +42,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import type { Post, MembreCM, PlanningCM, Plateforme, StatutPost, TypeContenu } from '@/types/community'
+import type { Post, MembreCM, PlanningCM, Plateforme, StatutPost } from '@/types/community'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE, STATUTS_POST, STATUTS_POST_BY_CODE } from '@/types/community'
-import {
-  creerPostAction,
-  modifierPostAction,
-  supprimerPostAction,
-  updateStatutPostAction,
-  type PostPayload,
-} from '@/app/community/posts/actions'
+import type { Culte } from '@/types/annonces'
+import { supprimerPostAction, updateStatutPostAction } from '@/app/community/posts/actions'
+import { PostModal } from '@/components/community/PostModal'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const TYPES_CONTENU: { code: TypeContenu; label: string }[] = [
-  { code: 'photo',      label: 'Photo' },
-  { code: 'video',      label: 'Vidéo' },
-  { code: 'reel',       label: 'Reel' },
-  { code: 'story',      label: 'Story' },
-  { code: 'texte',      label: 'Texte' },
-  { code: 'annonce',    label: 'Annonce' },
-  { code: 'citation',   label: 'Citation' },
-  { code: 'evenement',  label: 'Événement' },
-]
 
 // Kanban columns: en_attente_validation lives in en_creation column
 const KANBAN_COLS: { id: string; label: string; statuts: StatutPost[] }[] = [
@@ -135,250 +115,7 @@ function membreInitiales(m: MembreCM): string {
   return `${m.prenom[0] ?? ''}${m.nom[0] ?? ''}`.toUpperCase()
 }
 
-// ── Zod schema ────────────────────────────────────────────────────────────────
 
-const postSchema = z.object({
-  plateforme:              z.enum(['facebook', 'instagram', 'whatsapp', 'youtube', 'twitter', 'tiktok']),
-  type_contenu:            z.enum(['photo', 'video', 'reel', 'story', 'texte', 'annonce', 'citation', 'evenement']),
-  titre:                   z.string().max(200).nullable(),
-  description:             z.string().nullable(),
-  lien_media:              z.string().url('URL invalide').nullable().or(z.literal('')).transform(v => v === '' ? null : v),
-  date_publication_prevue: z.string().nullable(),
-  assignee_id:             z.string().nullable(),
-  statut:                  z.enum(['a_faire', 'en_creation', 'en_attente_validation', 'programme', 'publie', 'annule']),
-  notes:                   z.string().nullable(),
-})
-
-type PostFormData = z.infer<typeof postSchema>
-
-// ── PostModal ─────────────────────────────────────────────────────────────────
-
-function PostModal({
-  open,
-  onClose,
-  semaine,
-  post,
-  membres,
-}: {
-  open:     boolean
-  onClose:  () => void
-  semaine:  string
-  post:     Post | null
-  membres:  MembreCM[]
-}) {
-  const [isPending, startTransition] = useTransition()
-  const [serverError, setServerError] = useState<string | null>(null)
-  const isEdit = !!post
-
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<PostFormData>({
-    resolver: zodResolver(postSchema),
-    defaultValues: post ? {
-      plateforme:              post.plateforme,
-      type_contenu:            post.type_contenu,
-      titre:                   post.titre ?? '',
-      description:             post.description ?? '',
-      lien_media:              post.lien_media ?? '',
-      date_publication_prevue: post.date_publication_prevue
-        ? post.date_publication_prevue.slice(0, 16)
-        : '',
-      assignee_id: post.assignee_id ?? '',
-      statut:      post.statut,
-      notes:       post.notes ?? '',
-    } : {
-      plateforme:              'facebook',
-      type_contenu:            'photo',
-      titre:                   '',
-      description:             '',
-      lien_media:              '',
-      date_publication_prevue: '',
-      assignee_id:             '',
-      statut:                  'a_faire',
-      notes:                   '',
-    },
-  })
-
-  function handleClose() {
-    reset()
-    setServerError(null)
-    onClose()
-  }
-
-  function onSubmit(data: PostFormData) {
-    const payload: PostPayload = {
-      plateforme:              data.plateforme,
-      type_contenu:            data.type_contenu,
-      titre:                   data.titre || null,
-      description:             data.description || null,
-      lien_media:              data.lien_media || null,
-      date_publication_prevue: data.date_publication_prevue
-        ? new Date(data.date_publication_prevue).toISOString()
-        : null,
-      assignee_id: data.assignee_id || null,
-      statut:      data.statut,
-      notes:       data.notes || null,
-    }
-
-    startTransition(async () => {
-      const result = isEdit
-        ? await modifierPostAction(post!.id, payload)
-        : await creerPostAction(semaine, payload)
-
-      if (!result.success) {
-        setServerError(result.error)
-        return
-      }
-      handleClose()
-    })
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={open => !open && handleClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{isEdit ? 'Modifier le post' : 'Nouveau post'}</DialogTitle>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
-          {/* Plateforme + Type */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Plateforme *</label>
-              <Controller
-                name="plateforme"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PLATEFORMES_CONFIG.map(p => (
-                        <SelectItem key={p.code} value={p.code}>
-                          {p.icone} {p.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Type *</label>
-              <Controller
-                name="type_contenu"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {TYPES_CONTENU.map(t => (
-                        <SelectItem key={t.code} value={t.code}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Titre */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Titre</label>
-            <Input {...register('titre')} placeholder="Titre du post…" />
-            {errors.titre && <p className="text-xs text-destructive">{errors.titre.message}</p>}
-          </div>
-
-          {/* Description */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Description / Texte</label>
-            <Textarea {...register('description')} rows={3} placeholder="Contenu du post…" />
-          </div>
-
-          {/* Date + Assignee */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Date de publication</label>
-              <Input type="datetime-local" {...register('date_publication_prevue')} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Assigné à</label>
-              <Controller
-                name="assignee_id"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value ?? ''} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="— Personne —" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">— Personne —</SelectItem>
-                      {membres.map(m => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.prenom} {m.nom}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Statut */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Statut *</label>
-            <Controller
-              name="statut"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUTS_POST.map(s => (
-                      <SelectItem key={s.code} value={s.code}>{s.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-          {/* Lien média */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Lien média</label>
-            <Input {...register('lien_media')} placeholder="https://…" />
-            {errors.lien_media && <p className="text-xs text-destructive">{errors.lien_media.message}</p>}
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Notes</label>
-            <Textarea {...register('notes')} rows={2} placeholder="Notes internes…" />
-          </div>
-
-          {serverError && (
-            <p className="text-sm text-destructive flex items-center gap-1">
-              <AlertCircle className="h-4 w-4 shrink-0" /> {serverError}
-            </p>
-          )}
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
-              Annuler
-            </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Enregistrement…' : isEdit ? 'Enregistrer' : 'Créer'}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-}
 
 // ── DeleteConfirmDialog ───────────────────────────────────────────────────────
 
@@ -874,12 +611,14 @@ export function PostsClient({
   planning,
   posts,
   membres,
+  cultes,
 }: {
   semaine:  string
   vue:      'tableau' | 'kanban'
   planning: PlanningCM | null
   posts:    Post[]
   membres:  MembreCM[]
+  cultes:   Culte[]
 }) {
   const router = useRouter()
 
@@ -1090,6 +829,7 @@ export function PostsClient({
         semaine={semaine}
         post={editPost}
         membres={membres}
+        cultes={cultes}
       />
       <DeleteConfirmDialog
         post={deletePost}

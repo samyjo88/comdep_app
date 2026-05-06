@@ -32,8 +32,14 @@ export type PostPayload = {
   lien_media:              string | null
   date_publication_prevue: string | null
   assignee_id:             string | null
+  culte_id:                string | null
   statut:                  StatutPost
   notes:                   string | null
+  url_post_publie:         string | null
+  nb_likes:                number | null
+  nb_commentaires:         number | null
+  nb_partages:             number | null
+  nb_vues:                 number | null
 }
 
 // ── creerPostAction ───────────────────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { PostsClient } from '@/components/community/PostsClient'
 import type { Post, MembreCM, PlanningCM } from '@/types/community'
+import type { Culte } from '@/types/annonces'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Posts CM' }
@@ -31,7 +32,13 @@ async function PageContent({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = await createClient() as any
 
-  const [planningRes, membresRes] = await Promise.all([
+  // Fetch cultes from 4 weeks ago to 12 weeks ahead (relevant window for post planning)
+  const dateMin = new Date(semaine + 'T12:00:00')
+  dateMin.setDate(dateMin.getDate() - 28)
+  const dateMax = new Date(semaine + 'T12:00:00')
+  dateMax.setDate(dateMax.getDate() + 84)
+
+  const [planningRes, membresRes, cultesRes] = await Promise.all([
     db
       .from('planning_cm')
       .select('*')
@@ -42,10 +49,17 @@ async function PageContent({
       .select('*')
       .eq('actif', true)
       .order('nom', { ascending: true }),
+    db
+      .from('cultes')
+      .select('id, date_culte, theme, predicateur, statut')
+      .gte('date_culte', dateMin.toISOString().slice(0, 10))
+      .lte('date_culte', dateMax.toISOString().slice(0, 10))
+      .order('date_culte', { ascending: true }),
   ])
 
   const planning = (planningRes.data ?? null) as PlanningCM | null
   const membres  = (membresRes.data ?? []) as MembreCM[]
+  const cultes   = (cultesRes.data ?? []) as Culte[]
 
   // Fetch posts — either by planning id or by week date range
   let posts: Post[] = []
@@ -76,6 +90,7 @@ async function PageContent({
       planning={planning}
       posts={posts}
       membres={membres}
+      cultes={cultes}
     />
   )
 }

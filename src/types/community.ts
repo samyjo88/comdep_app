@@ -17,6 +17,10 @@ export type TypeContenu =
   | 'annonce'
   | 'citation'
   | 'evenement'
+  | 'carrousel'
+  | 'programme'
+  | 'short'
+  | 'duet'
 
 export type StatutPost =
   | 'a_faire'
