@@ -157,13 +157,22 @@ export function PostModal({
   post,
   membres,
   cultes,
+  initialValues,
+  onSuccess,
 }: {
-  open:    boolean
-  onClose: () => void
-  semaine: string
-  post:    Post | null
-  membres: MembreCM[]
-  cultes:  Culte[]
+  open:          boolean
+  onClose:       () => void
+  semaine:       string
+  post:          Post | null
+  membres:       MembreCM[]
+  cultes:        Culte[]
+  initialValues?: {
+    plateforme?:   string
+    type_contenu?: string
+    titre?:        string
+    description?:  string
+  }
+  onSuccess?:    () => void
 }) {
   const isEdit = !!post
   const [isPending, startTransition] = useTransition()
@@ -191,10 +200,10 @@ export function PostModal({
         notes:                   post.notes ?? '',
       }
     : {
-        plateforme:              'facebook',
-        type_contenu:            'photo',
-        titre:                   '',
-        description:             '',
+        plateforme:              (initialValues?.plateforme as FormData['plateforme']) ?? 'facebook',
+        type_contenu:            (initialValues?.type_contenu as FormData['type_contenu']) ?? 'photo',
+        titre:                   initialValues?.titre ?? '',
+        description:             initialValues?.description ?? '',
         lien_media:              '',
         date_publication_prevue: '',
         assignee_id:             '',
@@ -280,6 +289,7 @@ export function PostModal({
       }
 
       toast.success(isEdit ? 'Post modifié avec succès ✓' : 'Post ajouté avec succès ✓')
+      onSuccess?.()
       handleClose()
     })
   }
