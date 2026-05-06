@@ -16,6 +16,7 @@ const TABS = [
 const PAGE_LABELS: Record<string, string> = {
   '/community':          'Tableau de bord',
   '/community/planning': 'Planning',
+  '/community/equipe':   'Équipe',
   '/community/posts':    'Posts',
   '/community/idees':    'Idées',
   '/community/rapports': 'Rapports',
