@@ -139,6 +139,13 @@ export default function ApercuClient({
   // ── Valider et publier ────────────────────────────────────────────────────
 
   const handlePublier = useCallback(async () => {
+    if (pret < total) {
+      const manquantes = total - pret
+      toast.error(
+        `${manquantes} rubrique${manquantes > 1 ? 's' : ''} non complétée${manquantes > 1 ? 's' : ''} — complétez toutes les rubriques avant de valider.`
+      )
+      return
+    }
     setPubliePending(true)
     const result = await publierAnnonce(annonceId)
     setPubliePending(false)
@@ -149,7 +156,7 @@ export default function ApercuClient({
     setStatut('valide')
     toast.success('Annonce validée et publiée !')
     router.refresh()
-  }, [annonceId, router])
+  }, [annonceId, router, pret, total])
 
   // ── Exporter PDF ─────────────────────────────────────────────────────────
 
@@ -246,8 +253,9 @@ export default function ApercuClient({
             <Button
               size="sm"
               onClick={handlePublier}
-              disabled={publiePending || !!generating}
-              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              disabled={publiePending || !!generating || pret < total}
+              title={pret < total ? `${total - pret} rubrique(s) non complétée(s)` : undefined}
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-40"
             >
               {publiePending
                 ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -262,6 +270,26 @@ export default function ApercuClient({
           )
         )}
       </div>
+
+      {/* ── Alerte rubriques incomplètes ── */}
+      {!estPasse && statut !== 'valide' && pret < total && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+              {total - pret} rubrique{total - pret > 1 ? 's' : ''} non complétée{total - pret > 1 ? 's' : ''}
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+              Toutes les rubriques doivent avoir un texte final avant de pouvoir valider et publier l&apos;annonce.
+            </p>
+          </div>
+          <Link href={`/annonces/${annonceId}/rubriques`} className="shrink-0">
+            <Button variant="outline" size="sm" className="text-xs h-7 border-amber-300 text-amber-700 hover:bg-amber-100">
+              Compléter les rubriques →
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* ── Barre de progression génération ── */}
       {generating && (

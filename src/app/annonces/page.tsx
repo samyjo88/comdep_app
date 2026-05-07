@@ -1,12 +1,13 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { getCultes } from '@/lib/annonces'
+import { getCultes, archiverCultesPassés } from '@/lib/annonces'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   PlusCircle, CalendarDays, ChevronRight,
   Clock, CheckCircle2, Send, FileText,
+  AlertTriangle,
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { CulteAvecAnnonce } from '@/lib/annonces'
@@ -85,8 +86,11 @@ function BadgeStatut({ statut }: { statut: ReturnType<typeof statutAnnonce> }) {
 // ── Données ────────────────────────────────────────────────────────────────
 
 async function getDashboardData() {
+  // Archiver silencieusement les cultes dont la date est passée
+  await archiverCultesPassés()
+
   const { data: cultes } = await getCultes()
-  if (!cultes) return { derniers: [], prochain: null }
+  if (!cultes) return { derniers: [], prochain: null, alerteUrgente: null }
 
   const today = new Date().toDateString()
   const todayMs = new Date(today).getTime()
@@ -99,9 +103,21 @@ async function getDashboardData() {
   // 5 cultes les plus récents (passés + à venir, triés desc) pour la section "Derniers cultes"
   const derniers = cultes.slice(0, 5)
 
+  // Alerte urgente : prochain culte dans ≤3 jours avec annonce non validée
+  const prochainCulte = (aVenir[0] ?? null) as CulteAvecAnnonce | null
+  const joursAvant = prochainCulte
+    ? Math.round((new Date(prochainCulte.date_culte + 'T00:00:00').getTime() - new Date(today).getTime()) / 86400000)
+    : null
+  const statutProchain = prochainCulte ? statutAnnonce(prochainCulte) : null
+  const alerteUrgente =
+    prochainCulte && joursAvant !== null && joursAvant <= 3 && statutProchain !== 'valide' && statutProchain !== 'publie'
+      ? { culte: prochainCulte, jours: joursAvant, statut: statutProchain }
+      : null
+
   return {
     derniers: derniers as CulteAvecAnnonce[],
-    prochain: (aVenir[0] ?? null) as CulteAvecAnnonce | null,
+    prochain: prochainCulte,
+    alerteUrgente,
   }
 }
 
@@ -235,10 +251,65 @@ function CompteARebours({ culte }: { culte: CulteAvecAnnonce }) {
 // ── Contenu principal ──────────────────────────────────────────────────────
 
 async function PageContent() {
-  const { derniers, prochain } = await getDashboardData()
+  const { derniers, prochain, alerteUrgente } = await getDashboardData()
 
   return (
     <div className="space-y-8">
+
+      {/* ── Alerte urgente dimanche approche ── */}
+      {alerteUrgente && (
+        <div className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${
+          alerteUrgente.jours === 0
+            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40'
+            : 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40'
+        }`}>
+          <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${
+            alerteUrgente.jours === 0 ? 'text-red-500' : 'text-amber-500'
+          }`} />
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-semibold ${
+              alerteUrgente.jours === 0
+                ? 'text-red-800 dark:text-red-200'
+                : 'text-amber-800 dark:text-amber-200'
+            }`}>
+              {alerteUrgente.jours === 0
+                ? "C'est aujourd'hui ! L'annonce n'est pas encore validée"
+                : alerteUrgente.jours === 1
+                ? "Le culte est demain — l'annonce n'est pas encore validée"
+                : `Le culte est dans ${alerteUrgente.jours} jours — l'annonce n'est pas encore validée`
+              }
+            </p>
+            <p className={`text-xs mt-0.5 ${
+              alerteUrgente.jours === 0
+                ? 'text-red-700 dark:text-red-300'
+                : 'text-amber-700 dark:text-amber-300'
+            }`}>
+              {capitalize(formatDateLongue(alerteUrgente.culte.date_culte))}
+              {alerteUrgente.statut === 'aucune' && ' — Aucune annonce créée'}
+              {alerteUrgente.statut === 'brouillon' && ' — Annonce en brouillon, rubriques incomplètes'}
+            </p>
+          </div>
+          <Link
+            href={
+              alerteUrgente.statut === 'aucune'
+                ? `/annonces/nouveau?culte=${alerteUrgente.culte.id}`
+                : `/annonces/${(alerteUrgente.culte as CulteAvecAnnonce).annonces?.[0]?.id}/rubriques`
+            }
+            className="shrink-0"
+          >
+            <Button
+              size="sm"
+              className={`text-xs h-7 ${
+                alerteUrgente.jours === 0
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-amber-600 hover:bg-amber-700 text-white'
+              }`}
+            >
+              {alerteUrgente.statut === 'aucune' ? 'Créer l\'annonce →' : 'Compléter →'}
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* CTA principal */}
       <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 py-10 px-4 text-center">

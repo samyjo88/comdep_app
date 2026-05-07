@@ -1,10 +1,10 @@
 /**
  * GET /api/cron/annonces
- * Cron horaire — Module Annonces.
+ * Cron quotidien (08h00) — Module Annonces.
  *
- * Vérification :
- *  Rubrique marquée "modifier" (reconduire='modifier') depuis plus de 3 jours
- *  sur un culte à venir → rappel aux responsables/admins.
+ * 1. Archive les cultes dont la date est dépassée (a_venir → passe).
+ * 2. Alerte si un culte est dans ≤ 3 jours et son annonce n'est pas validée.
+ * 3. Rappel sur les rubriques marquées "modifier" depuis > 3 jours.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import {
@@ -28,11 +28,72 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
 
-  const now      = new Date()
-  const since3d  = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  const now     = new Date()
+  const today   = now.toISOString().slice(0, 10)
+  const in3days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const since3d = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
   const inputs: NotifInput[] = []
 
-  // Annonces des cultes à venir avec rubriques "à modifier"
+  // ── 1. Archiver les cultes passés ────────────────────────────────────────
+
+  const { data: archives } = await supabase
+    .from('cultes')
+    .update({ statut: 'passe' })
+    .eq('statut', 'a_venir')
+    .lt('date_culte', today)
+    .select('id')
+
+  const nbArchives = (archives ?? []).length
+
+  // ── 2. Alertes cultes à venir non validés dans ≤ 3 jours ────────────────
+
+  const { data: cultesUrgents } = await supabase
+    .from('cultes')
+    .select(`
+      id, date_culte,
+      annonces(id, statut_global,
+        rubriques_annonce(id, valide)
+      )
+    `)
+    .eq('statut', 'a_venir')
+    .gte('date_culte', today)
+    .lte('date_culte', in3days)
+
+  let alertesUrgentes = 0
+
+  for (const culte of (cultesUrgents ?? []) as AnyRow[]) {
+    const annonce      = (culte.annonces ?? [])[0] as AnyRow | undefined
+    const statutGlobal = annonce?.statut_global ?? 'aucune'
+
+    if (statutGlobal === 'valide' || statutGlobal === 'publie') continue
+
+    const dateFr    = formatDateFr(culte.date_culte as string)
+    const joursAvant = Math.round(
+      (new Date(culte.date_culte + 'T00:00:00').getTime() - new Date(today).getTime()) / 86400000
+    )
+
+    const rubriques    = (annonce?.rubriques_annonce ?? []) as AnyRow[]
+    const nbValidees   = rubriques.filter((r: AnyRow) => r.valide).length
+    const nbTotal      = rubriques.length || 7
+    const detailStatut =
+      statutGlobal === 'aucune'   ? 'Aucune annonce créée'               :
+      statutGlobal === 'brouillon' ? `${nbValidees}/${nbTotal} rubriques complétées` :
+      ''
+
+    inputs.push({
+      emails:  [],
+      module:  'annonces',
+      titre:   joursAvant === 0
+        ? `🚨 Aujourd'hui ! Annonce non validée — ${dateFr}`
+        : `⚠️ Dans ${joursAvant} jour${joursAvant > 1 ? 's' : ''} — Annonce non validée — ${dateFr}`,
+      message: `Le culte du ${dateFr} approche et l'annonce n'est pas encore validée. ${detailStatut}`,
+      lien:    '/annonces',
+    })
+    alertesUrgentes++
+  }
+
+  // ── 3. Rubriques "à modifier" depuis > 3 jours ───────────────────────────
+
   const { data: annonces, error: annoncesErr } = await supabase
     .from('annonces')
     .select(`
@@ -49,7 +110,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: annoncesErr.message }, { status: 500 })
   }
 
-  let alertCount = 0
+  let alertesRetard = 0
 
   for (const annonce of (annonces ?? []) as AnyRow[]) {
     const rubriquesAModifier = ((annonce.rubriques_annonce ?? []) as AnyRow[])
@@ -67,23 +128,24 @@ export async function GET(req: NextRequest) {
     const suite    = nbRub > 3 ? ` (+${nbRub - 3} autre${nbRub - 3 > 1 ? 's' : ''})` : ''
 
     inputs.push({
-      emails:  [],   // pas d'équipe dédiée — fallback admins
+      emails:  [],
       module:  'annonces',
       titre:   `📢 Rubriques à mettre à jour — ${dateFr}`,
       message: `${nbRub} rubrique${nbRub > 1 ? 's' : ''} marquée${nbRub > 1 ? 's' : ''} "À modifier" depuis plus de 3 jours pour le culte du ${dateFr} : ${titresRub}${suite}.`,
       lien:    '/annonces',
     })
-
-    alertCount++
+    alertesRetard++
   }
 
   const { inserted, skipped } = await insertNotifications(supabase, inputs)
 
   return NextResponse.json({
-    success:  true,
-    module:   'annonces',
-    checks:   {
-      annoncesEnRetard: alertCount,
+    success: true,
+    module:  'annonces',
+    checks: {
+      cultesArchives:  nbArchives,
+      alertesUrgentes,
+      alertesEnRetard: alertesRetard,
     },
     inserted,
     skipped,
