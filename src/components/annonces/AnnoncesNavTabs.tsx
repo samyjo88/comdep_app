@@ -6,15 +6,15 @@ import { PlusCircle, Clock, RefreshCw, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { label: 'Nouveau culte',      href: '/annonces/nouveau',    icon: PlusCircle },
-  { label: 'Historique',         href: '/annonces/historique', icon: Clock },
-  { label: 'Suivi reconduite',   href: '/annonces/reconduite', icon: RefreshCw },
+  { label: 'Nouveau culte',    href: '/annonces/nouveau',    icon: PlusCircle },
+  { label: 'Historique',       href: '/annonces/historique', icon: Clock },
+  { label: 'Suivi reconduite', href: '/annonces/suivi',      icon: RefreshCw },
 ] as const
 
 const PAGE_LABELS: Record<string, string> = {
   '/annonces/nouveau':    'Nouveau culte',
   '/annonces/historique': 'Historique',
-  '/annonces/reconduite': 'Suivi reconduite',
+  '/annonces/suivi':      'Suivi reconduite',
 }
 
 export function AnnoncesNavTabs() {

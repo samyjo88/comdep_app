@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,7 @@ export function MaterielForm() {
 
   useEffect(() => {
     if (state.success) {
+      toast.success('Matériel ajouté avec succès')
       setOpen(false)
       formRef.current?.reset()
     }

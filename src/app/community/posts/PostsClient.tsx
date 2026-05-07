@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
 import { Plus, LayoutList, Columns3, Pencil, Trash2 } from 'lucide-react'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE, STATUTS_POST } from '@/types/community'
 import { createPostAction, updatePostAction, deletePostAction, updateStatutPostAction } from './actions'
@@ -128,6 +129,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
         ? await updatePostAction(editingPost.id, payload)
         : await createPostAction(payload)
       if (result.error) { setErr(result.error); return }
+      toast.success(editingPost ? 'Post mis à jour' : 'Post créé')
       onDone()
     } catch (e) {
       setErr(String(e))
@@ -492,12 +494,15 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer ce post ?')) return
-    await deletePostAction(id)
+    const result = await deletePostAction(id)
+    if (result?.error) { toast.error(result.error); return }
+    toast.success('Post supprimé')
     refresh()
   }
 
   async function handleStatusChange(id: string, statut: StatutPost) {
-    await updateStatutPostAction(id, statut)
+    const result = await updateStatutPostAction(id, statut)
+    if (result?.error) { toast.error(result.error); return }
     refresh()
   }
 

@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
 import { Plus, Lightbulb } from 'lucide-react'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE } from '@/types/community'
 import { createIdeaAction, updateIdeaStatutAction } from './actions'
@@ -74,6 +75,7 @@ function IdeaForm({ onDone }: { onDone: () => void }) {
         type_contenu: null,
       })
       if (result.error) { setErr(result.error); return }
+      toast.success('Idée ajoutée')
       onDone()
     } catch (e) {
       setErr(String(e))
@@ -167,7 +169,8 @@ export default function IdeesClient({ idees }: { idees: IdeaContenu[] }) {
   function handleDone() { setSheetOpen(false); refresh() }
 
   async function handleStatutChange(id: string, statut: string) {
-    await updateIdeaStatutAction(id, statut)
+    const result = await updateIdeaStatutAction(id, statut)
+    if (result?.error) { toast.error(result.error); return }
     refresh()
   }
 

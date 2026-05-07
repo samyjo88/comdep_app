@@ -2,19 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Package2, Users, CalendarDays, ChevronRight } from 'lucide-react'
+import { Package2, List, Users, CalendarDays, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
-  { label: 'Matériel', href: '/sonorisation/materiel', icon: Package2 },
-  { label: 'Équipe',   href: '/sonorisation/equipe',   icon: Users },
-  { label: 'Planning', href: '/sonorisation/planning', icon: CalendarDays },
+  { label: 'Inventaire', href: '/sonorisation/inventaire', icon: List },
+  { label: 'Matériel',   href: '/sonorisation/materiel',   icon: Package2 },
+  { label: 'Équipe',     href: '/sonorisation/equipe',     icon: Users },
+  { label: 'Planning',   href: '/sonorisation/planning',   icon: CalendarDays },
 ] as const
 
 const PAGE_LABELS: Record<string, string> = {
-  '/sonorisation/materiel': 'Matériel',
-  '/sonorisation/equipe':   'Équipe',
-  '/sonorisation/planning': 'Planning',
+  '/sonorisation/inventaire': 'Inventaire',
+  '/sonorisation/materiel':   'Matériel',
+  '/sonorisation/equipe':     'Équipe',
+  '/sonorisation/planning':   'Planning',
 }
 
 export function SonoBreadcrumb() {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -189,6 +190,7 @@ function MembreModal({
         ? await modifierMembre(membre!.id, payload)
         : await creerMembre(payload)
       if (!result.success) { form.setError('root', { message: result.error }); return }
+      toast.success(isEdit ? 'Membre mis à jour' : 'Membre ajouté')
       onOpenChange(false)
     })
   }
