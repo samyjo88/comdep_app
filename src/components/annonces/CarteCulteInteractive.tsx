@@ -24,7 +24,7 @@ import { toast } from 'sonner'
 // ── Types ──────────────────────────────────────────────────────────────────
 
 interface CulteMinimal {
-  id:          number
+  id:          string
   date_culte:  string
   theme:       string | null
   predicateur: string | null
