@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { UserPlus, Loader2 } from 'lucide-react'
+import { UserPlus, Loader2, Mail } from 'lucide-react'
 import { Button }   from '@/components/ui/button'
 import { Input }    from '@/components/ui/input'
 import { Label }    from '@/components/ui/label'
@@ -15,8 +15,8 @@ import { ajouterMembre, type Departement } from '@/lib/dashboard/team-actions'
 import { toast } from 'sonner'
 
 export function AjouterMembreDialog() {
-  const [open, setOpen]         = useState(false)
-  const [dept, setDept]         = useState<Departement>('son')
+  const [open, setOpen]              = useState(false)
+  const [dept, setDept]              = useState<Departement>('son')
   const [isPending, startTransition] = useTransition()
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -27,14 +27,14 @@ export function AjouterMembreDialog() {
       const result = await ajouterMembre({
         prenom:      fd.get('prenom') as string,
         nom:         fd.get('nom') as string,
-        email:       (fd.get('email') as string) || null,
+        email:       fd.get('email') as string,
         telephone:   (fd.get('telephone') as string) || null,
         departement: dept,
       })
       if (result.error) {
         toast.error('Erreur : ' + result.error)
       } else {
-        toast.success('Membre ajouté avec succès')
+        toast.success('Membre ajouté — invitation envoyée par email ✉️')
         setOpen(false)
       }
     })
@@ -54,7 +54,16 @@ export function AjouterMembreDialog() {
           <DialogTitle>Ajouter un membre</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+        {/* Note invitation */}
+        <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3 py-2.5 text-xs text-blue-700 dark:text-blue-300">
+          <Mail className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+          <span>
+            Un email d&apos;invitation sera envoyé à la personne pour qu&apos;elle crée son mot de passe
+            et accède à l&apos;application.
+          </span>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="prenom">Prénom *</Label>
@@ -67,8 +76,17 @@ export function AjouterMembreDialog() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="jean@mail.com" />
+            <Label htmlFor="email">Email *</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="jean@mail.com"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Utilisé pour l&apos;invitation et la connexion à l&apos;application.
+            </p>
           </div>
 
           <div className="space-y-1.5">
@@ -100,7 +118,7 @@ export function AjouterMembreDialog() {
               className="bg-emerald-700 hover:bg-emerald-800 text-white"
             >
               {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Ajouter
+              {isPending ? 'Envoi en cours…' : 'Ajouter et inviter'}
             </Button>
           </div>
         </form>
