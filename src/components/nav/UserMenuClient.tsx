@@ -2,7 +2,8 @@
 
 import { useTransition } from 'react'
 import Link              from 'next/link'
-import { UserCircle, LogOut, ChevronDown } from 'lucide-react'
+import { UserCircle, LogOut, ChevronDown, Shield } from 'lucide-react'
+import type { AppRole } from '@/lib/supabase/types'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +19,10 @@ interface UserMenuClientProps {
   prenom:    string
   nom:       string
   email:     string
+  role:      AppRole | null
 }
 
-export function UserMenuClient({ initiales, prenom, nom, email }: UserMenuClientProps) {
+export function UserMenuClient({ initiales, prenom, nom, email, role }: UserMenuClientProps) {
   const [pending, startTransition] = useTransition()
 
   function handleSignOut() {
@@ -48,6 +50,17 @@ export function UserMenuClient({ initiales, prenom, nom, email }: UserMenuClient
           <p className="text-xs text-muted-foreground truncate">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {role === 'super_admin' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/membres" className="flex items-center gap-2 cursor-pointer">
+                <Shield className="h-4 w-4 text-purple-500" />
+                Administration
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild>
           <Link href="/profil" className="flex items-center gap-2 cursor-pointer">
             <UserCircle className="h-4 w-4" />
