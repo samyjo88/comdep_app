@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { CulteAvecAnnonce } from '@/lib/annonces'
+import { CarteCulteClient } from '@/components/annonces/CarteCulteClient'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
@@ -104,63 +105,7 @@ async function getDashboardData() {
   }
 }
 
-// ── Carte culte ────────────────────────────────────────────────────────────
-
-function CarteCulte({ culte }: { culte: CulteAvecAnnonce }) {
-  const statut = statutAnnonce(culte)
-  const { completes, total } = rubriquesCompletes(culte)
-  const progression = completes / total
-  const btnLabel = statut === 'aucune' ? 'Commencer' : statut === 'brouillon' ? 'Reprendre' : 'Consulter'
-  const href = statut === 'aucune'
-    ? `/annonces/nouveau?culte=${culte.id}`
-    : statut === 'brouillon'
-    ? `/annonces/${culte.annonces?.[0]?.id ?? ''}/rubriques`
-    : `/annonces/historique/${culte.annonces?.[0]?.id ?? ''}`
-
-  return (
-    <Card className="transition-all duration-200 hover:shadow-md hover:border-primary/20">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <p className="text-sm font-semibold leading-tight truncate">
-              {capitalize(formatDateLongue(culte.date_culte))}
-            </p>
-            {culte.theme && (
-              <p className="text-xs text-muted-foreground truncate">{culte.theme}</p>
-            )}
-            <div className="flex items-center gap-2 flex-wrap">
-              <BadgeStatut statut={statut} />
-              {statut !== 'aucune' && (
-                <span className="text-xs text-muted-foreground">
-                  {completes}/{total} rubriques
-                </span>
-              )}
-            </div>
-            {/* Barre de progression */}
-            {statut !== 'aucune' && (
-              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-2">
-                <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${Math.round(progression * 100)}%` }}
-                />
-              </div>
-            )}
-          </div>
-          <Link href={href}>
-            <Button
-              variant={statut === 'aucune' || statut === 'brouillon' ? 'default' : 'outline'}
-              size="sm"
-              className="shrink-0 text-xs h-8"
-            >
-              {btnLabel}
-              <ChevronRight className="h-3 w-3 ml-1" />
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+// CarteCulte est désormais un composant client (CarteCulteClient)
 
 // ── Compte à rebours ───────────────────────────────────────────────────────
 
@@ -281,7 +226,7 @@ async function PageContent() {
           ) : (
             <div className="space-y-3">
               {derniers.map(c => (
-                <CarteCulte key={c.id} culte={c} />
+                <CarteCulteClient key={c.id} culte={c} />
               ))}
             </div>
           )}

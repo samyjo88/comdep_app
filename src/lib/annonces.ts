@@ -300,6 +300,51 @@ export async function getCultesAvenir(): Promise<DbResult<CulteAvecAnnonce[]>> {
   }
 }
 
+// ── updateCulte ────────────────────────────────────────────────────────────
+
+export type UpdateCultePayload = Partial<{
+  date_culte:  string
+  theme:       string | null
+  predicateur: string | null
+  statut:      'a_venir' | 'passe'
+}>
+
+export async function updateCulte(id: string, payload: UpdateCultePayload): Promise<DbResult<Culte>> {
+  try {
+    const db = await getDb()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (db as any)
+      .from('cultes')
+      .update(payload)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) return { data: null, error: error.message }
+    return { data: data as Culte, error: null }
+  } catch (e) {
+    return { data: null, error: String(e) }
+  }
+}
+
+// ── deleteCulte ────────────────────────────────────────────────────────────
+
+export async function deleteCulte(id: string): Promise<DbResult<null>> {
+  try {
+    const db = await getDb()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (db as any)
+      .from('cultes')
+      .delete()
+      .eq('id', id)
+
+    if (error) return { data: null, error: error.message }
+    return { data: null, error: null }
+  } catch (e) {
+    return { data: null, error: String(e) }
+  }
+}
+
 // ── getAnnoncePrecedente ───────────────────────────────────────────────────
 // Most recent culte with statut='passe' including its annonce and rubriques.
 
