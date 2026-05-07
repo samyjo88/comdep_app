@@ -6,7 +6,8 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { MobileMenu }       from "@/components/nav/MobileMenu";
 import { ThemeProvider }    from "@/components/providers/ThemeProvider";
 import { ThemeToggle }      from "@/components/nav/ThemeToggle";
-import { UserMenu }         from "@/components/nav/UserMenu";
+import { UserMenu }             from "@/components/nav/UserMenu";
+import { ConditionalHeader }    from "@/components/nav/ConditionalHeader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -48,29 +49,31 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Barre de navigation globale — sticky au-dessus de tout (z-40) */}
-          <header className="sticky top-0 z-40 h-12 border-b bg-card/95 backdrop-blur-sm shadow-sm shrink-0">
-            <div className="container mx-auto px-4 max-w-7xl h-full flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MobileMenu />
-                <Link
-                  href="/dashboard"
-                  className="flex items-center gap-2.5 font-bold text-sm hover:opacity-80 transition-opacity"
-                >
-                  <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary shrink-0">
-                    <span className="text-primary-foreground text-[11px] font-black tracking-tight">CD</span>
-                  </div>
-                  <span className="hidden sm:inline">ComDept</span>
-                </Link>
-              </div>
+          {/* Barre de navigation globale — masquée sur /login */}
+          <ConditionalHeader>
+            <header className="sticky top-0 z-40 h-12 border-b bg-card/95 backdrop-blur-sm shadow-sm shrink-0">
+              <div className="container mx-auto px-4 max-w-7xl h-full flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MobileMenu />
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center gap-2.5 font-bold text-sm hover:opacity-80 transition-opacity"
+                  >
+                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary shrink-0">
+                      <span className="text-primary-foreground text-[11px] font-black tracking-tight">CD</span>
+                    </div>
+                    <span className="hidden sm:inline">ComDept</span>
+                  </Link>
+                </div>
 
-              <div className="flex items-center gap-1">
-                <ThemeToggle />
-                <NotificationBell />
-                <UserMenu />
+                <div className="flex items-center gap-1">
+                  <ThemeToggle />
+                  <NotificationBell />
+                  <UserMenu />
+                </div>
               </div>
-            </div>
-          </header>
+            </header>
+          </ConditionalHeader>
 
           {children}
           <Toaster richColors position="top-right" />
