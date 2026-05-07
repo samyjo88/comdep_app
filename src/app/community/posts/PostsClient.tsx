@@ -138,7 +138,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="plateforme">Plateforme</Label>
           <Select value={plateforme} onValueChange={setPlateforme}>
@@ -184,7 +184,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="date">Date de publication</Label>
           <Input
@@ -210,12 +210,12 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
 
       {err && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{err}</p>}
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+        <Button type="button" variant="outline" onClick={onDone} className="w-full sm:w-auto">
+          Annuler
+        </Button>
         <Button type="submit" className="flex-1" disabled={loading}>
           {loading ? 'Enregistrement…' : editingPost ? 'Mettre à jour' : 'Créer le post'}
-        </Button>
-        <Button type="button" variant="outline" onClick={onDone}>
-          Annuler
         </Button>
       </div>
     </form>

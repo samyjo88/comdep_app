@@ -246,8 +246,8 @@ async function PageContent() {
         <p className="text-sm text-muted-foreground mb-5 max-w-xs">
           Créez ou reprenez la fiche d&apos;annonces pour le prochain culte en quelques minutes.
         </p>
-        <Link href="/annonces/nouveau">
-          <Button size="lg" className="gap-2 shadow-sm px-8">
+        <Link href="/annonces/nouveau" className="w-full sm:w-auto">
+          <Button size="lg" className="w-full sm:w-auto gap-2 shadow-sm sm:px-8">
             <PlusCircle className="h-5 w-5" />
             Préparer les annonces du prochain culte
           </Button>

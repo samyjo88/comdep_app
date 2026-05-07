@@ -79,7 +79,7 @@ async function InventaireContent({ searchParams }: Props) {
 
 export default function InventairePage({ searchParams }: Props) {
   return (
-    <div className="container mx-auto py-8 px-4 space-y-6">
+    <div className="container mx-auto py-6 px-4 max-w-7xl space-y-6">
       {/* En-tête */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
