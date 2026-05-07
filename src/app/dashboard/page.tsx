@@ -357,14 +357,14 @@ async function getDashboardData() {
 function BadgeStatut({ statut }: { statut: StatutModule }) {
   if (statut === 'ok') {
     return (
-      <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 gap-1 text-xs shrink-0">
+      <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 gap-1 text-xs shrink-0">
         <CheckCircle2 className="h-3 w-3" /> Tout va bien
       </Badge>
     )
   }
   if (statut === 'action') {
     return (
-      <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 gap-1 text-xs shrink-0">
+      <Badge className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 gap-1 text-xs shrink-0">
         <AlertCircle className="h-3 w-3" /> Action requise
       </Badge>
     )
@@ -424,8 +424,8 @@ function CarteModule({ icon: Icon, label, href, iconCls, info }: CarteModuleProp
           )}
           {info.nbTaches > 0 && (
             <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span className="text-xs text-amber-600 font-medium">
+              <Clock className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
+              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                 {info.nbTaches} tâche{info.nbTaches > 1 ? 's' : ''} en attente
               </span>
             </div>
@@ -453,10 +453,10 @@ interface EquipeData {
 
 function WidgetEquipe({ data }: { data: EquipeData }) {
   const lignes = [
-    { label: 'Son',        icon: Volume2,  membres: data.son.membres,          couleur: 'text-blue-600',   bg: 'bg-blue-50'   },
-    { label: 'Projection', icon: Monitor,  membres: data.projection.membres,   couleur: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Captation',  icon: Video,    membres: data.captation.membres,     couleur: 'text-red-600',    bg: 'bg-red-50'    },
-    { label: 'CM',         icon: Share2,   membres: data.cm.membre ? [data.cm.membre] : [], couleur: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Son',        icon: Volume2,  membres: data.son.membres,          couleur: 'text-blue-600   dark:text-blue-400',   bg: 'bg-blue-50   dark:bg-blue-950/40'   },
+    { label: 'Projection', icon: Monitor,  membres: data.projection.membres,   couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
+    { label: 'Captation',  icon: Video,    membres: data.captation.membres,    couleur: 'text-red-600    dark:text-red-400',    bg: 'bg-red-50    dark:bg-red-950/40'    },
+    { label: 'CM',         icon: Share2,   membres: data.cm.membre ? [data.cm.membre] : [], couleur: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/40' },
   ]
 
   const totalAssignes = lignes.reduce((sum, l) => sum + l.membres.length, 0)
@@ -496,8 +496,8 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
                 )}
               </div>
               {membres.length > 0
-                ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                : <AlertCircle  className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                : <AlertCircle  className="h-3.5 w-3.5 text-amber-400 dark:text-amber-300 shrink-0" />
               }
             </div>
           ))
@@ -558,13 +558,13 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
 
             {/* Légende */}
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-lg bg-emerald-50 p-2">
-                <p className="text-lg font-bold text-emerald-700 tabular-nums">{data.ok}</p>
-                <p className="text-xs text-emerald-600 leading-tight">Prêtes</p>
+              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/40 p-2">
+                <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{data.ok}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-tight">Prêtes</p>
               </div>
-              <div className="rounded-lg bg-amber-50 p-2">
-                <p className="text-lg font-bold text-amber-700 tabular-nums">{data.enCours}</p>
-                <p className="text-xs text-amber-600 leading-tight">En cours</p>
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-900/40 p-2">
+                <p className="text-lg font-bold text-amber-700 dark:text-amber-300 tabular-nums">{data.enCours}</p>
+                <p className="text-xs text-amber-600 dark:text-amber-400 leading-tight">En cours</p>
               </div>
               <div className="rounded-lg bg-muted p-2">
                 <p className="text-lg font-bold text-muted-foreground tabular-nums">{data.aFaire}</p>
@@ -598,7 +598,7 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
   const aDesAlerts = data.total > 0
 
   return (
-    <Card className={aDesAlerts ? 'border-red-200' : ''}>
+    <Card className={aDesAlerts ? 'border-red-200 dark:border-red-800' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -606,7 +606,7 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
             Matériel en alerte
           </CardTitle>
           {aDesAlerts && (
-            <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 gap-1 text-xs">
+            <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 gap-1 text-xs">
               <AlertTriangle className="h-3 w-3" />
               {data.total} alerte{data.total > 1 ? 's' : ''}
             </Badge>
@@ -616,18 +616,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
       <CardContent className="space-y-2 pt-0">
         {!aDesAlerts ? (
           <div className="flex items-center gap-2 py-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-            <p className="text-xs text-emerald-700 font-medium">Tout le matériel est en ordre</p>
+            <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Tout le matériel est en ordre</p>
           </div>
         ) : (
           <>
             {data.horsService.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-red-600 flex items-center gap-1 mb-1.5">
+                <p className="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1 mb-1.5">
                   <AlertTriangle className="h-3 w-3" /> Hors service ({data.horsService.length})
                 </p>
                 {data.horsService.map((m: Row) => (
-                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2">
+                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-950/40 px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{m.nom}</p>
                       {(m.marque || m.modele) && (
@@ -636,7 +636,7 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
                         </p>
                       )}
                     </div>
-                    <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs shrink-0">
+                    <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-xs shrink-0">
                       Hors service
                     </Badge>
                   </div>
@@ -646,18 +646,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
 
             {data.enReparation.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-amber-600 flex items-center gap-1 mb-1.5">
+                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1.5">
                   <Wrench className="h-3 w-3" /> En réparation ({data.enReparation.length})
                 </p>
                 {data.enReparation.map((m: Row) => (
-                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2">
+                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{m.nom}</p>
                       {m.description_reparation && (
                         <p className="text-xs text-muted-foreground truncate">{m.description_reparation}</p>
                       )}
                     </div>
-                    <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 text-xs shrink-0">
+                    <Badge className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs shrink-0">
                       Réparation
                     </Badge>
                   </div>
@@ -682,18 +682,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
 // ── Widget : Posts Community Management ───────────────────────────────────
 
 const PLATEFORME_CONFIG: Record<string, { label: string; icone: string; bg: string; couleur: string }> = {
-  facebook:  { label: 'Facebook',  icone: '📘', bg: 'bg-blue-50',   couleur: 'text-blue-700'  },
-  instagram: { label: 'Instagram', icone: '📸', bg: 'bg-pink-50',   couleur: 'text-pink-700'  },
-  whatsapp:  { label: 'WhatsApp',  icone: '💬', bg: 'bg-green-50',  couleur: 'text-green-700' },
+  facebook:  { label: 'Facebook',  icone: '📘', bg: 'bg-blue-50  dark:bg-blue-950/40',  couleur: 'text-blue-700  dark:text-blue-300'  },
+  instagram: { label: 'Instagram', icone: '📸', bg: 'bg-pink-50  dark:bg-pink-950/40',  couleur: 'text-pink-700  dark:text-pink-300'  },
+  whatsapp:  { label: 'WhatsApp',  icone: '💬', bg: 'bg-green-50 dark:bg-green-950/40', couleur: 'text-green-700 dark:text-green-300' },
 }
 
 const STATUT_POST_CONFIG: Record<string, { label: string; cls: string }> = {
-  a_faire:               { label: 'À faire',       cls: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-100' },
-  en_creation:           { label: 'En création',   cls: 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100' },
-  en_attente_validation: { label: 'En attente',    cls: 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-100' },
-  programme:             { label: 'Programmé',     cls: 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100' },
-  publie:                { label: 'Publié',         cls: 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
-  annule:                { label: 'Annulé',         cls: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-100' },
+  a_faire:               { label: 'À faire',    cls: 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/60' },
+  en_creation:           { label: 'En création',cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40' },
+  en_attente_validation: { label: 'En attente', cls: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40' },
+  programme:             { label: 'Programmé',  cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40' },
+  publie:                { label: 'Publié',     cls: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40' },
+  annule:                { label: 'Annulé',     cls: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40' },
 }
 
 interface PostsCMWidgetData {
@@ -815,8 +815,8 @@ async function PageContent() {
           <div className="hidden sm:block w-px h-10 bg-border" />
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50 shrink-0">
-              <Users className="h-5 w-5 text-blue-600" />
+            <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 shrink-0">
+              <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -830,10 +830,10 @@ async function PageContent() {
 
           <div className="flex items-center gap-3">
             <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${
-              d.tachesEnAttente > 0 ? 'bg-amber-50' : 'bg-emerald-50'
+              d.tachesEnAttente > 0 ? 'bg-amber-50 dark:bg-amber-950/40' : 'bg-emerald-50 dark:bg-emerald-950/40'
             }`}>
               <Clock className={`h-5 w-5 ${
-                d.tachesEnAttente > 0 ? 'text-amber-600' : 'text-emerald-600'
+                d.tachesEnAttente > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
               }`} />
             </div>
             <div>
@@ -841,7 +841,7 @@ async function PageContent() {
                 Tâches en attente
               </p>
               <p className={`font-semibold text-sm tabular-nums ${
-                d.tachesEnAttente > 0 ? 'text-amber-700' : 'text-emerald-700'
+                d.tachesEnAttente > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-emerald-700 dark:text-emerald-300'
               }`}>
                 {d.tachesEnAttente > 0 ? d.tachesEnAttente : 'Tout à jour'}
               </p>
@@ -855,11 +855,11 @@ async function PageContent() {
       <div>
         <h2 className="text-base font-semibold mb-4">Modules</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <CarteModule icon={Volume2} label="Sonorisation"          href="/sonorisation" iconCls="bg-blue-50 text-blue-600"     info={d.sonoInfo}     />
-          <CarteModule icon={Monitor} label="Projection / Proclaim" href="/projection"   iconCls="bg-purple-50 text-purple-600" info={d.projInfo}     />
-          <CarteModule icon={Megaphone} label="Annonces"            href="/annonces"     iconCls="bg-amber-50 text-amber-600"   info={d.annoncesInfo} />
-          <CarteModule icon={Video}   label="Captation Vidéo"       href="/captation"    iconCls="bg-red-50 text-red-600"       info={d.captationInfo}/>
-          <CarteModule icon={Share2}  label="Community Management"  href="/community"    iconCls="bg-green-50 text-green-600"   info={d.communityInfo}/>
+          <CarteModule icon={Volume2}   label="Sonorisation"          href="/sonorisation" iconCls="bg-blue-50   dark:bg-blue-950/40   text-blue-600   dark:text-blue-400"   info={d.sonoInfo}     />
+          <CarteModule icon={Monitor}   label="Projection / Proclaim" href="/projection"   iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400" info={d.projInfo}     />
+          <CarteModule icon={Megaphone} label="Annonces"              href="/annonces"     iconCls="bg-amber-50  dark:bg-amber-950/40  text-amber-600  dark:text-amber-400"  info={d.annoncesInfo} />
+          <CarteModule icon={Video}     label="Captation Vidéo"       href="/captation"    iconCls="bg-red-50    dark:bg-red-950/40    text-red-600    dark:text-red-400"    info={d.captationInfo}/>
+          <CarteModule icon={Share2}    label="Community Management"  href="/community"    iconCls="bg-green-50  dark:bg-green-950/40  text-green-600  dark:text-green-400"  info={d.communityInfo}/>
         </div>
       </div>
 

@@ -21,12 +21,12 @@ import { cn } from '@/lib/utils'
 interface ModuleCfg { icon: ElementType; couleur: string; bg: string }
 
 const MODULE_CFG: Record<string, ModuleCfg> = {
-  son:        { icon: Volume2,  couleur: 'text-blue-600',   bg: 'bg-blue-50'   },
-  projection: { icon: Monitor,  couleur: 'text-purple-600', bg: 'bg-purple-50' },
-  annonces:   { icon: Megaphone,couleur: 'text-amber-600',  bg: 'bg-amber-50'  },
-  captation:  { icon: Video,    couleur: 'text-red-600',    bg: 'bg-red-50'    },
-  cm:         { icon: Share2,   couleur: 'text-green-600',  bg: 'bg-green-50'  },
-  general:    { icon: BellRing, couleur: 'text-slate-600',  bg: 'bg-slate-100' },
+  son:        { icon: Volume2,  couleur: 'text-blue-600   dark:text-blue-400',   bg: 'bg-blue-50   dark:bg-blue-950/40'   },
+  projection: { icon: Monitor,  couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
+  annonces:   { icon: Megaphone,couleur: 'text-amber-600  dark:text-amber-400',  bg: 'bg-amber-50  dark:bg-amber-950/40'  },
+  captation:  { icon: Video,    couleur: 'text-red-600    dark:text-red-400',    bg: 'bg-red-50    dark:bg-red-950/40'    },
+  cm:         { icon: Share2,   couleur: 'text-green-600  dark:text-green-400',  bg: 'bg-green-50  dark:bg-green-950/40'  },
+  general:    { icon: BellRing, couleur: 'text-slate-600  dark:text-slate-400',  bg: 'bg-slate-100 dark:bg-slate-800/60'  },
 }
 
 // ── Temps relatif ──────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ export function NotificationBell() {
               Notifications
             </SheetTitle>
             {nonLues > 0 && (
-              <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs">
+              <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-xs">
                 {nonLues} non lue{nonLues > 1 ? 's' : ''}
               </Badge>
             )}

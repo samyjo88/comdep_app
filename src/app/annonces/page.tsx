@@ -56,13 +56,13 @@ function BadgeStatut({ statut }: { statut: ReturnType<typeof statutAnnonce> }) {
   switch (statut) {
     case 'publie':
       return (
-        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 gap-1 text-xs">
+        <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 gap-1 text-xs">
           <Send className="h-3 w-3" /> Publié
         </Badge>
       )
     case 'valide':
       return (
-        <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 gap-1 text-xs">
+        <Badge className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 gap-1 text-xs">
           <CheckCircle2 className="h-3 w-3" /> Validé
         </Badge>
       )
@@ -168,14 +168,14 @@ function CompteARebours({ culte }: { culte: CulteAvecAnnonce }) {
   const { completes, total } = rubriquesCompletes(culte)
 
   const couleur =
-    jours <= 2 ? 'border-red-200 bg-red-50'    :
-    jours <= 5 ? 'border-amber-200 bg-amber-50' :
-                 'border-emerald-200 bg-emerald-50'
+    jours <= 2 ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40'          :
+    jours <= 5 ? 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40'   :
+                 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/40'
 
   const couleurTexte =
-    jours <= 2 ? 'text-red-700'    :
-    jours <= 5 ? 'text-amber-700'  :
-                 'text-emerald-700'
+    jours <= 2 ? 'text-red-700 dark:text-red-300'      :
+    jours <= 5 ? 'text-amber-700 dark:text-amber-300'  :
+                 'text-emerald-700 dark:text-emerald-300'
 
   return (
     <Card className={`border-2 ${couleur}`}>
