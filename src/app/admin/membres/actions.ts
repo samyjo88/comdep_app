@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers }        from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import type { AppRole }      from '@/lib/supabase/types'
@@ -98,8 +99,12 @@ export async function resetPasswordAction(formData: FormData): Promise<{ error?:
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = await createClient() as any
+    const hdrs   = await headers()
+    const proto  = hdrs.get('x-forwarded-proto')
+    const host   = hdrs.get('host')
+    const origin = hdrs.get('origin') ?? (proto && host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL ?? ''))
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? ''}/profil/reset-password`,
+      redirectTo: `${origin}/auth/callback?next=/profil/reset-password`,
     })
     if (error) return { error: error.message }
 

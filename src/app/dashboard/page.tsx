@@ -119,7 +119,7 @@ async function getDashboardData() {
       .eq('actif', true),
     // Posts CM en attente (pour statut module)
     supabase
-      .from('posts_cm')
+      .from('posts')
       .select('id, statut')
       .in('statut', ['a_faire', 'en_creation', 'en_attente_validation']),
     supabase
@@ -856,7 +856,7 @@ async function PageContent() {
         <h2 className="text-base font-semibold mb-4">Modules</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <CarteModule icon={Volume2}   label="Sonorisation"          href="/sonorisation" iconCls="bg-blue-50   dark:bg-blue-950/40   text-blue-600   dark:text-blue-400"   info={d.sonoInfo}     />
-          <CarteModule icon={Monitor}   label="Projection / Proclaim" href="/projection"   iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400" info={d.projInfo}     />
+          <CarteModule icon={Monitor}   label="Projection / Proclaim" href="#"             iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 opacity-50 pointer-events-none" info={d.projInfo} />
           <CarteModule icon={Megaphone} label="Annonces"              href="/annonces"     iconCls="bg-amber-50  dark:bg-amber-950/40  text-amber-600  dark:text-amber-400"  info={d.annoncesInfo} />
           <CarteModule icon={Video}     label="Captation Vidéo"       href="/captation"    iconCls="bg-red-50    dark:bg-red-950/40    text-red-600    dark:text-red-400"    info={d.captationInfo}/>
           <CarteModule icon={Share2}    label="Community Management"  href="/community"    iconCls="bg-green-50  dark:bg-green-950/40  text-green-600  dark:text-green-400"  info={d.communityInfo}/>
