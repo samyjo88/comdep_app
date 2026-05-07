@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { CulteAvecAnnonce } from '@/lib/annonces'
+import { CarteCulteInteractive } from '@/components/annonces/CarteCulteInteractive'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
@@ -281,7 +282,7 @@ async function PageContent() {
           ) : (
             <div className="space-y-3">
               {derniers.map(c => (
-                <CarteCulte key={c.id} culte={c} />
+                <CarteCulteInteractive key={c.id} culte={c} />
               ))}
             </div>
           )}
