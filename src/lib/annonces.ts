@@ -39,6 +39,26 @@ async function getDb() {
   )
 }
 
+// ── archiverCultesPassés ───────────────────────────────────────────────────
+// Passe en statut='passe' tous les cultes a_venir dont la date est dépassée.
+// Retourne le nombre de cultes archivés.
+export async function archiverCultesPassés(): Promise<number> {
+  try {
+    const db    = await getDb()
+    const today = new Date().toISOString().slice(0, 10)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (db as any)
+      .from('cultes')
+      .update({ statut: 'passe' })
+      .eq('statut', 'a_venir')
+      .lt('date_culte', today)
+      .select('id')
+    return (data ?? []).length
+  } catch {
+    return 0
+  }
+}
+
 // ── getCultes ──────────────────────────────────────────────────────────────
 
 export async function getCultes(): Promise<DbResult<Culte[]>> {

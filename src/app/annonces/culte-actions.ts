@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 export interface ModifierCulteData {
-  id:          number
+  id:          string
   date_culte:  string
   theme:       string | null
   predicateur: string | null
@@ -31,7 +31,7 @@ export async function modifierCulte(
   return {}
 }
 
-export async function supprimerCulte(id: number): Promise<{ error?: string }> {
+export async function supprimerCulte(id: string): Promise<{ error?: string }> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
 
@@ -42,7 +42,7 @@ export async function supprimerCulte(id: number): Promise<{ error?: string }> {
     .eq('culte_id', id)
 
   if (annonces && annonces.length > 0) {
-    const annonceIds = annonces.map((a: { id: number }) => a.id)
+    const annonceIds = annonces.map((a: { id: string }) => a.id)
     await supabase.from('rubriques_annonce').delete().in('annonce_id', annonceIds)
     await supabase.from('annonces').delete().in('id', annonceIds)
   }
