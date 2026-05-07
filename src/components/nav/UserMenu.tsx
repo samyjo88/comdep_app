@@ -14,11 +14,10 @@ export async function UserMenu() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return null
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('prenom, nom')
-      .eq('id', user.id)
-      .single()
+    const [{ data: profile }, { data: role }] = await Promise.all([
+      supabase.from('profiles').select('prenom, nom').eq('id', user.id).single(),
+      supabase.rpc('get_my_role'),
+    ])
 
     const prenom    = profile?.prenom ?? ''
     const nom       = profile?.nom    ?? ''
@@ -32,6 +31,7 @@ export async function UserMenu() {
         prenom={prenom}
         nom={nom}
         email={user.email ?? ''}
+        role={role ?? null}
       />
     )
   } catch {

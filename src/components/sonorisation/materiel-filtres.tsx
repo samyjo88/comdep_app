@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useTransition } from 'react'
+import { useTransition, useRef } from 'react'
 import { Search, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CATEGORIES } from '@/lib/sonorisation/constants'
 
 export function MaterielFiltres() {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router       = useRouter()
+  const pathname     = usePathname()
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
+  const debounceRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const q         = searchParams.get('q') ?? ''
   const categorie = searchParams.get('categorie') ?? ''
@@ -25,7 +26,13 @@ export function MaterielFiltres() {
     startTransition(() => router.push(`${pathname}?${params.toString()}`))
   }
 
+  function handleSearch(value: string) {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => update('q', value), 300)
+  }
+
   function reset() {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     startTransition(() => router.push(pathname))
   }
 
@@ -35,7 +42,7 @@ export function MaterielFiltres() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           defaultValue={q}
-          onChange={e => update('q', e.target.value)}
+          onChange={e => handleSearch(e.target.value)}
           placeholder="Rechercher par nom…"
           className="pl-9"
         />
