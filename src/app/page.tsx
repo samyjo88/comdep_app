@@ -1,22 +1,13 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
-  return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight">
-          ComDept Église
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-md">
-          Plateforme de gestion du département de communication de l&apos;église.
-        </p>
-      </div>
-      <div className="flex gap-4">
-        <Button asChild>
-          <Link href="/dashboard">Commencer</Link>
-        </Button>
-      </div>
-    </main>
-  );
+export default async function Home() {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabase = await createClient() as any
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) redirect('/dashboard')
+  } catch { /* env not configured */ }
+
+  redirect('/login')
 }
