@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Camera, ImageIcon, Palette } from 'lucide-react'
+import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Camera, ImageIcon, Palette, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { Button }           from '@/components/ui/button'
@@ -12,6 +13,9 @@ import { Badge }            from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Switch }           from '@/components/ui/switch'
 import { Input }            from '@/components/ui/input'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import { Textarea }         from '@/components/ui/textarea'
 import { Label }            from '@/components/ui/label'
 import {
@@ -257,6 +261,7 @@ function MembreModal({
         ? await modifierMembreCaptationAction(membre!.id, payload)
         : await creerMembreCaptationAction(payload)
       if (!result.success) { form.setError('root', { message: result.error }); return }
+      toast.success(isEdit ? 'Membre mis à jour' : 'Membre ajouté')
       onOpenChange(false)
     })
   }
@@ -562,14 +567,28 @@ export function EquipeCaptationClient({
   trimestreLabel:  string
 }) {
   const [filtre, setFiltre]                   = useState<Filtre>('tous')
+  const [search, setSearch]                   = useState('')
+  const [sort, setSort]                       = useState<'nom-az' | 'nom-za' | 'role'>('nom-az')
   const [modalOpen, setModalOpen]             = useState(false)
   const [membreEnEdition, setMembreEnEdition] = useState<MembreCaptation | null>(null)
 
-  const membresFiltres = membres.filter(m => {
-    if (filtre === 'inactifs') return !m.actif
-    if (filtre === 'tous')     return m.actif
-    return m.actif && m.roles.includes(filtre as RoleCaptation)
-  })
+  const membresFiltres = membres
+    .filter(m => {
+      if (filtre === 'inactifs') return !m.actif
+      if (filtre === 'tous')     return m.actif
+      return m.actif && m.roles.includes(filtre as RoleCaptation)
+    })
+    .filter(m => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return `${m.prenom} ${m.nom}`.toLowerCase().includes(q) ||
+        (m.email ?? '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sort === 'nom-za') return `${b.nom} ${b.prenom}`.localeCompare(`${a.nom} ${a.prenom}`, 'fr')
+      if (sort === 'role')   return (a.roles[0] ?? '').localeCompare(b.roles[0] ?? '', 'fr')
+      return `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, 'fr')
+    })
 
   function countFiltre(f: Filtre): number {
     if (f === 'inactifs') return membres.filter(m => !m.actif).length
@@ -583,35 +602,60 @@ export function EquipeCaptationClient({
   return (
     <div className="space-y-6">
 
-      {/* Filtres + bouton */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-1 bg-muted rounded-lg p-1 self-start overflow-x-auto max-w-full">
-          {FILTRES.map(f => (
-            <button
-              key={f.value}
-              onClick={() => setFiltre(f.value)}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap min-h-[36px]',
-                filtre === f.value
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {f.label}
-              <span className={cn(
-                'text-xs px-1.5 py-0.5 rounded-full tabular-nums',
-                filtre === f.value ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/60',
-              )}>
-                {countFiltre(f.value)}
-              </span>
-            </button>
-          ))}
+      {/* Recherche + tri + filtres + bouton */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Rechercher un membre…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+          <Select value={sort} onValueChange={v => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-9 w-44 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nom-az">Nom A → Z</SelectItem>
+              <SelectItem value="nom-za">Nom Z → A</SelectItem>
+              <SelectItem value="role">Par rôle</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto min-h-[44px]">
-          <Plus className="h-4 w-4" />
-          Ajouter un membre
-        </Button>
+        {/* Filtres + bouton */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-1 bg-muted rounded-lg p-1 self-start overflow-x-auto max-w-full">
+            {FILTRES.map(f => (
+              <button
+                key={f.value}
+                onClick={() => setFiltre(f.value)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap min-h-[36px]',
+                  filtre === f.value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {f.label}
+                <span className={cn(
+                  'text-xs px-1.5 py-0.5 rounded-full tabular-nums',
+                  filtre === f.value ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/60',
+                )}>
+                  {countFiltre(f.value)}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto min-h-[44px]">
+            <Plus className="h-4 w-4" />
+            Ajouter un membre
+          </Button>
+        </div>
       </div>
 
       {/* Grille */}

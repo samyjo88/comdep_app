@@ -15,7 +15,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, LayoutList, Columns3, Pencil, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { Plus, LayoutList, Columns3, Pencil, Trash2, Search } from 'lucide-react'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE, STATUTS_POST } from '@/types/community'
 import { createPostAction, updatePostAction, deletePostAction, updateStatutPostAction } from './actions'
 import type { Post, MembreCM, Plateforme, StatutPost, TypeContenu } from '@/types/community'
@@ -56,12 +57,12 @@ function PlateBadge({ plateforme, mobileIconOnly = false }: { plateforme: Platef
 
 function StatutBadge({ statut }: { statut: StatutPost }) {
   const COLOR: Record<StatutPost, string> = {
-    a_faire:               'bg-slate-100 text-slate-600',
-    en_creation:           'bg-amber-100 text-amber-700',
-    en_attente_validation: 'bg-purple-100 text-purple-700',
-    programme:             'bg-blue-100 text-blue-700',
-    publie:                'bg-green-100 text-green-700',
-    annule:                'bg-red-100 text-red-700',
+    a_faire:               'bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300',
+    en_creation:           'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+    en_attente_validation: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+    programme:             'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    publie:                'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
+    annule:                'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
   }
   const LABEL: Record<StatutPost, string> = {
     a_faire:               'À faire',
@@ -128,6 +129,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
         ? await updatePostAction(editingPost.id, payload)
         : await createPostAction(payload)
       if (result.error) { setErr(result.error); return }
+      toast.success(editingPost ? 'Post mis à jour' : 'Post créé')
       onDone()
     } catch (e) {
       setErr(String(e))
@@ -138,7 +140,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="plateforme">Plateforme</Label>
           <Select value={plateforme} onValueChange={setPlateforme}>
@@ -184,7 +186,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="date">Date de publication</Label>
           <Input
@@ -210,12 +212,12 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
 
       {err && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{err}</p>}
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
+        <Button type="button" variant="outline" onClick={onDone} className="w-full sm:w-auto">
+          Annuler
+        </Button>
         <Button type="submit" className="flex-1" disabled={loading}>
           {loading ? 'Enregistrement…' : editingPost ? 'Mettre à jour' : 'Créer le post'}
-        </Button>
-        <Button type="button" variant="outline" onClick={onDone}>
-          Annuler
         </Button>
       </div>
     </form>
@@ -466,15 +468,28 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
   const [, startTransition]               = useTransition()
   const [view,         setView]           = useState<View>('list')
   const [filterPlate,  setFilterPlate]    = useState<Plateforme | 'all'>('all')
+  const [search,       setSearch]         = useState('')
+  const [sort,         setSort]           = useState<'date-asc' | 'date-desc' | 'statut' | 'plateforme'>('date-asc')
   const [sheetOpen,    setSheetOpen]      = useState(false)
   const [editingPost,  setEditingPost]    = useState<Post | null>(null)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   void membres // available for future assignee selection
 
-  const filtered = filterPlate === 'all'
-    ? posts
-    : posts.filter(p => p.plateforme === filterPlate)
+  const filtered = posts
+    .filter(p => filterPlate === 'all' || p.plateforme === filterPlate)
+    .filter(p => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return (p.titre ?? '').toLowerCase().includes(q) ||
+        (p.description ?? '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sort === 'date-desc') return (b.date_publication_prevue ?? '').localeCompare(a.date_publication_prevue ?? '')
+      if (sort === 'statut')    return a.statut.localeCompare(b.statut)
+      if (sort === 'plateforme')return a.plateforme.localeCompare(b.plateforme)
+      return (a.date_publication_prevue ?? '').localeCompare(b.date_publication_prevue ?? '')
+    })
 
   function refresh() {
     startTransition(() => router.refresh())
@@ -492,12 +507,15 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
 
   async function handleDelete(id: string) {
     if (!confirm('Supprimer ce post ?')) return
-    await deletePostAction(id)
+    const result = await deletePostAction(id)
+    if (result?.error) { toast.error(result.error); return }
+    toast.success('Post supprimé')
     refresh()
   }
 
   async function handleStatusChange(id: string, statut: StatutPost) {
-    await updateStatutPostAction(id, statut)
+    const result = await updateStatutPostAction(id, statut)
+    if (result?.error) { toast.error(result.error); return }
     refresh()
   }
 
@@ -510,6 +528,31 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
   return (
     <div className="space-y-4">
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3">
+        {/* Recherche + tri */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Rechercher un post…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <Select value={sort} onValueChange={v => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-8 w-44 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-asc">Date ↑</SelectItem>
+              <SelectItem value="date-desc">Date ↓</SelectItem>
+              <SelectItem value="statut">Par statut</SelectItem>
+              <SelectItem value="plateforme">Par plateforme</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
         {/* Platform filter */}
@@ -584,6 +627,7 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
             </SheetContent>
           </Sheet>
         </div>
+      </div>
       </div>
 
       {/* ── Count label ──────────────────────────────────────────────────────── */}

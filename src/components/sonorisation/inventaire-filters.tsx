@@ -32,9 +32,9 @@ export function InventaireFilters() {
   }
 
   return (
-    <div className="flex flex-wrap gap-3 items-center">
+    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
       {/* Recherche texte */}
-      <div className="relative flex-1 min-w-48">
+      <div className="relative w-full sm:flex-1 sm:min-w-48">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           defaultValue={q}
@@ -44,32 +44,34 @@ export function InventaireFilters() {
         />
       </div>
 
-      {/* Filtre catégorie */}
-      <select
-        value={categorie}
-        onChange={e => update('categorie', e.target.value)}
-        className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <option value="">Toutes les catégories</option>
-        {CATEGORIES.map(c => (
-          <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
-        ))}
-      </select>
+      <div className="flex gap-2 sm:contents">
+        {/* Filtre catégorie */}
+        <select
+          value={categorie}
+          onChange={e => update('categorie', e.target.value)}
+          className="flex-1 sm:flex-none h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="">Toutes les catégories</option>
+          {CATEGORIES.map(c => (
+            <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
+          ))}
+        </select>
 
-      {/* Filtre statut */}
-      <select
-        value={statut}
-        onChange={e => update('statut', e.target.value)}
-        className="h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <option value="">Tous les statuts</option>
-        {STATUTS.map(s => (
-          <option key={s.value} value={s.value}>{s.label}</option>
-        ))}
-      </select>
+        {/* Filtre statut */}
+        <select
+          value={statut}
+          onChange={e => update('statut', e.target.value)}
+          className="flex-1 sm:flex-none h-10 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <option value="">Tous les statuts</option>
+          {STATUTS.map(s => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+      </div>
 
       {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground">
+        <Button variant="ghost" size="sm" onClick={reset} className="text-muted-foreground w-full sm:w-auto">
           <X className="h-4 w-4" />
           Réinitialiser
         </Button>

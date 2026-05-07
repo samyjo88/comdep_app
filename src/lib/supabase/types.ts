@@ -1,4 +1,17 @@
 export type AppRole = 'super_admin' | 'admin' | 'responsable' | 'redacteur' | 'membre'
+
+export type ModuleNotification = 'son' | 'projection' | 'annonces' | 'captation' | 'cm' | 'general'
+
+export interface Notification {
+  id:         string
+  user_id:    string
+  module:     ModuleNotification
+  titre:      string
+  message:    string
+  lu:         boolean
+  lien:       string | null
+  created_at: string
+}
 export type StatutCulte = 'planifie' | 'confirme' | 'passe'
 
 export interface PlanningCulte {
@@ -88,6 +101,7 @@ export interface Profile {
   avatar_url: string | null
   bio: string | null
   actif: boolean
+  email_notifications: boolean
   created_at: string
   updated_at: string
 }
@@ -215,7 +229,8 @@ export type Database = {
       materiel_sono:      TableDef<MaterielSono,    Omit<MaterielSono,    'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono,    'id'>>>
       achats_planifies:   TableDef<AchatPlanifie,  Omit<AchatPlanifie,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<AchatPlanifie,  'id'>>>
       membres_son:        TableDef<MembreSon,      Omit<MembreSon,      'id' | 'created_at' | 'updated_at'>, Partial<Omit<MembreSon,      'id'>>>
-      planning_son:       TableDef<PlanningCulte, Omit<PlanningCulte, 'id' | 'created_at' | 'updated_at'>, Partial<Omit<PlanningCulte, 'id'>>>
+      planning_son:       TableDef<PlanningCulte,  Omit<PlanningCulte,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<PlanningCulte,  'id'>>>
+      notifications:      TableDef<Notification,   Omit<Notification,   'id' | 'created_at'>,               Partial<Pick<Notification,   'lu'>>>
     }
     Views: Record<string, never>
     Functions: {

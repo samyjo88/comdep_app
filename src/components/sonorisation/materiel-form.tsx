@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,7 @@ export function MaterielForm() {
 
   useEffect(() => {
     if (state.success) {
+      toast.success('Matériel ajouté avec succès')
       setOpen(false)
       formRef.current?.reset()
     }
@@ -29,7 +31,7 @@ export function MaterielForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Plus className="h-4 w-4" />
           Ajouter du matériel
         </Button>
@@ -42,7 +44,7 @@ export function MaterielForm() {
 
         <form ref={formRef} action={action} className="space-y-4">
           {/* Nom + Catégorie */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="col-span-2 space-y-1.5">
               <Label htmlFor="nom">Nom <span className="text-destructive">*</span></Label>
               <Input id="nom" name="nom" placeholder="ex: Shure SM58" required />
@@ -78,7 +80,7 @@ export function MaterielForm() {
           </div>
 
           {/* Marque + Modèle */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="marque">Marque</Label>
               <Input id="marque" name="marque" placeholder="ex: Shure" />
@@ -90,7 +92,7 @@ export function MaterielForm() {
           </div>
 
           {/* Référence + N° de série */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="reference">Référence interne</Label>
               <Input id="reference" name="reference" placeholder="ex: SONO-001" />
@@ -102,7 +104,7 @@ export function MaterielForm() {
           </div>
 
           {/* Localisation + Date acquisition */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="localisation">Localisation</Label>
               <Input id="localisation" name="localisation" placeholder="ex: Salle de culte" />

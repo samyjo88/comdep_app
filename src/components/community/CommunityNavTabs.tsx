@@ -29,8 +29,12 @@ export function CommunityBreadcrumb() {
 
   return (
     <div className="flex items-center gap-1 text-xs text-muted-foreground leading-none">
+      <Link href="/dashboard" className="hover:text-foreground transition-colors">
+        Dashboard
+      </Link>
+      <ChevronRight className="h-3 w-3 shrink-0" />
       <Link href="/community" className="hover:text-foreground transition-colors">
-        Community Management
+        Community
       </Link>
       {label && !isRoot && (
         <>
@@ -59,14 +63,15 @@ export function CommunityNavTabs() {
             key={href}
             href={href}
             className={cn(
-              'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 min-h-[44px]',
+              'flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 min-h-[44px]',
               isActive
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
-            {label}
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">{label}</span>
+            <span className="sr-only sm:hidden">{label}</span>
           </Link>
         )
       })}

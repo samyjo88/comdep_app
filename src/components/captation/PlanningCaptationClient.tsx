@@ -54,17 +54,17 @@ const ROLE_ICON: Record<RoleCaptation, typeof Camera> = {
 type StatutGlobal = 'incomplet' | 'planifie' | 'confirme' | 'couvert'
 
 const STATUT_GLOBAL_CONFIG: Record<StatutGlobal, { label: string; className: string }> = {
-  incomplet: { label: 'Incomplet', className: 'bg-red-50 text-red-700 border-red-200' },
-  planifie:  { label: 'Planifié',  className: 'bg-gray-100 text-gray-600 border-gray-200' },
-  confirme:  { label: 'Confirmé',  className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  couvert:   { label: 'Couvert',   className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  incomplet: { label: 'Incomplet', className: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' },
+  planifie:  { label: 'Planifié',  className: 'bg-gray-100 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
+  confirme:  { label: 'Confirmé',  className: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  couvert:   { label: 'Couvert',   className: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
 }
 
 const STATUT_ASSIGN_CONFIG: Record<StatutPlanning, { label: string; className: string }> = {
-  planifie: { label: 'Planifié',  className: 'bg-gray-100 text-gray-600 border-gray-200' },
-  confirme: { label: 'Confirmé',  className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  present:  { label: 'Présent',   className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  absent:   { label: 'Absent',    className: 'bg-red-50 text-red-700 border-red-200' },
+  planifie: { label: 'Planifié',  className: 'bg-gray-100 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
+  confirme: { label: 'Confirmé',  className: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  present:  { label: 'Présent',   className: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
+  absent:   { label: 'Absent',    className: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' },
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ function CelleAssignation({
       <SelectTrigger className={cn(
         'h-8 text-xs border shadow-none focus:ring-0 focus:ring-offset-0',
         currentValue === 'none'
-          ? 'bg-red-50 border-red-200 text-red-700'
+          ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
           : 'bg-background',
       )}>
         <SelectValue placeholder="Non assigné" />
@@ -288,7 +288,7 @@ function CulteCard({
                       onStatutChange={onStatutChange}
                     />
                   ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-red-50 text-red-600 border-red-200">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 border-red-200 dark:border-red-800">
                       À assigner
                     </Badge>
                   )}
@@ -394,7 +394,7 @@ function VueCalendrier({
               {item && (
                 <div className={cn(
                   'rounded p-1 flex flex-col gap-0.5 text-[10px] leading-tight',
-                  allAssigned ? 'bg-emerald-50 border border-emerald-100' : 'bg-red-50 border border-red-100',
+                  allAssigned ? 'bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800',
                 )}>
                   {item.assignments.map(a => {
                     const m = membreById[a.membre_id]
@@ -402,7 +402,7 @@ function VueCalendrier({
                     return (
                       <span key={a.id} className={cn(
                         'truncate font-medium',
-                        allAssigned ? 'text-emerald-700' : 'text-red-700',
+                        allAssigned ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300',
                       )}>
                         {m.prenom[0]}.{m.nom[0]}. <span className="opacity-70">·</span> {ROLES_CONFIG.find(r => r.code === a.role_du_jour)?.label.slice(0, 3)}
                       </span>
