@@ -3,9 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import Link from "next/link";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { MobileMenu } from "@/components/nav/MobileMenu";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import { ThemeToggle } from "@/components/nav/ThemeToggle";
+import { MobileMenu }       from "@/components/nav/MobileMenu";
+import { ThemeProvider }    from "@/components/providers/ThemeProvider";
+import { ThemeToggle }      from "@/components/nav/ThemeToggle";
+import { UserMenu }         from "@/components/nav/UserMenu";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -60,6 +61,7 @@ export default function RootLayout({
               <div className="flex items-center gap-1">
                 <ThemeToggle />
                 <NotificationBell />
+                <UserMenu />
               </div>
             </div>
           </header>

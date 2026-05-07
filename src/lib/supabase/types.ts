@@ -101,6 +101,7 @@ export interface Profile {
   avatar_url: string | null
   bio: string | null
   actif: boolean
+  email_notifications: boolean
   created_at: string
   updated_at: string
 }
