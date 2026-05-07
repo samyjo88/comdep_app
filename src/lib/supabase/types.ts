@@ -28,6 +28,21 @@ export interface PlanningCulte {
 }
 
 export type RoleSon = 'responsable' | 'technicien' | 'assistant'
+export type RoleAnnonce = 'responsable' | 'redacteur' | 'lecteur'
+
+export interface MembreAnnonce {
+  id: number
+  prenom: string
+  nom: string
+  telephone: string | null
+  email: string | null
+  role: RoleAnnonce
+  actif: boolean
+  notes: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
 export type PrioriteAchat = 'urgent' | 'normal' | 'faible'
 export type StatutAchat   = 'en_attente' | 'approuve' | 'commande' | 'recu'
 
@@ -229,6 +244,7 @@ export type Database = {
       materiel_sono:      TableDef<MaterielSono,    Omit<MaterielSono,    'id' | 'created_at' | 'updated_at'>, Partial<Omit<MaterielSono,    'id'>>>
       achats_planifies:   TableDef<AchatPlanifie,  Omit<AchatPlanifie,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<AchatPlanifie,  'id'>>>
       membres_son:        TableDef<MembreSon,      Omit<MembreSon,      'id' | 'created_at' | 'updated_at'>, Partial<Omit<MembreSon,      'id'>>>
+      membres_annonces:   TableDef<MembreAnnonce,  Omit<MembreAnnonce,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<MembreAnnonce,  'id'>>>
       planning_son:       TableDef<PlanningCulte,  Omit<PlanningCulte,  'id' | 'created_at' | 'updated_at'>, Partial<Omit<PlanningCulte,  'id'>>>
       notifications:      TableDef<Notification,   Omit<Notification,   'id' | 'created_at'>,               Partial<Pick<Notification,   'lu'>>>
     }
@@ -248,6 +264,7 @@ export type Database = {
       priorite_achat: PrioriteAchat
       statut_achat: StatutAchat
       role_son: RoleSon
+      role_annonce: RoleAnnonce
       statut_culte: StatutCulte
     }
     CompositeTypes: Record<string, never>

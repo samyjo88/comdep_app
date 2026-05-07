@@ -110,9 +110,11 @@ function CarteCulte({ culte }: { culte: CulteAvecAnnonce }) {
   const statut = statutAnnonce(culte)
   const { completes, total } = rubriquesCompletes(culte)
   const progression = completes / total
-  const btnLabel = statut === 'aucune' || statut === 'brouillon' ? 'Reprendre' : 'Consulter'
+  const btnLabel = statut === 'aucune' ? 'Commencer' : statut === 'brouillon' ? 'Reprendre' : 'Consulter'
   const href = statut === 'aucune'
     ? `/annonces/nouveau?culte=${culte.id}`
+    : statut === 'brouillon'
+    ? `/annonces/${culte.annonces?.[0]?.id ?? ''}/rubriques`
     : `/annonces/historique/${culte.annonces?.[0]?.id ?? ''}`
 
   return (
