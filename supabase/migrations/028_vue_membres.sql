@@ -17,6 +17,8 @@ FROM (
   FROM (
     SELECT prenom, nom, email, actif FROM public.membres_son
     UNION ALL
+    SELECT prenom, nom, email, actif FROM public.membres_captation
+    UNION ALL
     SELECT prenom, nom, email, actif FROM public.membres_cm
   ) tous
   ORDER BY lower(coalesce(email, prenom || ' ' || nom)), actif DESC
