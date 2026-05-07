@@ -31,11 +31,12 @@ export async function proxy(request: NextRequest) {
 
   const isPublic =
     pathname === "/" ||
+    pathname === "/login" ||
     pathname.startsWith("/api/cron");
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
