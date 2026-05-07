@@ -2,19 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { PlusCircle, Clock, RefreshCw, ChevronRight } from 'lucide-react'
+import { PlusCircle, Clock, RefreshCw, Users, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const TABS = [
   { label: 'Nouveau culte',    href: '/annonces/nouveau',    icon: PlusCircle },
   { label: 'Historique',       href: '/annonces/historique', icon: Clock },
   { label: 'Suivi reconduite', href: '/annonces/suivi',      icon: RefreshCw },
+  { label: 'Équipe',           href: '/annonces/equipe',     icon: Users },
 ] as const
 
 const PAGE_LABELS: Record<string, string> = {
   '/annonces/nouveau':    'Nouveau culte',
   '/annonces/historique': 'Historique',
   '/annonces/suivi':      'Suivi reconduite',
+  '/annonces/equipe':     'Équipe',
 }
 
 export function AnnoncesNavTabs() {
