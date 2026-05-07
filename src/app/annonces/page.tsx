@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { getCultes, archiverCultesPassés } from '@/lib/annonces'
+import { getCultesAvenir, getHistoriqueAnnonces, archiverCultesPassés } from '@/lib/annonces'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -89,22 +89,22 @@ async function getDashboardData() {
   // Archiver silencieusement les cultes dont la date est passée
   await archiverCultesPassés()
 
-  const { data: cultes } = await getCultes()
-  if (!cultes) return { derniers: [], prochain: null, alerteUrgente: null }
+  // Fetch both upcoming and past cultes with their annonces data
+  const [{ data: aVenirData }, { data: historiqueData }] = await Promise.all([
+    getCultesAvenir(),
+    getHistoriqueAnnonces(),
+  ])
+
+  const aVenir    = aVenirData    ?? []
+  const historique = historiqueData ?? []
 
   const today = new Date().toDateString()
-  const todayMs = new Date(today).getTime()
 
-  // Cultes à venir (date >= aujourd'hui, triés ascendant)
-  const aVenir = cultes
-    .filter(c => new Date(c.date_culte + 'T00:00:00').getTime() >= todayMs)
-    .sort((a, b) => a.date_culte.localeCompare(b.date_culte))
-
-  // 5 cultes les plus récents (passés + à venir, triés desc) pour la section "Derniers cultes"
-  const derniers = cultes.slice(0, 5)
+  // "Derniers cultes": up to 5 most recent (upcoming first, then past)
+  const derniers = [...aVenir, ...historique].slice(0, 5)
 
   // Alerte urgente : prochain culte dans ≤3 jours avec annonce non validée
-  const prochainCulte = (aVenir[0] ?? null) as CulteAvecAnnonce | null
+  const prochainCulte = aVenir[0] ?? null
   const joursAvant = prochainCulte
     ? Math.round((new Date(prochainCulte.date_culte + 'T00:00:00').getTime() - new Date(today).getTime()) / 86400000)
     : null
@@ -115,7 +115,7 @@ async function getDashboardData() {
       : null
 
   return {
-    derniers: derniers as CulteAvecAnnonce[],
+    derniers,
     prochain: prochainCulte,
     alerteUrgente,
   }
