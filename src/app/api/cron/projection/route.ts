@@ -12,6 +12,7 @@ import {
   dateToISO, formatDateFr,
   type NotifInput, type AnyRow,
 } from '@/lib/cron-notifications'
+import { sendNotificationEmails } from '@/lib/resend'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,16 +67,17 @@ export async function GET(req: NextRequest) {
   }
 
   for (const culte of (cultes ?? []) as AnyRow[]) {
-    const dateFr = formatDateFr(culte.date_culte as string)
-    const theme  = culte.theme ? ` — Thème : « ${culte.theme} »` : ''
+    const dateFr  = formatDateFr(culte.date_culte as string)
+    const theme   = culte.theme ? ` — Thème : « ${culte.theme} »` : ''
+    const titre   = `📽️ Rappel Projection — ${dateFr}`
+    const message = `Le culte du ${dateFr} approche.${theme} Vérifiez que la présentation Proclaim est complète et à jour.`
 
-    inputs.push({
-      emails:  emailsProj,   // fallback admins si vide
-      module:  'projection',
-      titre:   `📽️ Rappel Projection — ${dateFr}`,
-      message: `Le culte du ${dateFr} approche.${theme} Vérifiez que la présentation Proclaim est complète et à jour.`,
-      lien:    '/projection',
-    })
+    inputs.push({ emails: emailsProj, module: 'projection', titre, message, lien: '/projection' })
+
+    // E-mail en complément de la notification in-app (uniquement si email résolu)
+    if (emailsProj.length > 0) {
+      await sendNotificationEmails(emailsProj, titre, message, '/projection')
+    }
   }
 
   // ── 2. Setlist manquante à J-2 ────────────────────────────────────────────

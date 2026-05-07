@@ -12,6 +12,7 @@ import {
   dateToISO, formatDateFr,
   type NotifInput, type AnyRow,
 } from '@/lib/cron-notifications'
+import { sendNotificationEmails } from '@/lib/resend'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,18 +57,17 @@ export async function GET(req: NextRequest) {
   for (const mat of (materiel ?? []) as AnyRow[]) {
     const horsService = mat.statut === 'hors_service'
     const nomMat      = mat.marque ? `${mat.nom} (${mat.marque})` : String(mat.nom)
+    const titre = horsService
+      ? `🔴 Matériel hors service : ${mat.nom}`
+      : `🔧 Matériel en réparation : ${mat.nom}`
+    const message = horsService
+      ? `${nomMat} est marqué hors service. Vérifiez l'inventaire avant le prochain culte.`
+      : `${nomMat} est actuellement en cours de réparation.`
 
-    inputs.push({
-      emails:  emailsResponsables,
-      module:  'son',
-      titre:   horsService
-        ? `🔴 Matériel hors service : ${mat.nom}`
-        : `🔧 Matériel en réparation : ${mat.nom}`,
-      message: horsService
-        ? `${nomMat} est marqué hors service. Vérifiez l'inventaire avant le prochain culte.`
-        : `${nomMat} est actuellement en cours de réparation.`,
-      lien: '/sonorisation/materiel',
-    })
+    inputs.push({ emails: emailsResponsables, module: 'son', titre, message, lien: '/sonorisation/materiel' })
+
+    // E-mail en complément de la notification in-app
+    await sendNotificationEmails(emailsResponsables, titre, message, '/sonorisation/materiel')
   }
 
   // ── 2. Rappel 48h avant un culte planifié ─────────────────────────────
@@ -101,15 +101,14 @@ export async function GET(req: NextRequest) {
       .map((m: AnyRow) => m.email as string)
       .filter(Boolean)
 
-    const dateFr = formatDateFr(culte.date_culte as string)
+    const dateFr  = formatDateFr(culte.date_culte as string)
+    const titre   = `🔔 Rappel service son — ${dateFr}`
+    const message = `Tu es assigné(e) pour assurer la sonorisation du culte du ${dateFr}. Prépare ton matériel.`
 
-    inputs.push({
-      emails,
-      module:  'son',
-      titre:   `🔔 Rappel service son — ${dateFr}`,
-      message: `Tu es assigné(e) pour assurer la sonorisation du culte du ${dateFr}. Prépare ton matériel.`,
-      lien:    '/sonorisation/planning',
-    })
+    inputs.push({ emails, module: 'son', titre, message, lien: '/sonorisation/planning' })
+
+    // E-mail en complément de la notification in-app
+    await sendNotificationEmails(emails, titre, message, '/sonorisation/planning')
   }
 
   // ── Insertion avec déduplication ───────────────────────────────────────
