@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export interface ModifierCulteData {
   id:          string
@@ -13,8 +13,7 @@ export interface ModifierCulteData {
 export async function modifierCulte(
   data: ModifierCulteData,
 ): Promise<{ error?: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = await createClient() as any
+  const supabase = createAdminClient()
 
   const { error } = await supabase
     .from('cultes')
@@ -32,10 +31,9 @@ export async function modifierCulte(
 }
 
 export async function supprimerCulte(id: string): Promise<{ error?: string }> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = await createClient() as any
+  const supabase = createAdminClient()
 
-  // Supprimer les rubriques -> annonces -> culte (cascade si pas configuré en DB)
+  // Cascade: rubriques → annonces → culte (in case DB cascade isn't set)
   const { data: annonces } = await supabase
     .from('annonces')
     .select('id')
