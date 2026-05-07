@@ -54,6 +54,10 @@ export function AnnoncesBreadcrumb() {
 
   return (
     <div className="flex items-center gap-1 text-xs text-muted-foreground leading-none">
+      <Link href="/dashboard" className="hover:text-foreground transition-colors">
+        Dashboard
+      </Link>
+      <ChevronRight className="h-3 w-3 shrink-0" />
       <Link href="/annonces" className="hover:text-foreground transition-colors">
         Annonces
       </Link>

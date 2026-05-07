@@ -1,5 +1,6 @@
 import { Video } from 'lucide-react'
 import { CaptationNavTabs, CaptationBreadcrumb } from '@/components/captation/CaptationNavTabs'
+import { PageTransition } from '@/components/PageTransition'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function CaptationLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      <main>{children}</main>
+      <main><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }

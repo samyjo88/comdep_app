@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Plus, LayoutList, Columns3, Pencil, Trash2 } from 'lucide-react'
+import { Plus, LayoutList, Columns3, Pencil, Trash2, Search } from 'lucide-react'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE, STATUTS_POST } from '@/types/community'
 import { createPostAction, updatePostAction, deletePostAction, updateStatutPostAction } from './actions'
 import type { Post, MembreCM, Plateforme, StatutPost, TypeContenu } from '@/types/community'
@@ -468,15 +468,28 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
   const [, startTransition]               = useTransition()
   const [view,         setView]           = useState<View>('list')
   const [filterPlate,  setFilterPlate]    = useState<Plateforme | 'all'>('all')
+  const [search,       setSearch]         = useState('')
+  const [sort,         setSort]           = useState<'date-asc' | 'date-desc' | 'statut' | 'plateforme'>('date-asc')
   const [sheetOpen,    setSheetOpen]      = useState(false)
   const [editingPost,  setEditingPost]    = useState<Post | null>(null)
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   void membres // available for future assignee selection
 
-  const filtered = filterPlate === 'all'
-    ? posts
-    : posts.filter(p => p.plateforme === filterPlate)
+  const filtered = posts
+    .filter(p => filterPlate === 'all' || p.plateforme === filterPlate)
+    .filter(p => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return (p.titre ?? '').toLowerCase().includes(q) ||
+        (p.description ?? '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sort === 'date-desc') return (b.date_publication_prevue ?? '').localeCompare(a.date_publication_prevue ?? '')
+      if (sort === 'statut')    return a.statut.localeCompare(b.statut)
+      if (sort === 'plateforme')return a.plateforme.localeCompare(b.plateforme)
+      return (a.date_publication_prevue ?? '').localeCompare(b.date_publication_prevue ?? '')
+    })
 
   function refresh() {
     startTransition(() => router.refresh())
@@ -515,6 +528,31 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
   return (
     <div className="space-y-4">
       {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-3">
+        {/* Recherche + tri */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Rechercher un post…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <Select value={sort} onValueChange={v => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-8 w-44 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date-asc">Date ↑</SelectItem>
+              <SelectItem value="date-desc">Date ↓</SelectItem>
+              <SelectItem value="statut">Par statut</SelectItem>
+              <SelectItem value="plateforme">Par plateforme</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
         {/* Platform filter */}
@@ -589,6 +627,7 @@ export default function PostsClient({ posts, membres, planningId }: PostsClientP
             </SheetContent>
           </Sheet>
         </div>
+      </div>
       </div>
 
       {/* ── Count label ──────────────────────────────────────────────────────── */}

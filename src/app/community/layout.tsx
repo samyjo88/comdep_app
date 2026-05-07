@@ -1,4 +1,5 @@
 import { CommunityBreadcrumb, CommunityNavTabs } from '@/components/community/CommunityNavTabs'
+import { PageTransition } from '@/components/PageTransition'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default function CommunityLayout({ children }: { children: React.ReactNod
         </div>
       </div>
 
-      <main>{children}</main>
+      <main><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }

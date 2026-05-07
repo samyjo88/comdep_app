@@ -20,8 +20,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ComDept Église",
+  title: {
+    template: '%s – ComDept',
+    default:  'ComDept – Gestion de la communication',
+  },
   description: "Gestion du département de communication de l'église",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

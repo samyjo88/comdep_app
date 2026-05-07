@@ -4,7 +4,7 @@ import { ProfilClient }    from './ProfilClient'
 import type { Metadata }   from 'next'
 import type { AppRole }    from '@/lib/supabase/types'
 
-export const metadata: Metadata = { title: 'Mon profil – ComDept' }
+export const metadata: Metadata = { title: 'Mon profil' }
 
 // ── Détection des modules ──────────────────────────────────────────────────
 

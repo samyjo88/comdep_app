@@ -1,5 +1,6 @@
 import { Volume2 } from 'lucide-react'
 import { SonoBreadcrumb, SonoNavTabs } from '@/components/sonorisation/SonoNavTabs'
+import { PageTransition } from '@/components/PageTransition'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -38,7 +39,7 @@ export default function SonorisationLayout({
       </div>
 
       {/* Contenu de la page */}
-      <main>{children}</main>
+      <main><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }

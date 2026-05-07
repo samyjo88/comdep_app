@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Plus, Lightbulb } from 'lucide-react'
+import { Plus, Lightbulb, Search } from 'lucide-react'
 import { PLATEFORMES_CONFIG, PLATEFORMES_BY_CODE } from '@/types/community'
 import { createIdeaAction, updateIdeaStatutAction } from './actions'
 import type { IdeaContenu, Plateforme, PrioritéIdee } from '@/types/community'
@@ -161,8 +161,10 @@ function IdeaForm({ onDone }: { onDone: () => void }) {
 export default function IdeesClient({ idees }: { idees: IdeaContenu[] }) {
   const router              = useRouter()
   const [, startTransition] = useTransition()
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const [sheetOpen, setSheetOpen]       = useState(false)
   const [filterStatut, setFilterStatut] = useState<string>('all')
+  const [search, setSearch]             = useState('')
+  const [sort, setSort]                 = useState<'date-desc' | 'priorite' | 'statut'>('date-desc')
 
   function refresh() { startTransition(() => router.refresh()) }
 
@@ -174,12 +176,47 @@ export default function IdeesClient({ idees }: { idees: IdeaContenu[] }) {
     refresh()
   }
 
-  const filtered = filterStatut === 'all'
-    ? idees
-    : idees.filter(i => i.statut === filterStatut)
+  const PRIORITE_ORDER: Record<string, number> = { urgente: 0, haute: 1, normale: 2, basse: 3 }
+
+  const filtered = idees
+    .filter(i => filterStatut === 'all' || i.statut === filterStatut)
+    .filter(i => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return i.titre.toLowerCase().includes(q) ||
+        (i.description ?? '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sort === 'priorite') return (PRIORITE_ORDER[a.priorite] ?? 2) - (PRIORITE_ORDER[b.priorite] ?? 2)
+      if (sort === 'statut')   return a.statut.localeCompare(b.statut)
+      return (b.created_at ?? '').localeCompare(a.created_at ?? '')
+    })
 
   return (
     <div className="space-y-4">
+      {/* Recherche + tri */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            placeholder="Rechercher une idée…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-8 h-8 text-sm"
+          />
+        </div>
+        <Select value={sort} onValueChange={v => setSort(v as typeof sort)}>
+          <SelectTrigger className="h-8 w-44 text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date-desc">Plus récentes</SelectItem>
+            <SelectItem value="priorite">Par priorité</SelectItem>
+            <SelectItem value="statut">Par statut</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-1.5">

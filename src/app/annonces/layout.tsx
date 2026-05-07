@@ -1,5 +1,6 @@
 import { Megaphone } from 'lucide-react'
 import { AnnoncesNavTabs, AnnoncesBreadcrumb } from '@/components/annonces/AnnoncesNavTabs'
+import { PageTransition } from '@/components/PageTransition'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function AnnoncesLayout({ children }: { children: React.ReactNode
         </div>
       </div>
 
-      <main>{children}</main>
+      <main><PageTransition>{children}</PageTransition></main>
     </div>
   )
 }

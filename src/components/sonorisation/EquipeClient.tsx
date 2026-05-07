@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users } from 'lucide-react'
+import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
@@ -359,14 +359,28 @@ type Filtre = 'tous' | 'actifs' | 'inactifs'
 
 export function EquipeClient({ membres }: { membres: MembreSon[] }) {
   const [filtre, setFiltre]                   = useState<Filtre>('actifs')
+  const [search, setSearch]                   = useState('')
+  const [sort, setSort]                       = useState<'nom-az' | 'nom-za' | 'role'>('nom-az')
   const [modalOpen, setModalOpen]             = useState(false)
   const [membreEnEdition, setMembreEnEdition] = useState<MembreSon | null>(null)
 
-  const membresFiltres = membres.filter(m => {
-    if (filtre === 'actifs')   return m.actif
-    if (filtre === 'inactifs') return !m.actif
-    return true
-  })
+  const membresFiltres = membres
+    .filter(m => {
+      if (filtre === 'actifs')   return m.actif
+      if (filtre === 'inactifs') return !m.actif
+      return true
+    })
+    .filter(m => {
+      if (!search.trim()) return true
+      const q = search.toLowerCase()
+      return `${m.prenom} ${m.nom}`.toLowerCase().includes(q) ||
+        (m.email ?? '').toLowerCase().includes(q)
+    })
+    .sort((a, b) => {
+      if (sort === 'nom-za') return `${b.nom} ${b.prenom}`.localeCompare(`${a.nom} ${a.prenom}`, 'fr')
+      if (sort === 'role')   return a.role.localeCompare(b.role, 'fr')
+      return `${a.nom} ${a.prenom}`.localeCompare(`${b.nom} ${b.prenom}`, 'fr')
+    })
 
   const stats = {
     actifs:       membres.filter(m => m.actif).length,
@@ -386,35 +400,60 @@ export function EquipeClient({ membres }: { membres: MembreSon[] }) {
 
   return (
     <div className="space-y-6">
-      {/* Filtre + bouton */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-1 bg-muted rounded-lg p-1 self-start overflow-x-auto">
-          {filtres.map(f => (
-            <button
-              key={f.value}
-              onClick={() => setFiltre(f.value)}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap min-h-[36px]',
-                filtre === f.value
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {f.label}
-              <span className={cn(
-                'text-xs px-1.5 py-0.5 rounded-full tabular-nums',
-                filtre === f.value ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/60',
-              )}>
-                {f.count}
-              </span>
-            </button>
-          ))}
+      {/* Recherche + tri + bouton */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Rechercher un membre…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-9 text-sm"
+            />
+          </div>
+          <Select value={sort} onValueChange={v => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-9 w-44 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nom-az">Nom A → Z</SelectItem>
+              <SelectItem value="nom-za">Nom Z → A</SelectItem>
+              <SelectItem value="role">Par rôle</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto min-h-[44px]">
-          <Plus className="h-4 w-4" />
-          Ajouter un membre
-        </Button>
+        {/* Filtre + bouton */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-1 bg-muted rounded-lg p-1 self-start overflow-x-auto">
+            {filtres.map(f => (
+              <button
+                key={f.value}
+                onClick={() => setFiltre(f.value)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap min-h-[36px]',
+                  filtre === f.value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {f.label}
+                <span className={cn(
+                  'text-xs px-1.5 py-0.5 rounded-full tabular-nums',
+                  filtre === f.value ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/60',
+                )}>
+                  {f.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <Button onClick={openAdd} size="sm" className="gap-1.5 self-start sm:self-auto min-h-[44px]">
+            <Plus className="h-4 w-4" />
+            Ajouter un membre
+          </Button>
+        </div>
       </div>
 
       {/* Grille */}

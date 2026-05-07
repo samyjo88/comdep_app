@@ -29,8 +29,12 @@ export function CommunityBreadcrumb() {
 
   return (
     <div className="flex items-center gap-1 text-xs text-muted-foreground leading-none">
+      <Link href="/dashboard" className="hover:text-foreground transition-colors">
+        Dashboard
+      </Link>
+      <ChevronRight className="h-3 w-3 shrink-0" />
       <Link href="/community" className="hover:text-foreground transition-colors">
-        Community Management
+        Community
       </Link>
       {label && !isRoot && (
         <>
