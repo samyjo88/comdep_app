@@ -21,6 +21,7 @@ export async function updateCantiqueAction(id: string, payload: CantiquePayload)
   const { error } = await supabase.from('cantiques').update(payload).eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/projection/cantiques')
+  revalidatePath(`/projection/cantiques/${id}`)
   return {}
 }
 
