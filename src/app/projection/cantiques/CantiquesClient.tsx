@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useTransition, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,8 @@ import {
   ListPlus, ChevronDown, FileAudio, FileText, Loader2, X, Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { createCantiqueAction, updateCantiqueAction, deleteCantiqueAction } from './actions'
+import { createCantiqueAction, updateCantiqueAction, deleteCantiqueAction, searchCantiquesAction } from './actions'
+import { ImportCSVModal } from '@/components/projection/ImportCSVModal'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -241,17 +242,40 @@ function FreqBar({ count, max }: { count: number; max: number }) {
   )
 }
 
+// ── Highlight ──────────────────────────────────────────────────────────────
+
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function Highlight({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <>{text}</>
+  const words = query.trim().split(/\s+/).filter(Boolean).map(escapeRegex)
+  const regex = new RegExp(`(${words.join('|')})`, 'gi')
+  const parts = text.split(regex)
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <mark key={i} className="bg-yellow-100 dark:bg-yellow-900/40 text-inherit rounded-sm px-0.5 not-italic">{part}</mark>
+          : <span key={i}>{part}</span>
+      )}
+    </>
+  )
+}
+
 // ── GadCard ────────────────────────────────────────────────────────────────
 
 function GadCard({
-  c, maxUtil,
+  c, maxUtil, highlightQuery,
   onParoles, onEdit, onSetlist,
 }: {
-  c:         Cantique
-  maxUtil:   number
-  onParoles: () => void
-  onEdit:    () => void
-  onSetlist: () => void
+  c:              Cantique
+  maxUtil:        number
+  highlightQuery: string
+  onParoles:      () => void
+  onEdit:         () => void
+  onSetlist:      () => void
 }) {
   return (
     <Card className={cn('flex flex-col gap-0', !c.actif && 'opacity-60')}>
@@ -272,9 +296,13 @@ function GadCard({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-base leading-tight">{c.titre}</p>
+            <p className="font-bold text-base leading-tight">
+              <Highlight text={c.titre} query={highlightQuery} />
+            </p>
             {c.auteur_compositeur && (
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">{c.auteur_compositeur}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                <Highlight text={c.auteur_compositeur} query={highlightQuery} />
+              </p>
             )}
           </div>
           {!c.actif && (
@@ -374,14 +402,15 @@ function GadCard({
 // ── ChoraleCard ────────────────────────────────────────────────────────────
 
 function ChoraleCard({
-  c, maxUtil,
+  c, maxUtil, highlightQuery,
   onParoles, onEdit, onSetlist,
 }: {
-  c:         Cantique
-  maxUtil:   number
-  onParoles: () => void
-  onEdit:    () => void
-  onSetlist: () => void
+  c:              Cantique
+  maxUtil:        number
+  highlightQuery: string
+  onParoles:      () => void
+  onEdit:         () => void
+  onSetlist:      () => void
 }) {
   return (
     <Card className={cn('flex flex-col gap-0', !c.actif && 'opacity-60')}>
@@ -397,12 +426,16 @@ function ChoraleCard({
             </Badge>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-bold text-base leading-tight">{c.titre}</p>
+            <p className="font-bold text-base leading-tight">
+              <Highlight text={c.titre} query={highlightQuery} />
+            </p>
             {c.sous_titre && (
               <p className="text-xs text-muted-foreground mt-0.5 truncate italic">{c.sous_titre}</p>
             )}
             {c.auteur_compositeur && (
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">{c.auteur_compositeur}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                <Highlight text={c.auteur_compositeur} query={highlightQuery} />
+              </p>
             )}
           </div>
           <div className="flex flex-col items-end gap-1 shrink-0">
@@ -920,59 +953,6 @@ function CantiquesForm({
   )
 }
 
-// ── ImportCsvSheet ─────────────────────────────────────────────────────────
-
-function ImportCsvSheet({
-  open,
-  onClose,
-}: {
-  open:    boolean
-  onClose: () => void
-}) {
-  const [csv, setCsv] = useState('')
-
-  return (
-    <Sheet open={open} onOpenChange={o => { if (!o) onClose() }}>
-      <SheetContent className="w-full sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>Importer des cantiques (CSV)</SheetTitle>
-          <SheetDescription>
-            Collez votre CSV avec les colonnes :<br />
-            <code className="text-xs bg-muted px-1 rounded">
-              categorie, numero_gad, titre, auteur_compositeur, tonalite, tempo
-            </code>
-          </SheetDescription>
-        </SheetHeader>
-        <SheetBody className="space-y-4">
-          <Textarea
-            value={csv}
-            onChange={e => setCsv(e.target.value)}
-            placeholder={'categorie,numero_gad,titre,auteur,tonalite\ngad,245,Mon cantique,Jean Dupont,Do'}
-            rows={12}
-            className="text-xs font-mono resize-y"
-          />
-          <p className="text-xs text-muted-foreground">
-            La première ligne doit être l&apos;en-tête. Les champs manquants seront ignorés.
-          </p>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={onClose}>
-              Annuler
-            </Button>
-            <Button
-              className="flex-1 gap-1.5"
-              disabled={!csv.trim()}
-              onClick={() => toast.info('Import CSV — fonctionnalité à venir')}
-            >
-              <Download className="h-3.5 w-3.5" />
-              Importer
-            </Button>
-          </div>
-        </SheetBody>
-      </SheetContent>
-    </Sheet>
-  )
-}
-
 // ── CantiquesClient ────────────────────────────────────────────────────────
 
 export default function CantiquesClient({
@@ -988,8 +968,13 @@ export default function CantiquesClient({
   // Tabs
   const [activeTab, setActiveTab] = useState<'gad' | 'chorale'>('gad')
 
-  // Search + sort
-  const [search,      setSearch]      = useState('')
+  // Search — immediate display value + debounced server query
+  const [search,        setSearch]        = useState('')
+  const [isSearching,   setIsSearching]   = useState(false)
+  const [searchResults, setSearchResults] = useState<{ gad: Cantique[]; chorale: Cantique[] } | null>(null)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Sort
   const [sortGad,     setSortGad]     = useState<SortGad>('numero')
   const [sortChorale, setSortChorale] = useState<SortChorale>('titre')
 
@@ -1016,6 +1001,32 @@ export default function CantiquesClient({
 
   function refresh() { startTransition(() => router.refresh()) }
 
+  // Debounced server search (400 ms)
+  useEffect(() => {
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+
+    const q = search.trim()
+    if (!q) {
+      setSearchResults(null)
+      setIsSearching(false)
+      return
+    }
+
+    setIsSearching(true)
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const results = await searchCantiquesAction(q)
+        setSearchResults(results as { gad: Cantique[]; chorale: Cantique[] })
+      } catch {
+        setSearchResults(null)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 400)
+
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current) }
+  }, [search])
+
   function handleAddSetlist(c: Cantique) {
     toast.info(`Ajout de « ${c.titre} » à une setlist — disponible depuis la page Setlists`)
   }
@@ -1032,17 +1043,13 @@ export default function CantiquesClient({
 
   // ── Filtered & sorted lists ──────────────────────────────────────────────
 
+  // Base lists: use server search results when active, else initial data
+  const baseGad    = searchResults ? searchResults.gad    : gad
+  const baseChorale = searchResults ? searchResults.chorale : chorale
+
   const filteredGad = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return gad
+    return baseGad
       .filter(c => {
-        if (q) {
-          const hit = c.titre.toLowerCase().includes(q) ||
-            (c.numero_gad ?? '').toLowerCase().includes(q) ||
-            (c.auteur_compositeur ?? '').toLowerCase().includes(q) ||
-            (c.paroles ?? '').toLowerCase().includes(q)
-          if (!hit) return false
-        }
         if (momentGad !== 'all' && !c.moment_culte?.includes(momentGad)) return false
         if (tonalite.length > 0 && !tonalite.includes(c.tonalite ?? '')) return false
         if (tempo !== 'all' && c.tempo !== tempo) return false
@@ -1050,34 +1057,30 @@ export default function CantiquesClient({
         return true
       })
       .sort((a, b) => {
-        if (sortGad === 'numero')     return sortNumeroGad(a.numero_gad, b.numero_gad)
+        // When search is active, preserve server relevance order
+        if (searchResults) return 0
+        if (sortGad === 'numero')      return sortNumeroGad(a.numero_gad, b.numero_gad)
         if (sortGad === 'utilisation') return b.nb_utilisations - a.nb_utilisations
-        if (sortGad === 'date')       return b.created_at.localeCompare(a.created_at)
+        if (sortGad === 'date')        return b.created_at.localeCompare(a.created_at)
         return a.titre.localeCompare(b.titre, 'fr')
       })
-  }, [gad, search, momentGad, tonalite, tempo, themes, sortGad])
+  }, [baseGad, momentGad, tonalite, tempo, themes, sortGad, searchResults])
 
   const filteredChorale = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    return chorale
+    return baseChorale
       .filter(c => {
-        if (q) {
-          const hit = c.titre.toLowerCase().includes(q) ||
-            (c.auteur_compositeur ?? '').toLowerCase().includes(q) ||
-            (c.paroles ?? '').toLowerCase().includes(q)
-          if (!hit) return false
-        }
         if (momentChorale !== 'all' && !c.moment_culte?.includes(momentChorale)) return false
         if (difficulte !== 'all' && c.difficulte !== difficulte) return false
         if (occasion.length > 0 && !occasion.some(o => c.occasion?.includes(o))) return false
         return true
       })
       .sort((a, b) => {
+        if (searchResults) return 0
         if (sortChorale === 'utilisation') return b.nb_utilisations - a.nb_utilisations
-        if (sortChorale === 'date')       return b.created_at.localeCompare(a.created_at)
+        if (sortChorale === 'date')        return b.created_at.localeCompare(a.created_at)
         return a.titre.localeCompare(b.titre, 'fr')
       })
-  }, [chorale, search, momentChorale, difficulte, occasion, sortChorale])
+  }, [baseChorale, momentChorale, difficulte, occasion, sortChorale, searchResults])
 
   const maxUtilGad    = useMemo(() => Math.max(1, ...gad.map(c => c.nb_utilisations)), [gad])
   const maxUtilChorale = useMemo(() => Math.max(1, ...chorale.map(c => c.nb_utilisations)), [chorale])
@@ -1150,13 +1153,16 @@ export default function CantiquesClient({
       {/* ── Barre de recherche + tri ──────────────────────────────────── */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          {isSearching
+            ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin pointer-events-none" />
+            : <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          }
           <Input
             value={search}
             onChange={e => { setSearch(e.target.value); setLimitGad(PAGE_SIZE); setLimitChorale(PAGE_SIZE) }}
             placeholder={
               activeTab === 'gad'
-                ? 'Chercher par titre, numéro, auteur ou paroles…'
+                ? 'Chercher par titre, numéro, auteur ou paroles… (PostgreSQL full-text)'
                 : 'Chercher par titre, auteur ou paroles…'
             }
             className="pl-9 h-9"
@@ -1164,7 +1170,7 @@ export default function CantiquesClient({
           {search && (
             <button
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              onClick={() => setSearch('')}
+              onClick={() => { setSearch(''); setSearchResults(null) }}
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -1283,6 +1289,7 @@ export default function CantiquesClient({
                   key={c.id}
                   c={c}
                   maxUtil={maxUtilGad}
+                  highlightQuery={search}
                   onParoles={() => setParolesOf(c)}
                   onEdit={() => { setEditOf(c); setIsAdding(true) }}
                   onSetlist={() => handleAddSetlist(c)}
@@ -1322,6 +1329,7 @@ export default function CantiquesClient({
                   key={c.id}
                   c={c}
                   maxUtil={maxUtilChorale}
+                  highlightQuery={search}
                   onParoles={() => setParolesOf(c)}
                   onEdit={() => { setEditOf(c); setIsAdding(true) }}
                   onSetlist={() => handleAddSetlist(c)}
@@ -1389,10 +1397,11 @@ export default function CantiquesClient({
         </SheetContent>
       </Sheet>
 
-      {/* ── Import CSV Sheet ──────────────────────────────────────────── */}
-      <ImportCsvSheet
+      {/* ── Import CSV Modal ──────────────────────────────────────────── */}
+      <ImportCSVModal
         open={isImporting}
-        onClose={() => setIsImporting(false)}
+        onOpenChange={setIsImporting}
+        onSuccess={refresh}
       />
 
     </div>
