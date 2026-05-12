@@ -51,7 +51,7 @@ export async function genererTexteRubrique(
   const userMessage  = buildUserMessage(codeRubrique, donnees, annoncePrecedente)
 
   const response = await anthropic.messages.create({
-    model:      'claude-sonnet-4-5',
+    model:      'claude-sonnet-4-6',
     max_tokens: 800,
     system: [
       {
