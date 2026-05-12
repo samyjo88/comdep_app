@@ -989,8 +989,8 @@ async function PageContent() {
             info={d.sonoInfo} primary
           />
           <CarteModule
-            icon={Monitor} label="Projection / Proclaim" href="#"
-            iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 opacity-50 pointer-events-none"
+            icon={Monitor} label="Projection / Proclaim" href="/projection"
+            iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
             info={d.projInfo}
           />
           <CarteModule
