@@ -1,6 +1,7 @@
 import { createClient }          from '@/lib/supabase/server'
 import { sendNotificationEmails } from '@/lib/resend'
 import { capitalize, formatDateLong } from '@/lib/utils'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>
@@ -11,6 +12,9 @@ const STATUT_LABEL: Record<string, string> = {
 }
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   try {
     const body    = await request.json() as { culte_id?: string }
     const culteId = body.culte_id

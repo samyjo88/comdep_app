@@ -1,10 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   try {
     const { setlist_id, culte_id_cible, titre_setlist } = (await request.json()) as {
       setlist_id:      string

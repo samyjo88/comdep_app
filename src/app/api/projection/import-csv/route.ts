@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireAuth, unauthorizedResponse } from '@/lib/api-auth'
 
 // ── CSV helpers ────────────────────────────────────────────────────────────
 
@@ -79,6 +80,9 @@ function rowToCantique(headers: string[], row: string[], defaultCategorie: strin
 // ── Route handler ──────────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
+  const { unauthorized } = await requireAuth()
+  if (unauthorized) return unauthorizedResponse()
+
   try {
     const { csv, defaultCategorie = 'gad' } = (await request.json()) as {
       csv:               string
