@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner'
 import {
   Search, Plus, Download, Music, Users, Pencil, BookOpen,
-  ListPlus, ChevronDown, FileAudio, FileText, Loader2, X, Trash2,
+  ListPlus, ChevronDown, FileAudio, FileText, Loader2, X, Trash2, SlidersHorizontal,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createCantiqueAction, updateCantiqueAction, deleteCantiqueAction, searchCantiquesAction } from './actions'
@@ -369,28 +369,28 @@ function GadCard({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 flex-1 min-w-0"
+            className="h-11 sm:h-7 text-xs gap-1 flex-1 min-w-0"
             onClick={onParoles}
             disabled={!c.paroles}
           >
-            <BookOpen className="h-3 w-3 shrink-0" />
+            <BookOpen className="h-3.5 w-3.5 sm:h-3 sm:w-3 shrink-0" />
             <span className="truncate">Paroles</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 px-2"
+            className="h-11 w-11 sm:h-7 sm:w-7 p-0"
             onClick={onEdit}
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 flex-1 min-w-0"
+            className="h-11 sm:h-7 text-xs gap-1 flex-1 min-w-0"
             onClick={onSetlist}
           >
-            <ListPlus className="h-3 w-3 shrink-0" />
+            <ListPlus className="h-3.5 w-3.5 sm:h-3 sm:w-3 shrink-0" />
             <span className="truncate">Setlist</span>
           </Button>
         </div>
@@ -508,28 +508,28 @@ function ChoraleCard({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 flex-1 min-w-0"
+            className="h-11 sm:h-7 text-xs gap-1 flex-1 min-w-0"
             onClick={onParoles}
             disabled={!c.paroles}
           >
-            <BookOpen className="h-3 w-3 shrink-0" />
+            <BookOpen className="h-3.5 w-3.5 sm:h-3 sm:w-3 shrink-0" />
             <span className="truncate">Paroles</span>
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 px-2"
+            className="h-11 w-11 sm:h-7 sm:w-7 p-0"
             onClick={onEdit}
           >
-            <Pencil className="h-3 w-3" />
+            <Pencil className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-xs gap-1 flex-1 min-w-0"
+            className="h-11 sm:h-7 text-xs gap-1 flex-1 min-w-0"
             onClick={onSetlist}
           >
-            <ListPlus className="h-3 w-3 shrink-0" />
+            <ListPlus className="h-3.5 w-3.5 sm:h-3 sm:w-3 shrink-0" />
             <span className="truncate">Setlist</span>
           </Button>
         </div>
@@ -994,10 +994,11 @@ export default function CantiquesClient({
   const [occasion,      setOccasion]      = useState<string[]>([])
 
   // Sheets
-  const [parolesOf,   setParolesOf]   = useState<Cantique | null>(null)
-  const [editOf,      setEditOf]      = useState<Cantique | null>(null)
-  const [isAdding,    setIsAdding]    = useState(false)
-  const [isImporting, setIsImporting] = useState(false)
+  const [parolesOf,       setParolesOf]       = useState<Cantique | null>(null)
+  const [editOf,          setEditOf]          = useState<Cantique | null>(null)
+  const [isAdding,        setIsAdding]        = useState(false)
+  const [isImporting,     setIsImporting]     = useState(false)
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   function refresh() { startTransition(() => router.refresh()) }
 
@@ -1151,7 +1152,7 @@ export default function CantiquesClient({
       </div>
 
       {/* ── Barre de recherche + tri ──────────────────────────────────── */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex gap-2">
         <div className="relative flex-1">
           {isSearching
             ? <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary animate-spin pointer-events-none" />
@@ -1162,8 +1163,8 @@ export default function CantiquesClient({
             onChange={e => { setSearch(e.target.value); setLimitGad(PAGE_SIZE); setLimitChorale(PAGE_SIZE) }}
             placeholder={
               activeTab === 'gad'
-                ? 'Chercher par titre, numéro, auteur ou paroles… (PostgreSQL full-text)'
-                : 'Chercher par titre, auteur ou paroles…'
+                ? 'Chercher par titre, numéro, auteur…'
+                : 'Chercher par titre, auteur…'
             }
             className="pl-9 h-9"
           />
@@ -1176,6 +1177,30 @@ export default function CantiquesClient({
             </button>
           )}
         </div>
+
+        {/* Filters button — mobile only */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="sm:hidden h-9 gap-1.5 shrink-0"
+          onClick={() => setShowMobileFilters(true)}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filtres
+          {(
+            (activeTab === 'gad'
+              ? (momentGad !== 'all' ? 1 : 0) + tonalite.length + themes.length + (tempo !== 'all' ? 1 : 0)
+              : (momentChorale !== 'all' ? 1 : 0) + occasion.length + (difficulte !== 'all' ? 1 : 0))
+          ) > 0 && (
+            <span className="inline-flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+              {activeTab === 'gad'
+                ? (momentGad !== 'all' ? 1 : 0) + tonalite.length + themes.length + (tempo !== 'all' ? 1 : 0)
+                : (momentChorale !== 'all' ? 1 : 0) + occasion.length + (difficulte !== 'all' ? 1 : 0)
+              }
+            </span>
+          )}
+        </Button>
+
         <Select
           value={activeTab === 'gad' ? sortGad : sortChorale}
           onValueChange={v => activeTab === 'gad'
@@ -1183,7 +1208,7 @@ export default function CantiquesClient({
             : setSortChorale(v as SortChorale)
           }
         >
-          <SelectTrigger className="h-9 w-44 text-xs shrink-0">
+          <SelectTrigger className="h-9 w-36 sm:w-44 text-xs shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -1196,9 +1221,9 @@ export default function CantiquesClient({
         </Select>
       </div>
 
-      {/* ── Filtres spécifiques à l'onglet ───────────────────────────── */}
+      {/* ── Filtres spécifiques à l'onglet — desktop only ────────────── */}
       {activeTab === 'gad' ? (
-        <div className="flex flex-col gap-2.5">
+        <div className="hidden sm:flex flex-col gap-2.5">
           <ChipsFilter
             options={MOMENTS_CULTE}
             value={momentGad}
@@ -1233,7 +1258,7 @@ export default function CantiquesClient({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div className="hidden sm:flex flex-col gap-2.5">
           <ChipsFilter
             options={MOMENTS_CULTE}
             value={momentChorale}
@@ -1262,6 +1287,117 @@ export default function CantiquesClient({
           </div>
         </div>
       )}
+
+      {/* ── Mobile filters sheet ──────────────────────────────────────── */}
+      <Sheet open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+        <SheetContent className="max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-base">Filtres</SheetTitle>
+          </SheetHeader>
+          <SheetBody className="space-y-4 pb-6">
+            {activeTab === 'gad' ? (
+              <>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Moment du culte</p>
+                  <ChipsFilter
+                    options={MOMENTS_CULTE}
+                    value={momentGad}
+                    onChange={v => { setMomentGad(v); setLimitGad(PAGE_SIZE) }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tempo</p>
+                  <div className="flex items-center gap-1.5">
+                    {TEMPOS.map(t => (
+                      <Button
+                        key={t.value}
+                        size="sm"
+                        variant={tempo === t.value ? 'default' : 'outline'}
+                        className="h-9 px-3 text-xs"
+                        onClick={() => { setTempo(tempo === t.value ? 'all' : t.value); setLimitGad(PAGE_SIZE) }}
+                      >
+                        {t.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Tonalité</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TONALITES.map(t => (
+                      <button
+                        key={t}
+                        onClick={() => { setTonalite(tonalite.includes(t) ? tonalite.filter(x => x !== t) : [...tonalite, t]); setLimitGad(PAGE_SIZE) }}
+                        className={cn(
+                          'text-xs px-2.5 py-1 rounded-full border transition-colors',
+                          tonalite.includes(t) ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Moment du culte</p>
+                  <ChipsFilter
+                    options={MOMENTS_CULTE}
+                    value={momentChorale}
+                    onChange={v => { setMomentChorale(v); setLimitChorale(PAGE_SIZE) }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Difficulté</p>
+                  <div className="flex items-center gap-1.5">
+                    {DIFFICULTES.map(d => (
+                      <Button
+                        key={d.value}
+                        size="sm"
+                        variant={difficulte === d.value ? 'default' : 'outline'}
+                        className="h-9 px-3 text-xs"
+                        onClick={() => { setDifficulte(difficulte === d.value ? 'all' : d.value); setLimitChorale(PAGE_SIZE) }}
+                      >
+                        {d.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Occasion</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {OCCASIONS.map(o => (
+                      <button
+                        key={o.value}
+                        onClick={() => { setOccasion(occasion.includes(o.value) ? occasion.filter(x => x !== o.value) : [...occasion, o.value]); setLimitChorale(PAGE_SIZE) }}
+                        className={cn(
+                          'text-xs px-2.5 py-1 rounded-full border transition-colors',
+                          occasion.includes(o.value) ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'
+                        )}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+            <Button
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => {
+                setMomentGad('all'); setTonalite([]); setTempo('all'); setThemes([])
+                setMomentChorale('all'); setDifficulte('all'); setOccasion([])
+                setShowMobileFilters(false)
+              }}
+            >
+              Réinitialiser les filtres
+            </Button>
+          </SheetBody>
+        </SheetContent>
+      </Sheet>
 
       {/* ── Compteur ─────────────────────────────────────────────────── */}
       <p className="text-xs text-muted-foreground">

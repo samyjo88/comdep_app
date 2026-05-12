@@ -16,8 +16,10 @@ import {
 import {
   ArrowLeft, GripVertical, Plus, Trash2, Save, Eye,
   CheckCircle2, Loader2, Music2, Mic2, Star, Search,
-  Check, AlertCircle,
+  Check, AlertCircle, BookOpenText,
 } from 'lucide-react'
+import { toast } from 'sonner'
+import { capitalize, formatDateLong } from '@/lib/utils'
 import {
   addSetlistItemAction,
   removeSetlistItemAction,
@@ -25,8 +27,6 @@ import {
   updateSetlistItemAction,
   updateSetlistStatusAction,
 } from './actions'
-
-// ── Types ────────────────────────────────────────────────────────────────────
 
 export type LibCantique = {
   id:              string
@@ -63,8 +63,6 @@ export type SetlistFull = {
   setlist_items: SetlistItemFull[]
 }
 
-// ── Constants ────────────────────────────────────────────────────────────────
-
 const MOMENTS_CULTE = [
   { value: 'adoration',  label: 'Adoration' },
   { value: 'louange',    label: 'Louange' },
@@ -84,20 +82,6 @@ const STATUT_CONFIG = {
   valide:    { label: 'Validée',   badge: 'bg-blue-50 text-blue-700 border-blue-200' },
   utilise:   { label: 'Utilisée',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
-// ── LibCantiqueRow ───────────────────────────────────────────────────────────
 
 function LibCantiqueRow({
   cantique,
@@ -122,9 +106,7 @@ function LibCantiqueRow({
     >
       <span
         className={`shrink-0 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${
-          isGad
-            ? 'bg-blue-100 text-blue-700'
-            : 'bg-amber-100 text-amber-700'
+          isGad ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
         }`}
       >
         {isGad ? (cantique.numero_gad ?? 'GAD') : '🎤'}
@@ -143,11 +125,11 @@ function LibCantiqueRow({
         <button
           onClick={() => onAdd(cantique)}
           disabled={adding}
-          className="shrink-0 h-7 w-7 flex items-center justify-center rounded-md border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors disabled:opacity-50"
+          className="shrink-0 h-11 w-11 md:h-7 md:w-7 flex items-center justify-center rounded-md border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors disabled:opacity-50"
         >
           {adding
             ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            : <Plus className="h-3.5 w-3.5" />
+            : <Plus className="h-4 w-4 md:h-3.5 md:w-3.5" />
           }
         </button>
       )}
@@ -155,13 +137,12 @@ function LibCantiqueRow({
   )
 }
 
-// ── SetlistItemRow ───────────────────────────────────────────────────────────
-
 function SetlistItemRow({
   item,
   index,
   dragHandleProps,
   removing,
+  flash,
   onRemove,
   onFieldChange,
 }: {
@@ -170,6 +151,7 @@ function SetlistItemRow({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dragHandleProps: any
   removing:        boolean
+  flash:           boolean
   onRemove:        (id: string) => void
   onFieldChange:   (id: string, field: string, value: string | null) => void
 }) {
@@ -177,9 +159,11 @@ function SetlistItemRow({
   const isGad = c?.categorie === 'gad'
 
   return (
-    <div className="flex items-start gap-2 px-3 py-3 bg-card rounded-lg border">
-
-      {/* Drag handle */}
+    <div
+      className={`flex items-start gap-2 px-3 py-3 bg-card rounded-lg border transition-all duration-500 ${
+        flash ? 'ring-2 ring-green-400 bg-green-50 dark:bg-green-950/20' : ''
+      } ${removing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+    >
       <div
         {...dragHandleProps}
         className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground/50 hover:text-muted-foreground transition-colors"
@@ -187,21 +171,15 @@ function SetlistItemRow({
         <GripVertical className="h-4 w-4" />
       </div>
 
-      {/* Position number */}
       <span className="mt-0.5 text-xs font-mono text-muted-foreground w-5 shrink-0 text-right">
         #{index + 1}
       </span>
 
-      {/* Content */}
       <div className="flex-1 min-w-0 space-y-2">
-
-        {/* Top: badge + titre */}
         <div className="flex items-center gap-2 min-w-0">
           <span
             className={`shrink-0 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${
-              isGad
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-amber-100 text-amber-700'
+              isGad ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
             }`}
           >
             {isGad ? (c.numero_gad ?? 'GAD') : '🎤'}
@@ -209,10 +187,7 @@ function SetlistItemRow({
           <span className="text-sm font-semibold truncate">{c?.titre ?? '—'}</span>
         </div>
 
-        {/* Fields row */}
         <div className="flex flex-wrap items-center gap-2">
-
-          {/* Tonalité utilisée */}
           <Select
             value={item.tonalite_utilisee ?? '__none__'}
             onValueChange={v => onFieldChange(item.id, 'tonalite_utilisee', v === '__none__' ? null : v)}
@@ -228,7 +203,6 @@ function SetlistItemRow({
             </SelectContent>
           </Select>
 
-          {/* Moment du culte */}
           <Select
             value={item.moment_culte ?? '__none__'}
             onValueChange={v => onFieldChange(item.id, 'moment_culte', v === '__none__' ? null : v)}
@@ -244,7 +218,6 @@ function SetlistItemRow({
             </SelectContent>
           </Select>
 
-          {/* Notes opérateur */}
           <Input
             value={item.notes_operateur ?? ''}
             onChange={e => onFieldChange(item.id, 'notes_operateur', e.target.value || null)}
@@ -254,7 +227,6 @@ function SetlistItemRow({
         </div>
       </div>
 
-      {/* Delete */}
       <button
         onClick={() => onRemove(item.id)}
         disabled={removing}
@@ -269,10 +241,9 @@ function SetlistItemRow({
   )
 }
 
-// ── EditClient ───────────────────────────────────────────────────────────────
-
 type SaveState = 'saved' | 'saving' | 'unsaved'
 type LibTab    = 'gad' | 'chorale' | 'frequents'
+type MobileTab = 'library' | 'setlist'
 
 export default function EditClient({
   setlist,
@@ -287,39 +258,30 @@ export default function EditClient({
 }) {
   const router = useRouter()
 
-  // ── Setlist state ─────────────────────────────────────────────────────────
-
   const [items, setItems] = useState<SetlistItemFull[]>(
     [...setlist.setlist_items].sort((a, b) => a.position - b.position),
   )
   const [statut, setStatut] = useState(setlist.statut)
 
-  // ── Save state ────────────────────────────────────────────────────────────
+  const [saveState, setSaveState]   = useState<SaveState>('saved')
+  const [saveError, setSaveError]   = useState<string | null>(null)
+  const [validating, setValidating] = useState(false)
 
-  const [saveState, setSaveState]     = useState<SaveState>('saved')
-  const [saveError, setSaveError]     = useState<string | null>(null)
-  const [validating, setValidating]   = useState(false)
+  const [addingId,    setAddingId]    = useState<string | null>(null)
+  const [removingId,  setRemovingId]  = useState<string | null>(null)
+  const [flashItemId, setFlashItemId] = useState<string | null>(null)
 
-  // ── Loading states ────────────────────────────────────────────────────────
+  const [libTab, setLibTab]         = useState<LibTab>('gad')
+  const [libSearch, setLibSearch]   = useState('')
+  const [debouncedQ, setDebouncedQ] = useState('')
+  const [libMoment, setLibMoment]   = useState('')
 
-  const [addingId, setAddingId]       = useState<string | null>(null)  // cantique_id being added
-  const [removingId, setRemovingId]   = useState<string | null>(null)  // item_id being removed
-
-  // ── Library state ─────────────────────────────────────────────────────────
-
-  const [libTab, setLibTab]           = useState<LibTab>('gad')
-  const [libSearch, setLibSearch]     = useState('')
-  const [debouncedQ, setDebouncedQ]   = useState('')
-  const [libMoment, setLibMoment]     = useState('')
-
-  // ── Pending field changes for debounced save ──────────────────────────────
+  const [mobileTab, setMobileTab] = useState<MobileTab>('library')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const pendingRef    = useRef<Map<string, Record<string, any>>>(new Map())
-  const saveTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingRef     = useRef<Map<string, Record<string, any>>>(new Map())
+  const saveTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // ── Computed ──────────────────────────────────────────────────────────────
 
   const addedIds = useMemo(() => new Set(items.map(i => i.cantique_id)), [items])
 
@@ -346,13 +308,11 @@ export default function EditClient({
     chorale: items.filter(i => i.cantiques?.categorie === 'chorale').length,
   }), [items])
 
-  const culte      = setlist.cultes
-  const pageTitle  = setlist.titre_setlist
+  const culte     = setlist.cultes
+  const pageTitle = setlist.titre_setlist
     ?? (culte?.date_culte
-      ? capitalize(formatDateLongue(culte.date_culte))
+      ? capitalize(formatDateLong(culte.date_culte))
       : 'Setlist sans titre')
-
-  // ── Save helpers ──────────────────────────────────────────────────────────
 
   const flushPendingChanges = useCallback(async () => {
     if (pendingRef.current.size === 0) return
@@ -378,7 +338,6 @@ export default function EditClient({
     saveTimerRef.current = setTimeout(() => { flushPendingChanges() }, 1500)
   }, [flushPendingChanges])
 
-  // Auto-save every 30s
   useEffect(() => {
     const interval = setInterval(() => {
       if (pendingRef.current.size > 0) flushPendingChanges()
@@ -386,14 +345,11 @@ export default function EditClient({
     return () => clearInterval(interval)
   }, [flushPendingChanges])
 
-  // Search debounce
   function handleSearchChange(v: string) {
     setLibSearch(v)
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
     searchTimerRef.current = setTimeout(() => setDebouncedQ(v), 300)
   }
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function handleAdd(cantique: LibCantique) {
     if (addedIds.has(cantique.id) || addingId) return
@@ -423,6 +379,10 @@ export default function EditClient({
       }
       setItems(prev => [...prev, newItem])
       setSaveState('saved')
+      toast.success(`${cantique.titre} ajouté à la setlist ✓`)
+      setFlashItemId(res.id!)
+      setTimeout(() => setFlashItemId(null), 1200)
+      setMobileTab('setlist')
     }
     setAddingId(null)
   }
@@ -432,6 +392,8 @@ export default function EditClient({
     setRemovingId(itemId)
     setSaveError(null)
 
+    await new Promise(r => setTimeout(r, 200))
+
     const res = await removeSetlistItemAction(itemId)
     if (res.error) {
       setSaveError(res.error)
@@ -440,9 +402,8 @@ export default function EditClient({
     }
 
     setItems(prev => {
-      const filtered = prev.filter(i => i.id !== itemId)
+      const filtered  = prev.filter(i => i.id !== itemId)
       const reordered = filtered.map((item, idx) => ({ ...item, position: idx + 1 }))
-      // Sync positions in DB asynchronously
       if (reordered.length > 0) {
         reorderSetlistItemsAction(reordered.map(i => ({ id: i.id, position: i.position })))
       }
@@ -490,19 +451,231 @@ export default function EditClient({
     await flushPendingChanges()
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
   const statutCfg = STATUT_CONFIG[statut] ?? STATUT_CONFIG.brouillon
+
+  const libraryPanel = (
+    <div className="flex flex-col min-h-0 h-full bg-muted/10">
+      <div className="shrink-0 px-3 pt-3 pb-2 space-y-2 border-b">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={libSearch}
+            onChange={e => handleSearchChange(e.target.value)}
+            placeholder="Rechercher un cantique…"
+            className="pl-8 h-8 text-sm"
+          />
+        </div>
+
+        <div className="flex items-center gap-0.5 rounded-md border bg-muted/30 p-0.5">
+          {([
+            { id: 'gad',       label: '📘 GAD',      count: libGad.length },
+            { id: 'chorale',   label: '🎤 Chorale',  count: libChorale.length },
+            { id: 'frequents', label: '⭐',           count: libFrequents.length },
+          ] as const).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setLibTab(tab.id)}
+              className={`flex-1 py-1 rounded text-xs font-medium transition-colors ${
+                libTab === tab.id
+                  ? 'bg-background shadow-sm text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+              <span className="ml-1 text-[10px] opacity-60">({tab.count})</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-1">
+          <button
+            onClick={() => setLibMoment('')}
+            className={`px-2 py-0.5 rounded-full text-[11px] border transition-colors ${
+              libMoment === ''
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'border-border text-muted-foreground hover:border-foreground'
+            }`}
+          >
+            Tous
+          </button>
+          {MOMENTS_CULTE.map(m => (
+            <button
+              key={m.value}
+              onClick={() => setLibMoment(prev => prev === m.value ? '' : m.value)}
+              className={`px-2 py-0.5 rounded-full text-[11px] border transition-colors ${
+                libMoment === m.value
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'border-border text-muted-foreground hover:border-foreground'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {libFiltered.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-sm text-muted-foreground">Aucun cantique trouvé</p>
+          </div>
+        ) : (
+          libFiltered.map(c => (
+            <LibCantiqueRow
+              key={c.id}
+              cantique={c}
+              alreadyAdded={addedIds.has(c.id)}
+              adding={addingId === c.id}
+              onAdd={handleAdd}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+
+  const setlistPanel = (
+    <div className="flex flex-col min-h-0 h-full">
+      <div className="flex-1 overflow-y-auto px-4 py-3">
+        {items.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center gap-3 text-center py-16">
+            <div className="flex items-center justify-center w-14 h-14 rounded-full bg-muted">
+              <Music2 className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="font-semibold">Setlist vide</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Ajoutez des cantiques depuis la bibliothèque.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 md:hidden"
+              onClick={() => setMobileTab('library')}
+            >
+              <BookOpenText className="h-3.5 w-3.5" />
+              Ouvrir la bibliothèque
+            </Button>
+          </div>
+        ) : (
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="setlist">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="space-y-2"
+                >
+                  {items.map((item, index) => (
+                    <Draggable key={item.id} draggableId={item.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`rounded-lg transition-shadow ${
+                            snapshot.isDragging ? 'shadow-lg ring-1 ring-primary/20' : ''
+                          }`}
+                        >
+                          <SetlistItemRow
+                            item={item}
+                            index={index}
+                            dragHandleProps={provided.dragHandleProps}
+                            removing={removingId === item.id}
+                            flash={flashItemId === item.id}
+                            onRemove={handleRemove}
+                            onFieldChange={handleFieldChange}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        )}
+      </div>
+
+      <div className="shrink-0 border-t bg-background px-4 py-2.5 flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">
+            {stats.total} cantique{stats.total !== 1 ? 's' : ''}
+          </span>
+          {stats.gad > 0 && (
+            <span className="flex items-center gap-1 text-xs">
+              <Music2 className="h-3.5 w-3.5 text-blue-500" />
+              {stats.gad} GAD
+            </span>
+          )}
+          {stats.chorale > 0 && (
+            <span className="flex items-center gap-1 text-xs">
+              <Mic2 className="h-3.5 w-3.5 text-amber-500" />
+              {stats.chorale} Chorale
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5 text-xs ml-auto">
+          {saveState === 'saving' && (
+            <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /><span className="text-muted-foreground">Sauvegarde…</span></>
+          )}
+          {saveState === 'saved' && (
+            <><Check className="h-3.5 w-3.5 text-emerald-600" /><span className="text-emerald-600">Sauvegardé</span></>
+          )}
+          {saveState === 'unsaved' && (
+            <><AlertCircle className="h-3.5 w-3.5 text-amber-500" /><span className="text-amber-600">Non sauvegardé</span></>
+          )}
+        </div>
+
+        {saveError && <p className="text-xs text-destructive w-full">{saveError}</p>}
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 text-xs"
+            onClick={handleManualSave}
+            disabled={saveState === 'saving' || saveState === 'saved'}
+          >
+            <Save className="h-3.5 w-3.5" />
+            Sauvegarder
+          </Button>
+
+          <Link href={`/projection/setlists/${setlist.id}`} target="_blank">
+            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
+              <Eye className="h-3.5 w-3.5" />
+              Aperçu
+            </Button>
+          </Link>
+
+          <Button
+            size="sm"
+            className="gap-1.5 h-8 text-xs"
+            onClick={handleValidate}
+            disabled={validating || statut === 'utilise'}
+            variant={statut === 'brouillon' ? 'default' : 'outline'}
+          >
+            {validating
+              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              : <CheckCircle2 className="h-3.5 w-3.5" />}
+            {statut === 'brouillon' ? 'Valider' : 'Validée ✓'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 48px)' }}>
 
-      {/* ── Header ───────────────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="shrink-0 border-b bg-background px-4 py-2.5 flex items-center gap-3">
         <Link href="/projection/setlists">
           <Button variant="ghost" size="sm" className="gap-1.5 h-8 px-2 text-muted-foreground">
             <ArrowLeft className="h-4 w-4" />
-            Retour
+            <span className="hidden sm:inline">Retour</span>
           </Button>
         </Link>
 
@@ -510,10 +683,10 @@ export default function EditClient({
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">
-            Setlist · {pageTitle}
+            <span className="hidden sm:inline">Setlist · </span>{pageTitle}
           </p>
           {culte?.theme && (
-            <p className="text-xs text-muted-foreground truncate">{culte.theme}</p>
+            <p className="text-xs text-muted-foreground truncate hidden sm:block">{culte.theme}</p>
           )}
         </div>
 
@@ -523,7 +696,7 @@ export default function EditClient({
 
         <Button
           size="sm"
-          className="shrink-0 gap-1.5"
+          className="shrink-0 gap-1.5 hidden sm:flex"
           onClick={handleValidate}
           disabled={validating || statut === 'utilise'}
           variant={statut === 'brouillon' ? 'default' : 'outline'}
@@ -535,239 +708,66 @@ export default function EditClient({
         </Button>
       </div>
 
-      {/* ── Split body ───────────────────────────────────────────────────── */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
+      {/* Mobile tab bar */}
+      <div className="md:hidden shrink-0 border-b bg-background flex">
+        <button
+          onClick={() => setMobileTab('library')}
+          className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+            mobileTab === 'library'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground'
+          }`}
+        >
+          📚 Bibliothèque
+        </button>
+        <button
+          onClick={() => setMobileTab('setlist')}
+          className={`flex-1 py-2.5 text-sm font-medium transition-colors border-b-2 ${
+            mobileTab === 'setlist'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground'
+          }`}
+        >
+          🎵 Ma Setlist
+          {stats.total > 0 && (
+            <span className="ml-1.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+              {stats.total}
+            </span>
+          )}
+        </button>
+      </div>
 
-        {/* ── Left: Library (40%) ──────────────────────────────────────── */}
-        <div className="w-[40%] min-w-0 border-r flex flex-col min-h-0 bg-muted/10">
+      {/* Desktop: split / Mobile: single panel */}
+      <div className="flex-1 min-h-0 overflow-hidden">
 
-          {/* Library controls */}
-          <div className="shrink-0 px-3 pt-3 pb-2 space-y-2 border-b">
-
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                value={libSearch}
-                onChange={e => handleSearchChange(e.target.value)}
-                placeholder="Rechercher un cantique…"
-                className="pl-8 h-8 text-sm"
-              />
-            </div>
-
-            {/* Tabs */}
-            <div className="flex items-center gap-0.5 rounded-md border bg-muted/30 p-0.5">
-              {([
-                { id: 'gad',       label: '📘 GAD',      count: libGad.length },
-                { id: 'chorale',   label: '🎤 Chorale',  count: libChorale.length },
-                { id: 'frequents', label: '⭐ Fréquents', count: libFrequents.length },
-              ] as const).map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setLibTab(tab.id)}
-                  className={`flex-1 py-1 rounded text-xs font-medium transition-colors ${
-                    libTab === tab.id
-                      ? 'bg-background shadow-sm text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {tab.label}
-                  <span className="ml-1 text-[10px] opacity-60">({tab.count})</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Moment chips */}
-            <div className="flex flex-wrap gap-1">
-              <button
-                onClick={() => setLibMoment('')}
-                className={`px-2 py-0.5 rounded-full text-[11px] border transition-colors ${
-                  libMoment === ''
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'border-border text-muted-foreground hover:border-foreground'
-                }`}
-              >
-                Tous
-              </button>
-              {MOMENTS_CULTE.map(m => (
-                <button
-                  key={m.value}
-                  onClick={() => setLibMoment(prev => prev === m.value ? '' : m.value)}
-                  className={`px-2 py-0.5 rounded-full text-[11px] border transition-colors ${
-                    libMoment === m.value
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'border-border text-muted-foreground hover:border-foreground'
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
+        {/* Desktop split */}
+        <div className="hidden md:flex h-full">
+          <div className="w-[40%] min-w-0 border-r flex flex-col min-h-0">
+            {libraryPanel}
           </div>
-
-          {/* Cantique list */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {libFiltered.length === 0 ? (
-              <div className="py-12 text-center">
-                <p className="text-sm text-muted-foreground">Aucun cantique trouvé</p>
-              </div>
-            ) : (
-              libFiltered.map(c => (
-                <LibCantiqueRow
-                  key={c.id}
-                  cantique={c}
-                  alreadyAdded={addedIds.has(c.id)}
-                  adding={addingId === c.id}
-                  onAdd={handleAdd}
-                />
-              ))
-            )}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0">
+            {setlistPanel}
           </div>
         </div>
 
-        {/* ── Right: Setlist (60%) ──────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0">
-
-          {/* DnD list */}
-          <div className="flex-1 overflow-y-auto px-4 py-3">
-
-            {items.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center gap-3 text-center py-16">
-                <div className="flex items-center justify-center w-14 h-14 rounded-full bg-muted">
-                  <Music2 className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-semibold">Setlist vide</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ajoutez des cantiques depuis la bibliothèque à gauche.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="setlist">
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="space-y-2"
-                    >
-                      {items.map((item, index) => (
-                        <Draggable
-                          key={item.id}
-                          draggableId={item.id}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`rounded-lg transition-shadow ${
-                                snapshot.isDragging ? 'shadow-lg ring-1 ring-primary/20' : ''
-                              }`}
-                            >
-                              <SetlistItemRow
-                                item={item}
-                                index={index}
-                                dragHandleProps={provided.dragHandleProps}
-                                removing={removingId === item.id}
-                                onRemove={handleRemove}
-                                onFieldChange={handleFieldChange}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            )}
-          </div>
-
-          {/* ── Bottom bar ─────────────────────────────────────────────── */}
-          <div className="shrink-0 border-t bg-background px-4 py-2.5 flex items-center gap-3 flex-wrap">
-
-            {/* Stats */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">
-                {stats.total} cantique{stats.total !== 1 ? 's' : ''}
-              </span>
-              {stats.gad > 0 && (
-                <span className="flex items-center gap-1 text-xs">
-                  <Music2 className="h-3.5 w-3.5 text-blue-500" />
-                  {stats.gad} GAD
-                </span>
+        {/* Mobile single panel */}
+        <div className="md:hidden h-full relative">
+          {mobileTab === 'library' ? (
+            <>
+              {libraryPanel}
+              {/* Floating add hint */}
+              {items.length === 0 && (
+                <button
+                  onClick={() => setMobileTab('setlist')}
+                  className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+                >
+                  <Star className="h-5 w-5" />
+                </button>
               )}
-              {stats.chorale > 0 && (
-                <span className="flex items-center gap-1 text-xs">
-                  <Mic2 className="h-3.5 w-3.5 text-amber-500" />
-                  {stats.chorale} Chorale
-                </span>
-              )}
-            </div>
-
-            {/* Save indicator */}
-            <div className="flex items-center gap-1.5 text-xs ml-auto">
-              {saveState === 'saving' && (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                  <span className="text-muted-foreground">Sauvegarde…</span>
-                </>
-              )}
-              {saveState === 'saved' && (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="text-emerald-600">Sauvegardé</span>
-                </>
-              )}
-              {saveState === 'unsaved' && (
-                <>
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-                  <span className="text-amber-600">Non sauvegardé</span>
-                </>
-              )}
-            </div>
-
-            {saveError && (
-              <p className="text-xs text-destructive w-full">{saveError}</p>
-            )}
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 h-8 text-xs"
-                onClick={handleManualSave}
-                disabled={saveState === 'saving' || saveState === 'saved'}
-              >
-                <Save className="h-3.5 w-3.5" />
-                Sauvegarder
-              </Button>
-
-              <Link href={`/projection/setlists/${setlist.id}`} target="_blank">
-                <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
-                  <Eye className="h-3.5 w-3.5" />
-                  Aperçu
-                </Button>
-              </Link>
-
-              <Button
-                size="sm"
-                className="gap-1.5 h-8 text-xs"
-                onClick={handleValidate}
-                disabled={validating || statut === 'utilise'}
-                variant={statut === 'brouillon' ? 'default' : 'outline'}
-              >
-                {validating
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <CheckCircle2 className="h-3.5 w-3.5" />}
-                {statut === 'brouillon' ? 'Valider' : 'Validée ✓'}
-              </Button>
-            </div>
-          </div>
+            </>
+          ) : (
+            setlistPanel
+          )}
         </div>
       </div>
     </div>

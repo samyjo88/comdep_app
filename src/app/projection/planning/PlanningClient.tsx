@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button }   from '@/components/ui/button'
 import { Badge }    from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -14,13 +15,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import { ChevronLeft, ChevronRight, Plus, Mail, CalendarDays, Link as LinkIcon } from 'lucide-react'
+import { capitalize, formatDateLong } from '@/lib/utils'
 import {
   upsertPlanningAction,
   updatePlanningStatusAction,
   createCulteAction,
 } from './actions'
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export type PlanningEntry = {
   id:           string
@@ -54,37 +54,23 @@ export type MembreBrief = {
   roles:  string[]
 }
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-
 const MONTH_NAMES = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
 ]
 
 const ROLES_PLANNING = [
-  { value: 'diffusion',    label: 'Diffusion' },
-  { value: 'proclaim',     label: 'Proclaim' },
+  { value: 'diffusion', label: 'Diffusion' },
+  { value: 'proclaim',  label: 'Proclaim' },
 ]
 
 const STATUT_ORDER: PlanningEntry['statut'][] = ['planifie', 'confirme', 'present', 'absent']
 
 const STATUT_BADGE: Record<PlanningEntry['statut'], { label: string; cls: string }> = {
-  planifie: { label: 'Planifié',  cls: 'bg-gray-100 text-gray-700 border-gray-200' },
-  confirme: { label: 'Confirmé',  cls: 'bg-blue-100 text-blue-700 border-blue-200' },
-  present:  { label: 'Présent',   cls: 'bg-green-100 text-green-700 border-green-200' },
-  absent:   { label: 'Absent',    cls: 'bg-red-100 text-red-700 border-red-200' },
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatDateLong(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  planifie: { label: 'Planifié', cls: 'bg-gray-100 text-gray-700 border-gray-200' },
+  confirme: { label: 'Confirmé', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
+  present:  { label: 'Présent',  cls: 'bg-green-100 text-green-700 border-green-200' },
+  absent:   { label: 'Absent',   cls: 'bg-red-100 text-red-700 border-red-200' },
 }
 
 function nextMonth(year: number, month: number) {
@@ -99,25 +85,26 @@ function toMoisParam(year: number, month: number) {
   return `${year}-${String(month).padStart(2, '0')}`
 }
 
-function getCulteGlobalBadge(culte: CulteForPlanning): {
-  label: string; cls: string
-} {
+function getCulteGlobalBadge(culte: CulteForPlanning): { label: string; cls: string } {
   const pp = culte.planning_projection
-  if (pp.length === 0) {
+  let hasDiffusion = false
+  let hasProclaim  = false
+  let allPresent   = true
+  let allCovered   = true
+
+  for (const p of pp) {
+    if (!p.membres_projection) { allCovered = false; allPresent = false; continue }
+    if (p.role_du_jour === 'diffusion') hasDiffusion = true
+    if (p.role_du_jour === 'proclaim')  hasProclaim  = true
+    if (p.statut !== 'present')                         allPresent = false
+    if (p.statut !== 'confirme' && p.statut !== 'present') allCovered = false
+  }
+
+  if (!hasDiffusion || !hasProclaim) {
     return { label: '⚠ Incomplet', cls: 'bg-red-100 text-red-700 border-red-200' }
   }
-  const diffusion = pp.find(p => p.role_du_jour === 'diffusion')
-  const proclaim  = pp.find(p => p.role_du_jour === 'proclaim')
-  if (!diffusion?.membres_projection || !proclaim?.membres_projection) {
-    return { label: '⚠ Incomplet', cls: 'bg-red-100 text-red-700 border-red-200' }
-  }
-  const statuts = pp.map(p => p.statut)
-  if (statuts.every(s => s === 'present')) {
-    return { label: '✓ Couvert', cls: 'bg-green-100 text-green-700 border-green-200' }
-  }
-  if (statuts.every(s => s === 'confirme' || s === 'present')) {
-    return { label: 'Confirmé', cls: 'bg-blue-100 text-blue-700 border-blue-200' }
-  }
+  if (allPresent)  return { label: '✓ Couvert', cls: 'bg-green-100 text-green-700 border-green-200' }
+  if (allCovered)  return { label: 'Confirmé',  cls: 'bg-blue-100 text-blue-700 border-blue-200' }
   return { label: 'Planifié', cls: 'bg-gray-100 text-gray-700 border-gray-200' }
 }
 
@@ -125,16 +112,14 @@ function getSetlistLink(culte: CulteForPlanning): {
   label: string; href: string; variant: 'ghost' | 'outline'
 } | null {
   const sl = culte.setlists?.[0]
-  if (!sl) {
-    return { label: 'Créer setlist', href: `/projection/setlists`, variant: 'ghost' }
-  }
-  if (sl.statut === 'brouillon') {
-    return { label: 'Compléter', href: `/projection/setlists/${sl.id}/edit`, variant: 'outline' }
-  }
-  return { label: 'Voir', href: `/projection/setlists/${sl.id}/apercu`, variant: 'outline' }
+  if (!sl)                    return { label: 'Créer setlist', href: '/projection/setlists',              variant: 'ghost' }
+  if (sl.statut === 'brouillon') return { label: 'Compléter',    href: `/projection/setlists/${sl.id}/edit`,   variant: 'outline' }
+  return                             { label: 'Voir',            href: `/projection/setlists/${sl.id}/apercu`, variant: 'outline' }
 }
 
-// ── CulteCard ─────────────────────────────────────────────────────────────────
+function getEntryByRole(culte: CulteForPlanning, role: string): PlanningEntry | undefined {
+  return culte.planning_projection.find(p => p.role_du_jour === role)
+}
 
 function CulteCard({
   culte,
@@ -148,46 +133,42 @@ function CulteCard({
   const [localCulte, setLocalCulte] = useState<CulteForPlanning>(culte)
   const [pending, startTransition]  = useTransition()
 
-  const globalBadge  = getCulteGlobalBadge(localCulte)
-  const setlistLink  = getSetlistLink(localCulte)
+  const globalBadge = getCulteGlobalBadge(localCulte)
+  const setlistLink = getSetlistLink(localCulte)
 
-  function getPlanningEntry(role: string): PlanningEntry | undefined {
+  function getEntry(role: string): PlanningEntry | undefined {
     return localCulte.planning_projection.find(p => p.role_du_jour === role)
   }
 
   function handleMemberChange(role: string, membreId: string) {
-    const id = membreId === '__none__' ? null : membreId
-    const prev = { ...localCulte }
+    const id   = membreId === '__none__' ? null : membreId
+    const prev = localCulte
 
     setLocalCulte(lc => {
       const filtered = lc.planning_projection.filter(p => p.role_du_jour !== role)
       if (!id) return { ...lc, planning_projection: filtered }
-      const membre = membres.find(m => m.id === id) ?? null
+      const membre   = membres.find(m => m.id === id) ?? null
       const existing = lc.planning_projection.find(p => p.role_du_jour === role)
       const updated: PlanningEntry = {
-        id:                  existing?.id ?? '',
-        role_du_jour:        role,
-        statut:              existing?.statut ?? 'planifie',
-        notes:               existing?.notes ?? null,
-        membres_projection:  membre ? { id: membre.id, prenom: membre.prenom, nom: membre.nom } : null,
+        id:                 existing?.id ?? '',
+        role_du_jour:       role,
+        statut:             existing?.statut ?? 'planifie',
+        notes:              existing?.notes ?? null,
+        membres_projection: membre ? { id: membre.id, prenom: membre.prenom, nom: membre.nom } : null,
       }
       return { ...lc, planning_projection: [...filtered, updated] }
     })
 
     startTransition(async () => {
       const res = await upsertPlanningAction({ culte_id: culte.id, role_du_jour: role, membre_id: id })
-      if (res.error) {
-        setLocalCulte(prev)
-        alert(res.error)
-      }
+      if (res.error) { setLocalCulte(prev); alert(res.error) }
     })
   }
 
   function handleStatutClick(entry: PlanningEntry) {
     if (!entry.id) return
-    const idx     = STATUT_ORDER.indexOf(entry.statut)
-    const next    = STATUT_ORDER[(idx + 1) % STATUT_ORDER.length]
-    const prevCulte = { ...localCulte }
+    const next = STATUT_ORDER[(STATUT_ORDER.indexOf(entry.statut) + 1) % STATUT_ORDER.length]
+    const prev = localCulte
 
     setLocalCulte(lc => ({
       ...lc,
@@ -198,10 +179,7 @@ function CulteCard({
 
     startTransition(async () => {
       const res = await updatePlanningStatusAction(entry.id, next)
-      if (res.error) {
-        setLocalCulte(prevCulte)
-        alert(res.error)
-      }
+      if (res.error) { setLocalCulte(prev); alert(res.error) }
     })
   }
 
@@ -214,10 +192,7 @@ function CulteCard({
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-sm">{dateLabel}</span>
-            <Badge
-              variant="outline"
-              className={`text-xs ${globalBadge.cls}`}
-            >
+            <Badge variant="outline" className={`text-xs ${globalBadge.cls}`}>
               {globalBadge.label}
             </Badge>
           </div>
@@ -230,15 +205,21 @@ function CulteCard({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {setlistLink && (
-            <Button
-              variant={setlistLink.variant}
-              size="sm"
-              className="h-7 text-xs gap-1"
-              onClick={() => window.open(setlistLink!.href, '_self')}
-            >
-              <LinkIcon className="h-3 w-3" />
-              {setlistLink.label}
-            </Button>
+            <>
+              {/* Desktop: labeled button */}
+              <Button asChild variant={setlistLink.variant} size="sm" className="h-7 text-xs gap-1 hidden sm:inline-flex">
+                <Link href={setlistLink.href}>
+                  <LinkIcon className="h-3 w-3" />
+                  {setlistLink.label}
+                </Link>
+              </Button>
+              {/* Mobile: icon only */}
+              <Button asChild variant={setlistLink.variant} size="sm" className="h-8 w-8 p-0 sm:hidden">
+                <Link href={setlistLink.href} title={setlistLink.label}>
+                  <LinkIcon className="h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </>
           )}
           <Button
             variant="ghost"
@@ -254,51 +235,47 @@ function CulteCard({
 
       <CardContent className="pt-0 space-y-2">
         {ROLES_PLANNING.map(role => {
-          const entry    = getPlanningEntry(role.value)
-          const membreId = entry?.membres_projection?.id ?? '__none__'
+          const entry     = getEntry(role.value)
+          const membreId  = entry?.membres_projection?.id ?? '__none__'
           const statutCfg = entry?.statut ? STATUT_BADGE[entry.statut] : null
 
           return (
-            <div key={role.value} className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground w-20 shrink-0">
+            <div key={role.value} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <span className="text-xs font-medium text-muted-foreground sm:w-20 shrink-0">
                 {role.label}
               </span>
 
-              <Select
-                value={membreId}
-                onValueChange={v => handleMemberChange(role.value, v)}
-              >
-                <SelectTrigger className="h-8 text-xs flex-1 min-w-0">
-                  <SelectValue placeholder="— Non assigné —" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__" className="text-xs text-muted-foreground">
-                    — Non assigné —
-                  </SelectItem>
-                  {membres
-                    .filter(m => m.roles?.includes(role.value))
-                    .map(m => (
-                      <SelectItem key={m.id} value={m.id} className="text-xs">
-                        {m.prenom} {m.nom}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <Select value={membreId} onValueChange={v => handleMemberChange(role.value, v)}>
+                  <SelectTrigger className="h-9 sm:h-8 text-xs flex-1 min-w-0">
+                    <SelectValue placeholder="— Non assigné —" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" className="text-xs text-muted-foreground">
+                      — Non assigné —
+                    </SelectItem>
+                    {membres
+                      .filter(m => m.roles?.includes(role.value))
+                      .map(m => (
+                        <SelectItem key={m.id} value={m.id} className="text-xs">
+                          {m.prenom} {m.nom}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
 
-              {entry && entry.membres_projection && statutCfg ? (
-                <button
-                  onClick={() => handleStatutClick(entry)}
-                  className={`
-                    shrink-0 text-xs px-2 py-0.5 rounded border font-medium cursor-pointer
-                    transition-opacity hover:opacity-70 ${statutCfg.cls}
-                  `}
-                  title="Cliquer pour changer le statut"
-                >
-                  {statutCfg.label}
-                </button>
-              ) : (
-                <span className="shrink-0 w-20" />
-              )}
+                {entry && entry.membres_projection && statutCfg ? (
+                  <button
+                    onClick={() => handleStatutClick(entry)}
+                    className={`shrink-0 text-xs px-2 py-1 sm:py-0.5 rounded border font-medium cursor-pointer transition-opacity hover:opacity-70 ${statutCfg.cls}`}
+                    title="Cliquer pour changer le statut"
+                  >
+                    {statutCfg.label}
+                  </button>
+                ) : (
+                  <span className="shrink-0 w-20 hidden sm:block" />
+                )}
+              </div>
             </div>
           )
         })}
@@ -306,8 +283,6 @@ function CulteCard({
     </Card>
   )
 }
-
-// ── AddCulteDialog ─────────────────────────────────────────────────────────────
 
 function AddCulteDialog({
   open,
@@ -322,21 +297,19 @@ function AddCulteDialog({
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-  const [date,   setDate]   = useState(
-    `${defaultYear}-${String(defaultMonth).padStart(2, '0')}-01`
-  )
-  const [theme,   setTheme]   = useState('')
-  const [pred,    setPred]    = useState('')
-  const [error,   setError]   = useState('')
+  const [date,  setDate]  = useState(`${defaultYear}-${String(defaultMonth).padStart(2, '0')}-01`)
+  const [theme, setTheme] = useState('')
+  const [pred,  setPred]  = useState('')
+  const [error, setError] = useState('')
 
   function handleSubmit() {
     if (!date) { setError('La date est requise.'); return }
     setError('')
     startTransition(async () => {
       const res = await createCulteAction({
-        date_culte:   date,
-        theme:        theme.trim() || null,
-        predicateur:  pred.trim()  || null,
+        date_culte:  date,
+        theme:       theme.trim() || null,
+        predicateur: pred.trim()  || null,
       })
       if (res.error) { setError(res.error); return }
       router.refresh()
@@ -398,8 +371,6 @@ function AddCulteDialog({
   )
 }
 
-// ── RappelDialog ──────────────────────────────────────────────────────────────
-
 function RappelDialog({
   culteId,
   onClose,
@@ -416,10 +387,10 @@ function RappelDialog({
     setResult(null); setError(null)
     startTransition(async () => {
       try {
-        const res = await fetch('/api/projection/rappel', {
-          method: 'POST',
+        const res  = await fetch('/api/projection/rappel', {
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ culte_id: culteId }),
+          body:    JSON.stringify({ culte_id: culteId }),
         })
         const json = await res.json()
         if (!res.ok) { setError(json.error ?? 'Erreur inconnue'); return }
@@ -458,8 +429,6 @@ function RappelDialog({
   )
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
 export default function PlanningClient({
   cultes,
   membres,
@@ -475,9 +444,8 @@ export default function PlanningClient({
   const [showAddCulte,  setShowAddCulte]  = useState(false)
   const [rappelCulteId, setRappelCulteId] = useState<string | null>(null)
 
-  const prev = prevMonth(year, month)
-  const next = nextMonth(year, month)
-
+  const prev     = prevMonth(year, month)
+  const next     = nextMonth(year, month)
   const nowYear  = new Date().getFullYear()
   const nowMonth = new Date().getMonth() + 1
   const isToday  = year === nowYear && month === nowMonth
@@ -486,12 +454,10 @@ export default function PlanningClient({
     router.push(`/projection/planning?mois=${toMoisParam(y, m)}`)
   }
 
-  // Monthly summary
-  const fullyCovered = cultes.filter(c => {
-    const d = getPlanningEntry(c, 'diffusion')
-    const p = getPlanningEntry(c, 'proclaim')
-    return d?.membres_projection && p?.membres_projection
-  }).length
+  const fullyCovered = cultes.filter(c =>
+    getEntryByRole(c, 'diffusion')?.membres_projection &&
+    getEntryByRole(c, 'proclaim')?.membres_projection
+  ).length
 
   const mobilisedIds = new Set(
     cultes.flatMap(c =>
@@ -503,14 +469,8 @@ export default function PlanningClient({
 
   return (
     <div className="space-y-4">
-      {/* Navigation bar */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => navigate(prev.year, prev.month)}
-        >
+        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => navigate(prev.year, prev.month)}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -518,23 +478,14 @@ export default function PlanningClient({
           {MONTH_NAMES[month - 1]} {year}
         </h2>
 
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-9 w-9"
-          onClick={() => navigate(next.year, next.month)}
-        >
+        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => navigate(next.year, next.month)}>
           <ChevronRight className="h-4 w-4" />
         </Button>
 
         <div className="flex-1" />
 
         {!isToday && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(nowYear, nowMonth)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => navigate(nowYear, nowMonth)}>
             Aujourd&apos;hui
           </Button>
         )}
@@ -545,7 +496,6 @@ export default function PlanningClient({
         </Button>
       </div>
 
-      {/* Culte cards */}
       {cultes.length === 0 ? (
         <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground text-sm">
           Aucun culte ce mois-ci.
@@ -563,7 +513,6 @@ export default function PlanningClient({
         </div>
       )}
 
-      {/* Monthly summary */}
       {cultes.length > 0 && (
         <p className="text-xs text-muted-foreground text-center pt-1">
           {fullyCovered}/{cultes.length} culte(s) entièrement assigné(s)
@@ -585,9 +534,4 @@ export default function PlanningClient({
       />
     </div>
   )
-}
-
-// small helper used in summary
-function getPlanningEntry(culte: CulteForPlanning, role: string): PlanningEntry | undefined {
-  return culte.planning_projection.find(p => p.role_du_jour === role)
 }

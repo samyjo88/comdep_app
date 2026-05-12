@@ -25,16 +25,14 @@ export async function searchCantiquesAction(query: string) {
   const isNum = /^\d/.test(q)
 
   const [ftsRes, fallbackRes] = await Promise.all([
-    // Full-text search on titre via GIN index
     supabase.from('cantiques')
       .select(SEARCH_SELECT)
       .textSearch('titre', q, { type: 'websearch', config: 'french' })
-      .limit(40),
-    // Fallback: numero_gad + auteur ilike
+      .limit(30),
     supabase.from('cantiques')
       .select(SEARCH_SELECT)
       .or(`numero_gad.ilike.%${q}%,auteur_compositeur.ilike.%${q}%`)
-      .limit(20),
+      .limit(15),
   ])
 
   // Merge & dedupe
