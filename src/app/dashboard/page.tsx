@@ -1,6 +1,7 @@
 import { Suspense, type ElementType } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { archiverCultesPassés } from '@/lib/annonces'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -9,7 +10,7 @@ import {
   CalendarDays, Users, Clock,
   CheckCircle2, AlertCircle, Circle, ChevronRight,
   Wrench, AlertTriangle, Package2, FileText,
-  Mail, Phone,
+  Mail, Phone, Zap,
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { CountdownDimanche }   from '@/components/dashboard/CountdownDimanche'
@@ -56,7 +57,7 @@ function dimancheSemaine(): string {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type StatutModule = 'ok' | 'action' | 'incomplet'
+type StatutModule = 'ok' | 'action' | 'urgent' | 'incomplet'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>
 
@@ -80,6 +81,9 @@ interface MembreUnifie {
 // ── Données ────────────────────────────────────────────────────────────────
 
 async function getDashboardData() {
+  // Archiver silencieusement les cultes dont la date est passée
+  await archiverCultesPassés()
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const today    = new Date().toISOString().slice(0, 10)
@@ -200,9 +204,22 @@ async function getDashboardData() {
     prochainSon.responsable_id ? 'ok'        : 'action'
 
   const annonceStatut = prochainCulte?.annonces?.[0]?.statut_global
+  const joursAvantCulte = prochainCulte
+    ? Math.round(
+        (new Date(prochainCulte.date_culte + 'T00:00:00').getTime() - new Date(today).getTime())
+        / 86400000
+      )
+    : null
+  const annonceUrgente =
+    prochainCulte &&
+    joursAvantCulte !== null &&
+    joursAvantCulte <= 3 &&
+    annonceStatut !== 'publie' &&
+    annonceStatut !== 'valide'
   const statutAnnonces: StatutModule =
     !prochainCulte                                             ? 'incomplet' :
-    (annonceStatut === 'publie' || annonceStatut === 'valide') ? 'ok'        : 'action'
+    (annonceStatut === 'publie' || annonceStatut === 'valide') ? 'ok'        :
+    annonceUrgente                                             ? 'urgent'    : 'action'
 
   const statutProjection: StatutModule =
     !projPlanning        ? 'incomplet' :
@@ -322,6 +339,7 @@ async function getDashboardData() {
     nbTaches: cantiques.length === 0 && projPlanning ? 1 : 0,
   }
 
+  const nbRubriquesManquantes = nbRubriquesAFaire + (annonceStatut == null ? 0 : nbRubriquesEnCours)
   const annoncesInfo: ModuleInfo = {
     prochainCulte: prochainCulte
       ? {
@@ -330,7 +348,9 @@ async function getDashboardData() {
         }
       : null,
     statut:   statutAnnonces,
-    nbTaches: statutAnnonces !== 'ok' ? 1 : 0,
+    nbTaches: statutAnnonces !== 'ok'
+      ? (annonceStatut == null ? 1 : nbRubriquesManquantes || 1)
+      : 0,
   }
 
   const captationInfo: ModuleInfo = {
@@ -353,6 +373,16 @@ async function getDashboardData() {
     dateProchainCulte,
     nbMembresActifs,
     tachesEnAttente,
+    alerteAnnonces: annonceUrgente
+      ? {
+          jours:        joursAvantCulte!,
+          statutGlobal: annonceStatut ?? null,
+          culteDate:    prochainCulte!.date_culte,
+          annonceId:    prochainCulte!.annonces?.[0]?.id ?? null,
+          rubriquesOk:  nbRubriquesOk,
+          rubriquesTotal: nbRubriquesTotal,
+        }
+      : null,
     sonoInfo, projInfo, annoncesInfo, captationInfo, communityInfo,
     equipe: {
       dateProchainCulte,
@@ -369,6 +399,7 @@ async function getDashboardData() {
       aFaire:       nbRubriquesAFaire,
       total:        nbRubriquesTotal,
       statutGlobal: annonceStatut ?? null,
+      joursAvant:   joursAvantCulte,
     },
     materielWidget: {
       horsService:   materielHorsService,
@@ -391,6 +422,13 @@ function BadgeStatut({ statut }: { statut: StatutModule }) {
     return (
       <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 gap-1 text-xs shrink-0">
         <CheckCircle2 className="h-3 w-3" /> Tout va bien
+      </Badge>
+    )
+  }
+  if (statut === 'urgent') {
+    return (
+      <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 gap-1 text-xs shrink-0">
+        <Zap className="h-3 w-3" /> Urgent
       </Badge>
     )
   }
@@ -431,12 +469,10 @@ function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteM
             <div className="min-w-0 flex-1 space-y-1">
               <p className="font-semibold text-sm leading-tight text-white">{label}</p>
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/20 gap-1 text-xs shrink-0">
-                {info.statut === 'ok'
-                  ? <><CheckCircle2 className="h-3 w-3" /> Tout va bien</>
-                  : info.statut === 'action'
-                  ? <><AlertCircle className="h-3 w-3" /> Action requise</>
-                  : <><Circle className="h-3 w-3" /> Incomplet</>
-                }
+                {info.statut === 'ok'      ? <><CheckCircle2 className="h-3 w-3" /> Tout va bien</>
+                : info.statut === 'urgent' ? <><Zap className="h-3 w-3" /> Urgent</>
+                : info.statut === 'action' ? <><AlertCircle className="h-3 w-3" /> Action requise</>
+                : <><Circle className="h-3 w-3" /> Incomplet</>}
               </Badge>
             </div>
           </div>
@@ -614,23 +650,37 @@ interface AnnoncesWidgetData {
   aFaire:       number
   total:        number
   statutGlobal: string | null
+  joursAvant:   number | null
 }
 
 function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
-  const pct = data.total > 0 ? Math.round((data.ok / data.total) * 100) : 0
+  const pct     = data.total > 0 ? Math.round((data.ok / data.total) * 100) : 0
+  const urgent  = data.joursAvant !== null && data.joursAvant <= 3 && data.statutGlobal !== 'publie' && data.statutGlobal !== 'valide'
+  const valide  = data.statutGlobal === 'publie' || data.statutGlobal === 'valide'
+
   return (
-    <Card>
+    <Card className={urgent ? 'border-red-200 dark:border-red-800' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Megaphone className="h-4 w-4 text-muted-foreground" />
+            <Megaphone className={`h-4 w-4 ${urgent ? 'text-red-500' : 'text-muted-foreground'}`} />
             Annonces
           </CardTitle>
-          {data.culteDate && (
-            <span className="text-xs text-muted-foreground">
-              {capitalize(formatDateCourte(data.culteDate))}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {data.joursAvant !== null && (
+              <span className={`text-xs font-medium tabular-nums ${
+                urgent ? (data.joursAvant === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400')
+                : 'text-muted-foreground'
+              }`}>
+                {data.joursAvant === 0 ? 'Aujourd\'hui' : `J-${data.joursAvant}`}
+              </span>
+            )}
+            {data.culteDate && (
+              <span className="text-xs text-muted-foreground">
+                {capitalize(formatDateCourte(data.culteDate))}
+              </span>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 pt-0">
@@ -638,14 +688,47 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
           <p className="text-xs text-muted-foreground py-2">Aucun culte planifié</p>
         ) : (
           <>
+            {/* Alerte urgence */}
+            {urgent && (
+              <div className={`flex items-start gap-2 rounded-lg px-3 py-2 ${
+                data.joursAvant === 0
+                  ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800'
+                  : 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800'
+              }`}>
+                <AlertTriangle className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${data.joursAvant === 0 ? 'text-red-500' : 'text-amber-500'}`} />
+                <p className={`text-xs font-medium ${data.joursAvant === 0 ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'}`}>
+                  {data.joursAvant === 0
+                    ? 'C\'est aujourd\'hui ! Annonce non validée'
+                    : data.joursAvant === 1
+                    ? 'Demain ! Annonce non validée'
+                    : `Dans ${data.joursAvant} jours — Annonce non validée`
+                  }
+                </p>
+              </div>
+            )}
+
+            {/* Statut validé */}
+            {valide && (
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                  {data.statutGlobal === 'publie' ? 'Annonce publiée' : 'Annonce validée'}
+                </p>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{data.ok} / {data.total} rubriques validées</span>
-                <span className="font-medium">{pct}%</span>
+                <span className={`font-medium ${pct === 100 ? 'text-emerald-600 dark:text-emerald-400' : urgent ? 'text-red-600 dark:text-red-400' : ''}`}>
+                  {pct}%
+                </span>
               </div>
               <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all"
+                  className={`h-full rounded-full transition-all ${
+                    pct === 100 ? 'bg-emerald-500' : urgent ? 'bg-red-500' : 'bg-primary'
+                  }`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -665,9 +748,13 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
               </div>
             </div>
             <Link href={data.annonceId ? `/annonces/${data.annonceId}/rubriques` : '/annonces'}>
-              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-8 mt-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className={`w-full gap-1.5 text-xs h-8 mt-1 ${urgent ? 'border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40' : ''}`}
+              >
                 <FileText className="h-3.5 w-3.5" />
-                Préparer les annonces
+                {data.annonceId ? 'Préparer les annonces' : 'Créer une annonce'}
                 <ChevronRight className="h-3.5 w-3.5 ml-auto" />
               </Button>
             </Link>
@@ -968,6 +1055,7 @@ function Skeleton() {
 
 async function PageContent() {
   const d = await getDashboardData()
+  const a = d.alerteAnnonces
 
   return (
     <div className="space-y-8">
@@ -978,6 +1066,44 @@ async function PageContent() {
         nbMembresActifs={d.nbMembresActifs}
         tachesEnAttente={d.tachesEnAttente}
       />
+
+      {/* ── Alerte annonces urgente ── */}
+      {a && (
+        <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${
+          a.jours === 0
+            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40'
+            : 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40'
+        }`}>
+          <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${a.jours === 0 ? 'text-red-500' : 'text-amber-500'}`} />
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-semibold ${a.jours === 0 ? 'text-red-800 dark:text-red-200' : 'text-amber-800 dark:text-amber-200'}`}>
+              {a.jours === 0
+                ? 'C\'est aujourd\'hui ! L\'annonce n\'est pas encore validée'
+                : a.jours === 1
+                ? 'Le culte est demain — l\'annonce n\'est pas encore validée'
+                : `Le culte est dans ${a.jours} jours — l'annonce n'est pas encore validée`
+              }
+            </p>
+            <p className={`text-xs mt-0.5 ${a.jours === 0 ? 'text-red-600 dark:text-red-300' : 'text-amber-600 dark:text-amber-300'}`}>
+              {capitalize(formatDateLongue(a.culteDate))}
+              {a.statutGlobal == null && ' — Aucune annonce créée'}
+              {a.statutGlobal === 'brouillon' && ` — ${a.rubriquesOk}/${a.rubriquesTotal} rubriques complétées`}
+            </p>
+          </div>
+          <Link
+            href={a.annonceId ? `/annonces/${a.annonceId}/rubriques` : `/annonces/nouveau?culte=`}
+            className="shrink-0"
+          >
+            <Button size="sm" className={`text-xs h-7 ${
+              a.jours === 0
+                ? 'bg-red-600 hover:bg-red-700 text-white'
+                : 'bg-amber-600 hover:bg-amber-700 text-white'
+            }`}>
+              {a.annonceId ? 'Compléter →' : 'Créer l\'annonce →'}
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* Accès aux modules */}
       <section id="modules">
@@ -995,7 +1121,10 @@ async function PageContent() {
           />
           <CarteModule
             icon={Megaphone} label="Annonces" href="/annonces"
-            iconCls="bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400"
+            iconCls={d.annoncesInfo.statut === 'urgent'
+              ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
+              : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+            }
             info={d.annoncesInfo}
           />
           <CarteModule
