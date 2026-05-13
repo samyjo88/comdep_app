@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, CheckSquare, Calendar, BarChart2, Users,
-  Settings, HelpCircle, Volume2, Megaphone, Video, Share2,
+  Settings, HelpCircle, Volume2, Megaphone, Video, Share2, Monitor,
 } from 'lucide-react'
 import { CalendrierMini } from './CalendrierMini'
 
@@ -17,10 +17,11 @@ const MENU_ITEMS = [
 ]
 
 const MODULES = [
-  { label: 'Sonorisation', href: '/sonorisation', icon: Volume2,   color: 'text-blue-500'   },
-  { label: 'Annonces',     href: '/annonces',     icon: Megaphone, color: 'text-amber-500'  },
-  { label: 'Captation',    href: '/captation',    icon: Video,     color: 'text-red-500'    },
-  { label: 'Community',    href: '/community',    icon: Share2,    color: 'text-green-500'  },
+  { label: 'Sonorisation',  href: '/sonorisation', icon: Volume2,   color: 'text-blue-500'   },
+  { label: 'Projection',    href: '/projection',   icon: Monitor,   color: 'text-purple-500' },
+  { label: 'Annonces',      href: '/annonces',     icon: Megaphone, color: 'text-amber-500'  },
+  { label: 'Captation',     href: '/captation',    icon: Video,     color: 'text-red-500'    },
+  { label: 'Community',     href: '/community',    icon: Share2,    color: 'text-green-500'  },
 ]
 
 const GENERAL_ITEMS = [
