@@ -118,3 +118,35 @@ export async function resetPasswordAction(formData: FormData): Promise<{ error?:
     return { error: e instanceof Error ? e.message : 'Erreur inconnue' }
   }
 }
+
+export async function deleteMembreAction(formData: FormData): Promise<{ error?: string }> {
+  try {
+    await assertSuperAdmin()
+    const userId = formData.get('userId') as string
+    const email  = formData.get('email')  as string
+
+    const admin = createAdminClient()
+
+    // Supprimer des tables département (par email)
+    await Promise.all([
+      admin.from('membres_son').delete().eq('email', email),
+      admin.from('membres_captation').delete().eq('email', email),
+      admin.from('membres_cm').delete().eq('email', email),
+      admin.from('membres_annonces').delete().eq('email', email),
+      admin.from('membres_projection').delete().eq('email', email),
+    ])
+
+    // Supprimer le rôle et le profil
+    await admin.from('user_roles').delete().eq('user_id', userId)
+    await admin.from('profiles').delete().eq('id', userId)
+
+    // Supprimer le compte Supabase Auth (irréversible)
+    const { error } = await admin.auth.admin.deleteUser(userId)
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/membres')
+    return {}
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : 'Erreur inconnue' }
+  }
+}

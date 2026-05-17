@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Shield, UserPlus, Mail, RotateCcw, Ban, CheckCircle, ChevronDown } from 'lucide-react'
+import { Shield, UserPlus, Mail, RotateCcw, Ban, CheckCircle, ChevronDown, Trash2, AlertTriangle } from 'lucide-react'
 import { Button }   from '@/components/ui/button'
 import { Input }    from '@/components/ui/input'
 import { Badge }    from '@/components/ui/badge'
@@ -17,6 +17,7 @@ import {
   disableMemberAction,
   enableMemberAction,
   resetPasswordAction,
+  deleteMembreAction,
 } from './actions'
 import type { AppRole } from '@/lib/supabase/types'
 
@@ -173,6 +174,91 @@ function RoleSelector({ membre }: { membre: Membre }) {
   )
 }
 
+function DeleteDialog({ membre }: { membre: Membre }) {
+  const [open, setOpen]       = useState(false)
+  const [confirm, setConfirm] = useState('')
+  const [error, setError]     = useState('')
+  const [pending, start]      = useTransition()
+
+  const nomComplet = `${membre.prenom} ${membre.nom}`
+  const ready      = confirm.trim().toLowerCase() === nomComplet.toLowerCase()
+
+  function handleDelete() {
+    if (!ready) return
+    setError('')
+    start(async () => {
+      const fd = new FormData()
+      fd.set('userId', membre.id)
+      fd.set('email',  membre.email)
+      const res = await deleteMembreAction(fd)
+      if (res.error) { setError(res.error); return }
+      setOpen(false)
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={v => { setOpen(v); setConfirm(''); setError('') }}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+          title="Supprimer définitivement"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Supprimer
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Suppression définitive
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive space-y-1">
+            <p className="font-medium">Cette action est irréversible.</p>
+            <p className="text-destructive/80">
+              Le compte de <span className="font-semibold">{nomComplet}</span> ({membre.email}) sera
+              supprimé de Supabase Auth et de tous les modules (sonorisation, captation, community, annonces, projection).
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">
+              Tapez <span className="font-semibold text-foreground">{nomComplet}</span> pour confirmer
+            </label>
+            <Input
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              placeholder={nomComplet}
+              className={ready ? 'border-destructive focus-visible:ring-destructive' : ''}
+            />
+          </div>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={!ready || pending}
+            >
+              {pending ? 'Suppression…' : 'Supprimer définitivement'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function MemberActions({ membre }: { membre: Membre }) {
   const [pending, start] = useTransition()
   const [feedback, setFeedback] = useState('')
@@ -191,7 +277,7 @@ function MemberActions({ membre }: { membre: Membre }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <Button
         variant="ghost"
         size="sm"
@@ -208,7 +294,7 @@ function MemberActions({ membre }: { membre: Membre }) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="h-8 gap-1.5 text-xs text-orange-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30"
           disabled={pending}
           onClick={() => run(disableMemberAction)}
           title="Désactiver le compte"
@@ -229,6 +315,8 @@ function MemberActions({ membre }: { membre: Membre }) {
           Réactiver
         </Button>
       )}
+
+      <DeleteDialog membre={membre} />
 
       {feedback && <span className="text-xs text-muted-foreground">{feedback}</span>}
     </div>
