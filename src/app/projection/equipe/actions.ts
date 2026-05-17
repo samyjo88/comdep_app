@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
 type MembrePayload = {
@@ -14,6 +16,37 @@ type MembrePayload = {
 }
 
 export async function createMembreAction(payload: MembrePayload) {
+  // If email is provided, send invitation
+  if (payload.email) {
+    const email  = payload.email.trim()
+    const prenom = payload.prenom.trim()
+    const nom    = payload.nom.trim()
+
+    const admin = createAdminClient()
+    const hdrs   = await headers()
+    const proto  = hdrs.get('x-forwarded-proto')
+    const host   = hdrs.get('host')
+    const origin = hdrs.get('origin') ?? (proto && host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL ?? ''))
+
+    const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+      data: { prenom, nom },
+      redirectTo: `${origin}/auth/callback`,
+    })
+
+    if (inviteError) {
+      if (!inviteError.message.toLowerCase().includes('already')) {
+        return { error: inviteError.message }
+      }
+      // account already exists — continue
+    } else {
+      const userId = inviteData?.user?.id
+      if (userId) {
+        await admin.from('profiles').upsert({ id: userId, prenom, nom, email, actif: true })
+        await admin.from('user_roles').upsert({ user_id: userId, role: 'membre' })
+      }
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase

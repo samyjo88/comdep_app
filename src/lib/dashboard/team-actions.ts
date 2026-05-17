@@ -1,10 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers }        from 'next/headers'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export type Departement = 'son' | 'captation' | 'community'
+export type Departement = 'son' | 'captation' | 'community' | 'annonces' | 'projection'
 
 export interface AjouterMembreData {
   prenom:      string
@@ -23,9 +24,15 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
 
   const admin = createAdminClient()
 
+  const hdrs   = await headers()
+  const proto  = hdrs.get('x-forwarded-proto')
+  const host   = hdrs.get('host')
+  const origin = hdrs.get('origin') ?? (proto && host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL ?? ''))
+
   // 1. Inviter via Supabase Auth (envoie un email avec lien de création de mot de passe)
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { prenom, nom },
+    redirectTo: `${origin}/auth/callback`,
   })
   if (inviteError) {
     // Si le compte existe déjà, on continue quand même pour la fiche équipe
@@ -52,19 +59,66 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
   // 4. Ajouter à la table département (fiche équipe pour les plannings)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
-  const table =
-    data.departement === 'son'       ? 'membres_son'      :
-    data.departement === 'captation' ? 'membres_captation' :
-    'membres_cm'
 
-  const { error: insertError } = await supabase.from(table).insert({
-    prenom,
-    nom,
-    email,
-    telephone: data.telephone?.trim() || null,
-    actif:     true,
-    role:      'assistant',
-  })
+  let insertError: { message: string } | null = null
+
+  if (data.departement === 'son') {
+    const { error } = await supabase.from('membres_son').insert({
+      prenom,
+      nom,
+      email,
+      telephone: data.telephone?.trim() || null,
+      actif:     true,
+      role:      'assistant',
+    })
+    insertError = error
+    revalidatePath('/sonorisation/equipe')
+  } else if (data.departement === 'captation') {
+    const { error } = await supabase.from('membres_captation').insert({
+      prenom,
+      nom,
+      email,
+      telephone: data.telephone?.trim() || null,
+      actif:     true,
+      roles:     ['cameraman'],
+    })
+    insertError = error
+    revalidatePath('/captation/equipe')
+  } else if (data.departement === 'community') {
+    const { error } = await supabase.from('membres_cm').insert({
+      prenom,
+      nom,
+      email,
+      telephone:  data.telephone?.trim() || null,
+      actif:      true,
+      specialites: [],
+      plateformes: [],
+    })
+    insertError = error
+    revalidatePath('/community')
+  } else if (data.departement === 'annonces') {
+    const { error } = await supabase.from('membres_annonces').insert({
+      prenom,
+      nom,
+      email,
+      telephone: data.telephone?.trim() || null,
+      actif:     true,
+      role:      'redacteur',
+    })
+    insertError = error
+    revalidatePath('/annonces/equipe')
+  } else if (data.departement === 'projection') {
+    const { error } = await supabase.from('membres_projection').insert({
+      prenom,
+      nom,
+      email,
+      telephone: data.telephone?.trim() || null,
+      actif:     true,
+      roles:     ['operateur_diffusion'],
+    })
+    insertError = error
+    revalidatePath('/projection/equipe')
+  }
 
   if (insertError) return { error: insertError.message }
 

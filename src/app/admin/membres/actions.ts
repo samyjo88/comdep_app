@@ -22,8 +22,13 @@ export async function inviteMemberAction(formData: FormData): Promise<{ error?: 
     const role       = (formData.get('role')       as AppRole) || 'membre'
 
     const admin = createAdminClient()
+    const hdrs   = await headers()
+    const proto  = hdrs.get('x-forwarded-proto')
+    const host   = hdrs.get('host')
+    const origin = hdrs.get('origin') ?? (proto && host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL ?? ''))
     const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { prenom, nom },
+      redirectTo: `${origin}/auth/callback`,
     })
     if (error) return { error: error.message }
 

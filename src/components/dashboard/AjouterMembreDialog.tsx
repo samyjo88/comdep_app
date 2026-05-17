@@ -104,6 +104,8 @@ export function AjouterMembreDialog() {
                 <SelectItem value="son">Sonorisation</SelectItem>
                 <SelectItem value="captation">Captation Vidéo</SelectItem>
                 <SelectItem value="community">Community Management</SelectItem>
+                <SelectItem value="annonces">Annonces</SelectItem>
+                <SelectItem value="projection">Projection</SelectItem>
               </SelectContent>
             </Select>
           </div>

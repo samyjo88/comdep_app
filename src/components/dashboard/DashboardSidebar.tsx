@@ -29,12 +29,28 @@ const GENERAL_ITEMS = [
   { label: 'Aide',       href: '#',       icon: HelpCircle },
 ]
 
-interface Props {
-  cultesDates: string[]
+const MODULE_KEY_MAP: Record<string, string> = {
+  son:        '/sonorisation',
+  captation:  '/captation',
+  community:  '/community',
+  annonces:   '/annonces',
+  projection: '/projection',
 }
 
-export function DashboardSidebar({ cultesDates }: Props) {
+interface Props {
+  cultesDates: string[]
+  modulesAccessibles?: string[] | null
+}
+
+export function DashboardSidebar({ cultesDates, modulesAccessibles }: Props) {
   const pathname = usePathname()
+
+  const visibleModules = modulesAccessibles == null
+    ? MODULES
+    : MODULES.filter(m => {
+        const key = Object.keys(MODULE_KEY_MAP).find(k => MODULE_KEY_MAP[k] === m.href)
+        return key != null && modulesAccessibles.includes(key)
+      })
 
   return (
     <aside className="hidden lg:flex flex-col w-64 xl:w-72 shrink-0 border-r bg-card overflow-y-auto">
@@ -76,7 +92,7 @@ export function DashboardSidebar({ cultesDates }: Props) {
             Modules
           </p>
           <div className="space-y-0.5">
-            {MODULES.map(({ label, href, icon: Icon, color }) => {
+            {visibleModules.map(({ label, href, icon: Icon, color }) => {
               const active = pathname.startsWith(href)
               return (
                 <Link
