@@ -1,5 +1,7 @@
+import { redirect } from 'next/navigation'
 import { CommunityBreadcrumb, CommunityNavTabs } from '@/components/community/CommunityNavTabs'
 import { PageTransition } from '@/components/PageTransition'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -9,7 +11,21 @@ export const metadata: Metadata = {
   },
 }
 
-export default function CommunityLayout({ children }: { children: React.ReactNode }) {
+export default async function CommunityLayout({ children }: { children: React.ReactNode }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: role } = await supabase.rpc('get_my_role')
+    if (role === 'membre' || role === 'redacteur') {
+      const { data } = await supabase
+        .from('membres_cm')
+        .select('id')
+        .eq('email', user.email)
+        .limit(1)
+      if (!data || data.length === 0) redirect('/dashboard')
+    }
+  }
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card sticky top-12 z-30 shadow-sm">

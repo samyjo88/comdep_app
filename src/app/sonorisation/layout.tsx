@@ -1,6 +1,8 @@
+import { redirect } from 'next/navigation'
 import { Volume2 } from 'lucide-react'
 import { SonoBreadcrumb, SonoNavTabs } from '@/components/sonorisation/SonoNavTabs'
 import { PageTransition } from '@/components/PageTransition'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -10,11 +12,25 @@ export const metadata: Metadata = {
   },
 }
 
-export default function SonorisationLayout({
+export default async function SonorisationLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: role } = await supabase.rpc('get_my_role')
+    if (role === 'membre' || role === 'redacteur') {
+      const { data } = await supabase
+        .from('membres_son')
+        .select('id')
+        .eq('email', user.email)
+        .limit(1)
+      if (!data || data.length === 0) redirect('/dashboard')
+    }
+  }
   return (
     <div className="min-h-screen bg-background">
       {/* Barre de navigation du module */}
