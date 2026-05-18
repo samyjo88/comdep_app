@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { CodeRubrique } from '@/types/annonces'
 
-export const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
 
 const NOM_EGLISE = process.env.NEXT_PUBLIC_NOM_EGLISE ?? 'Notre Église'
 
@@ -40,7 +40,7 @@ export function buildUserMessage(
   return message
 }
 
-// ── Appel Claude ──────────────────────────────────────────────────────────────
+// ── Appel Gemini ──────────────────────────────────────────────────────────────
 
 export async function genererTexteRubrique(
   codeRubrique: CodeRubrique,
@@ -50,25 +50,15 @@ export async function genererTexteRubrique(
   const systemPrompt = PROMPTS_SYSTEME[codeRubrique]
   const userMessage  = buildUserMessage(codeRubrique, donnees, annoncePrecedente)
 
-  const response = await anthropic.messages.create({
-    model:      'claude-sonnet-4-6',
-    max_tokens: 800,
-    system: [
-      {
-        type: 'text',
-        text: systemPrompt,
-        cache_control: { type: 'ephemeral' },
-      },
-    ],
-    messages: [{ role: 'user', content: userMessage }],
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash',
+    systemInstruction: systemPrompt,
   })
 
-  const texte = response.content
-    .filter(b => b.type === 'text')
-    .map(b => (b as { type: 'text'; text: string }).text)
-    .join('')
-
-  const tokens = response.usage.input_tokens + response.usage.output_tokens
+  const result = await model.generateContent(userMessage)
+  const texte  = result.response.text()
+  const usage  = result.response.usageMetadata
+  const tokens = (usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0)
 
   return { texte, tokens }
 }
