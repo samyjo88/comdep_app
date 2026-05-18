@@ -13,8 +13,9 @@ import {
   Mail, Phone, Zap,
 } from 'lucide-react'
 import type { Metadata } from 'next'
-import { CountdownDimanche }   from '@/components/dashboard/CountdownDimanche'
-import { AjouterMembreDialog } from '@/components/dashboard/AjouterMembreDialog'
+import { CountdownDimanche }              from '@/components/dashboard/CountdownDimanche'
+import { AjouterMembreDialog }             from '@/components/dashboard/AjouterMembreDialog'
+import { DeleteMembreDashboardButton }     from '@/components/dashboard/DeleteMembreDashboardButton'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -953,7 +954,7 @@ const DEPT_COLORS: Record<string, { badge: string; avatarBg: string; avatarText:
   },
 }
 
-function SectionEquipe({ membres }: { membres: MembreUnifie[] }) {
+function SectionEquipe({ membres, isSuperAdmin }: { membres: MembreUnifie[]; isSuperAdmin: boolean }) {
   return (
     <section id="equipe">
       <div className="flex items-center justify-between mb-4">
@@ -1017,6 +1018,15 @@ function SectionEquipe({ membres }: { membres: MembreUnifie[] }) {
                     )}
                   </div>
                 </div>
+
+                {/* Bouton suppression — super_admin uniquement */}
+                {isSuperAdmin && (
+                  <DeleteMembreDashboardButton
+                    id={m.id}
+                    departement={m.departement}
+                    nomComplet={`${m.prenom} ${m.nom}`}
+                  />
+                )}
               </div>
             )
           })}
@@ -1055,6 +1065,10 @@ function Skeleton() {
 
 async function PageContent() {
   const d = await getDashboardData()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: role } = await supabase.rpc('get_my_role')
+  const isSuperAdmin = role === 'super_admin'
   const a = d.alerteAnnonces
 
   return (
@@ -1141,7 +1155,7 @@ async function PageContent() {
       </section>
 
       {/* Liste complète de l'équipe */}
-      <SectionEquipe membres={d.equipeUnifiee} />
+      <SectionEquipe membres={d.equipeUnifiee} isSuperAdmin={isSuperAdmin} />
 
       {/* Statistiques */}
       <section id="stats">
