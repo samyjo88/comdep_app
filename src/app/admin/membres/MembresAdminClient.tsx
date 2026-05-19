@@ -336,51 +336,49 @@ export function MembresAdminClient({ membres }: { membres: Membre[] }) {
   })
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative sm:w-72">
-          <Input
-            placeholder="Rechercher un membre…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-3"
-          />
-        </div>
+        <Input
+          placeholder="Rechercher un membre…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="sm:w-80"
+        />
         <InviteDialog />
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border overflow-x-auto">
+      <div className="rounded-xl border shadow-sm overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40">
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Membre</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Rôle</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
+            <tr className="border-b bg-muted/50">
+              <th className="px-5 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wide">Membre</th>
+              <th className="px-5 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wide">Rôle</th>
+              <th className="px-5 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wide">Statut</th>
+              <th className="px-5 py-3.5 text-left font-semibold text-muted-foreground text-xs uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                <td colSpan={4} className="px-5 py-12 text-center text-muted-foreground">
                   Aucun membre trouvé
                 </td>
               </tr>
             )}
             {filtered.map(m => (
-              <tr key={m.id} className="hover:bg-muted/20 transition-colors">
-                <td className="px-4 py-3">
-                  <p className="font-medium">{m.prenom} {m.nom}</p>
-                  <p className="text-xs text-muted-foreground">{m.email}</p>
+              <tr key={m.id} className="hover:bg-muted/25 transition-colors">
+                <td className="px-5 py-4">
+                  <p className="font-medium leading-snug">{m.prenom} {m.nom}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{m.email}</p>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4">
                   <RoleSelector membre={m} />
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4">
                   {m.actif ? (
-                    <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50 dark:bg-green-950/20">
+                    <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
                       Actif
                     </Badge>
                   ) : (
@@ -389,7 +387,7 @@ export function MembresAdminClient({ membres }: { membres: Membre[] }) {
                     </Badge>
                   )}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-4">
                   <MemberActions membre={m} />
                 </td>
               </tr>
@@ -398,7 +396,7 @@ export function MembresAdminClient({ membres }: { membres: Membre[] }) {
         </table>
       </div>
 
-      <p className="text-xs text-muted-foreground">{membres.length} membre{membres.length > 1 ? 's' : ''} au total</p>
+      <p className="text-xs text-muted-foreground pl-1">{membres.length} membre{membres.length > 1 ? 's' : ''} au total</p>
     </div>
   )
 }
