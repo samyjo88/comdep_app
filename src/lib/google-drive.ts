@@ -7,15 +7,17 @@ function initDriveClient(): drive_v3.Drive {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
   const key   = process.env.GOOGLE_PRIVATE_KEY
 
-  if (!email || !key) {
-    throw new Error(
-      'GOOGLE_SERVICE_ACCOUNT_EMAIL ou GOOGLE_PRIVATE_KEY non configurées'
-    )
+  if (!email) throw new Error('GOOGLE_SERVICE_ACCOUNT_EMAIL non configurée')
+  if (!key)   throw new Error('GOOGLE_PRIVATE_KEY non configurée')
+
+  const normalizedKey = key.replace(/\\n/g, '\n')
+  if (!normalizedKey.includes('-----BEGIN')) {
+    throw new Error('GOOGLE_PRIVATE_KEY invalide — la clé doit commencer par -----BEGIN PRIVATE KEY-----')
   }
 
   const auth = new google.auth.JWT({
     email,
-    key: key.replace(/\\n/g, '\n'),
+    key: normalizedKey,
     scopes: ['https://www.googleapis.com/auth/drive'],
   })
 

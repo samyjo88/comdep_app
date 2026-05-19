@@ -45,6 +45,9 @@ function getSupabaseAdmin() {
 
 function driveErreur(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e)
+  if (msg.includes('non configurée') || msg.includes('invalide —')) {
+    return `Configuration Google Drive incorrecte : ${msg}`
+  }
   if (msg.includes('invalid_grant') || msg.includes('token') || msg.includes('JWT')) {
     return 'Impossible de contacter Google Drive. Le token de service est expiré ou invalide — vérifiez GOOGLE_PRIVATE_KEY.'
   }
@@ -56,9 +59,6 @@ function driveErreur(e: unknown): string {
   }
   if (msg.includes('permission') || msg.includes('403') || msg.includes('forbidden')) {
     return 'Impossible de contacter Google Drive. Permission refusée — partagez le dossier racine avec le compte de service.'
-  }
-  if (msg.includes('GOOGLE_SERVICE_ACCOUNT') || msg.includes('GOOGLE_PRIVATE_KEY') || msg.includes('non configurée')) {
-    return 'Impossible de contacter Google Drive. Vérifiez la configuration (GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_DRIVE_DOSSIER_RACINE_ID).'
   }
   return `Impossible de contacter Google Drive. ${msg}`
 }
