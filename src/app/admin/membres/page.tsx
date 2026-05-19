@@ -44,14 +44,14 @@ export default async function MembresAdminPage() {
   }))
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/40">
+    <div className="container mx-auto py-8 px-4 max-w-5xl space-y-8">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-11 h-11 rounded-xl bg-purple-100 dark:bg-purple-900/40 shrink-0">
           <Shield className="h-5 w-5 text-purple-600 dark:text-purple-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Gestion des membres</h1>
-          <p className="text-sm text-muted-foreground">Inviter, gérer les rôles et désactiver des comptes</p>
+          <h1 className="text-2xl font-bold tracking-tight">Gestion des membres</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Inviter, gérer les rôles et désactiver des comptes</p>
         </div>
       </div>
 
