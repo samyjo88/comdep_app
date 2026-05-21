@@ -34,10 +34,11 @@ export async function createMembreAction(payload: MembrePayload) {
     })
 
     if (inviteError) {
-      if (!inviteError.message.toLowerCase().includes('already')) {
+      const msg = inviteError.message.toLowerCase()
+      if (!msg.includes('already') && !msg.includes('rate limit')) {
         return { error: inviteError.message }
       }
-      // account already exists — continue
+      // account already exists or rate limited — continue
     } else {
       const userId = inviteData?.user?.id
       if (userId) {

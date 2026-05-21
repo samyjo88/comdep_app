@@ -30,12 +30,18 @@ export async function inviteMemberAction(formData: FormData): Promise<{ error?: 
       data: { prenom, nom },
       redirectTo: `${origin}/auth/callback`,
     })
-    if (error) return { error: error.message }
-
-    // Créer le profil et le rôle
-    const userId = data.user.id
-    await admin.from('profiles').upsert({ id: userId, prenom, nom, email, actif: true })
-    await admin.from('user_roles').upsert({ user_id: userId, role })
+    if (error) {
+      const msg = error.message.toLowerCase()
+      if (!msg.includes('already') && !msg.includes('rate limit')) {
+        return { error: error.message }
+      }
+      // account already exists or rate limited — profile/role already exist, skip
+    } else {
+      // Créer le profil et le rôle
+      const userId = data.user.id
+      await admin.from('profiles').upsert({ id: userId, prenom, nom, email, actif: true })
+      await admin.from('user_roles').upsert({ user_id: userId, role })
+    }
 
     revalidatePath('/admin/membres')
     return {}
