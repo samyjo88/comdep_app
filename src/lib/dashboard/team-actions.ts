@@ -35,8 +35,9 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
     redirectTo: `${origin}/auth/callback`,
   })
   if (inviteError) {
-    // Si le compte existe déjà, on continue quand même pour la fiche équipe
-    if (!inviteError.message.toLowerCase().includes('already')) {
+    // Si le compte existe déjà ou rate limit, on continue quand même pour la fiche équipe
+    const msg = inviteError.message.toLowerCase()
+    if (!msg.includes('already') && !msg.includes('rate limit')) {
       return { error: inviteError.message }
     }
   }
