@@ -1,7 +1,9 @@
 import { Suspense, type ElementType } from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { archiverCultesPassés } from '@/lib/annonces'
+import { getModulesAccessibles } from '@/lib/dashboard/modules-access'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -1054,8 +1056,13 @@ function Skeleton() {
 // ── Contenu principal ──────────────────────────────────────────────────────
 
 async function PageContent() {
-  const d = await getDashboardData()
+  const [d, modulesAccessibles] = await Promise.all([
+    getDashboardData(),
+    getModulesAccessibles(),
+  ])
   const a = d.alerteAnnonces
+
+  const canSee = (key: string) => modulesAccessibles == null || modulesAccessibles.includes(key)
 
   return (
     <div className="space-y-8">
@@ -1068,7 +1075,7 @@ async function PageContent() {
       />
 
       {/* ── Alerte annonces urgente ── */}
-      {a && (
+      {a && canSee('annonces') && (
         <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${
           a.jours === 0
             ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40'
@@ -1109,34 +1116,44 @@ async function PageContent() {
       <section id="modules">
         <h2 className="text-base font-semibold mb-4">Modules</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <CarteModule
-            icon={Volume2} label="Sonorisation" href="/sonorisation"
-            iconCls="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
-            info={d.sonoInfo} primary
-          />
-          <CarteModule
-            icon={Monitor} label="Projection / Proclaim" href="/projection"
-            iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
-            info={d.projInfo}
-          />
-          <CarteModule
-            icon={Megaphone} label="Annonces" href="/annonces"
-            iconCls={d.annoncesInfo.statut === 'urgent'
-              ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
-              : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-            }
-            info={d.annoncesInfo}
-          />
-          <CarteModule
-            icon={Video} label="Captation Vidéo" href="/captation"
-            iconCls="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"
-            info={d.captationInfo}
-          />
-          <CarteModule
-            icon={Share2} label="Community Management" href="/community"
-            iconCls="bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"
-            info={d.communityInfo}
-          />
+          {canSee('son') && (
+            <CarteModule
+              icon={Volume2} label="Sonorisation" href="/sonorisation"
+              iconCls="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+              info={d.sonoInfo} primary
+            />
+          )}
+          {canSee('projection') && (
+            <CarteModule
+              icon={Monitor} label="Projection / Proclaim" href="/projection"
+              iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
+              info={d.projInfo}
+            />
+          )}
+          {canSee('annonces') && (
+            <CarteModule
+              icon={Megaphone} label="Annonces" href="/annonces"
+              iconCls={d.annoncesInfo.statut === 'urgent'
+                ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
+                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+              }
+              info={d.annoncesInfo}
+            />
+          )}
+          {canSee('captation') && (
+            <CarteModule
+              icon={Video} label="Captation Vidéo" href="/captation"
+              iconCls="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"
+              info={d.captationInfo}
+            />
+          )}
+          {canSee('community') && (
+            <CarteModule
+              icon={Share2} label="Community Management" href="/community"
+              iconCls="bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"
+              info={d.communityInfo}
+            />
+          )}
         </div>
       </section>
 
@@ -1160,7 +1177,11 @@ async function PageContent() {
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
   return (
     <div className="container mx-auto py-7 px-5 max-w-5xl space-y-2">
       <div className="mb-5">

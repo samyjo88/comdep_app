@@ -4,17 +4,25 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X, LayoutDashboard, Volume2, Monitor, Megaphone, Video, Share2 } from 'lucide-react'
 
-const MODULES = [
-  { label: 'Vue d\'ensemble',       href: '/dashboard',    icon: LayoutDashboard, colour: 'text-primary' },
-  { label: 'Sonorisation',          href: '/sonorisation', icon: Volume2,          colour: 'text-blue-600' },
-  { label: 'Projection / Proclaim', href: '/projection',   icon: Monitor,          colour: 'text-purple-600' },
-  { label: 'Annonces',              href: '/annonces',     icon: Megaphone,        colour: 'text-amber-600' },
-  { label: 'Captation Vidéo',       href: '/captation',    icon: Video,            colour: 'text-red-600' },
-  { label: 'Community Management',  href: '/community',    icon: Share2,           colour: 'text-green-600' },
+const ALL_MODULES = [
+  { key: null,         label: 'Vue d\'ensemble',       href: '/dashboard',    icon: LayoutDashboard, colour: 'text-primary'    },
+  { key: 'son',        label: 'Sonorisation',          href: '/sonorisation', icon: Volume2,          colour: 'text-blue-600'  },
+  { key: 'projection', label: 'Projection / Proclaim', href: '/projection',   icon: Monitor,          colour: 'text-purple-600'},
+  { key: 'annonces',   label: 'Annonces',              href: '/annonces',     icon: Megaphone,        colour: 'text-amber-600' },
+  { key: 'captation',  label: 'Captation Vidéo',       href: '/captation',    icon: Video,            colour: 'text-red-600'   },
+  { key: 'community',  label: 'Community Management',  href: '/community',    icon: Share2,           colour: 'text-green-600' },
 ]
 
-export function MobileMenu() {
+interface Props {
+  modulesAccessibles?: string[] | null
+}
+
+export function MobileMenu({ modulesAccessibles }: Props) {
   const [open, setOpen] = useState(false)
+
+  const modules = modulesAccessibles == null
+    ? ALL_MODULES
+    : ALL_MODULES.filter(m => m.key === null || modulesAccessibles.includes(m.key))
 
   return (
     <div className="sm:hidden">
@@ -37,7 +45,7 @@ export function MobileMenu() {
           {/* Dropdown panel */}
           <div className="fixed top-12 left-0 right-0 z-50 bg-card border-b shadow-lg">
             <nav className="container mx-auto max-w-7xl px-4 py-1 divide-y divide-border/60">
-              {MODULES.map(({ label, href, icon: Icon, colour }) => (
+              {modules.map(({ label, href, icon: Icon, colour }) => (
                 <Link
                   key={href}
                   href={href}
