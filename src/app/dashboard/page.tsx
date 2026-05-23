@@ -1,5 +1,6 @@
 import { Suspense, type ElementType } from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { archiverCultesPassés } from '@/lib/annonces'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -1160,7 +1161,11 @@ async function PageContent() {
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
   return (
     <div className="container mx-auto py-7 px-5 max-w-5xl space-y-2">
       <div className="mb-5">
