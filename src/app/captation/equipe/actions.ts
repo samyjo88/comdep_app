@@ -55,7 +55,7 @@ export async function creerMembreCaptationAction(
 
       const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
         data: { prenom, nom },
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: `${origin}/auth/callback?next=/profil/reset-password`,
       })
 
       if (inviteError) {
@@ -126,6 +126,31 @@ export async function toggleActifMembreCaptationAction(
       .update({ actif })
       .eq('id', id)
 
+    if (error) return { success: false, error: (error as { message: string }).message }
+
+    revalidatePath('/captation/equipe')
+    return { success: true }
+  } catch (e) {
+    return { success: false, error: String(e) }
+  }
+}
+
+// ── supprimerMembreCaptationAction ─────────────────────────────────────────
+
+export async function supprimerMembreCaptationAction(id: string): Promise<ActionResult> {
+  try {
+    const db = await getDb()
+    const { data: { user } } = await db.auth.getUser()
+    if (!user) return { success: false, error: 'Non authentifié' }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: role } = await (db as any).rpc('get_my_role')
+    if (role !== 'admin' && role !== 'super_admin') {
+      return { success: false, error: 'Accès refusé : seuls les administrateurs peuvent supprimer des membres' }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (db as any).from('membres_captation').delete().eq('id', id)
     if (error) return { success: false, error: (error as { message: string }).message }
 
     revalidatePath('/captation/equipe')

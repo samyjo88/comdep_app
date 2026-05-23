@@ -14,9 +14,10 @@ import {
 } from '@/components/ui/dialog'
 import {
   Plus, Pencil, Phone, Mail, Check, Loader2, AlertCircle,
-  Monitor, Keyboard, Users,
+  Monitor, Keyboard, Users, Trash2,
 } from 'lucide-react'
-import { createMembreAction, updateMembreAction, toggleActifAction } from './actions'
+import { createMembreAction, updateMembreAction, toggleActifAction, supprimerMembreProjectionAction } from './actions'
+import { toast } from 'sonner'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -343,12 +344,24 @@ function MemberCard({
   totalCultes,
   onEdit,
   onToggle,
+  isAdmin,
+  onDeleted,
 }: {
   membre:      Membre
   totalCultes: number
   onEdit:      (m: Membre) => void
   onToggle:    (id: string, actif: boolean) => void
+  isAdmin:     boolean
+  onDeleted:   (id: string) => void
 }) {
+  function handleSupprimer() {
+    if (!confirm(`Supprimer définitivement ${membre.prenom} ${membre.nom} ? Cette action est irréversible.`)) return
+    supprimerMembreProjectionAction(membre.id).then(res => {
+      if (res.error) { toast.error(res.error); return }
+      toast.success('Membre supprimé')
+      onDeleted(membre.id)
+    })
+  }
   const initials   = getInitials(membre.prenom, membre.nom)
   const avatarColor = getAvatarColor(membre.nom + membre.prenom)
 
@@ -424,7 +437,7 @@ function MemberCard({
           </p>
         )}
 
-        {/* Footer: toggle + edit */}
+        {/* Footer: toggle + edit + delete */}
         <div className="flex items-center justify-between pt-1 border-t">
           <div className="flex items-center gap-2">
             <Switch
@@ -435,15 +448,28 @@ function MemberCard({
               {membre.actif ? 'Actif' : 'Inactif'}
             </span>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1.5"
-            onClick={() => onEdit(membre)}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Modifier
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs gap-1.5"
+              onClick={() => onEdit(membre)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Modifier
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={handleSupprimer}
+                title="Supprimer ce membre"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -570,10 +596,12 @@ export default function EquipeClient({
   membres:        initialMembres,
   planning,
   trimestreLabel,
+  isAdmin,
 }: {
   membres:        Membre[]
   planning:       PlanningEntry[]
   trimestreLabel: string
+  isAdmin:        boolean
 }) {
   const router = useRouter()
 
@@ -607,6 +635,10 @@ export default function EquipeClient({
     if (res.error) {
       setMembres(prev => prev.map(m => m.id === id ? { ...m, actif: !newActif } : m))
     }
+  }
+
+  function handleDeleted(id: string) {
+    setMembres(prev => prev.filter(m => m.id !== id))
   }
 
   function openEdit(m: Membre) {
@@ -684,6 +716,8 @@ export default function EquipeClient({
                 totalCultes={total}
                 onEdit={openEdit}
                 onToggle={handleToggleActif}
+                isAdmin={isAdmin}
+                onDeleted={handleDeleted}
               />
             )
           })}

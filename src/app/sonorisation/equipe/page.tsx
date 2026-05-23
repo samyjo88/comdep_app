@@ -15,22 +15,23 @@ async function PageContent() {
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: rawMembres, error } = await (supabase as any)
-    .from('membres_son')
-    .select('*')
-    .order('nom', { ascending: true })
+  const [membresRes, roleRes] = await Promise.all([
+    (supabase as any).from('membres_son').select('*').order('nom', { ascending: true }),
+    (supabase as any).rpc('get_my_role'),
+  ])
 
-  if (error) {
+  if (membresRes.error) {
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-        Erreur de chargement : {(error as { message: string }).message}
+        Erreur de chargement : {(membresRes.error as { message: string }).message}
       </div>
     )
   }
 
-  const membres = (rawMembres ?? []) as MembreSon[]
+  const membres = (membresRes.data ?? []) as MembreSon[]
+  const isAdmin = roleRes.data === 'admin' || roleRes.data === 'super_admin'
 
-  return <EquipeClient membres={membres} />
+  return <EquipeClient membres={membres} isAdmin={isAdmin} />
 }
 
 // ── Skeleton ───────────────────────────────────────────────────────────────

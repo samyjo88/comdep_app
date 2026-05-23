@@ -35,9 +35,10 @@ async function PageContent() {
   const supabase = await createClient() as any
   const { debut, fin, label: trimestreLabel } = bornesTrimestreActuel()
 
-  const [membresRes, cultesRes] = await Promise.all([
+  const [membresRes, cultesRes, roleRes] = await Promise.all([
     supabase.from('membres_captation').select('*').order('nom', { ascending: true }),
     supabase.from('cultes').select('id').gte('date_culte', debut).lte('date_culte', fin),
+    supabase.rpc('get_my_role'),
   ])
 
   if (membresRes.error) {
@@ -70,11 +71,14 @@ async function PageContent() {
     }, {})
   }
 
+  const isAdmin = roleRes.data === 'admin' || roleRes.data === 'super_admin'
+
   return (
     <EquipeCaptationClient
       membres={membres}
       statsParMembre={statsParMembre}
       trimestreLabel={trimestreLabel}
+      isAdmin={isAdmin}
     />
   )
 }

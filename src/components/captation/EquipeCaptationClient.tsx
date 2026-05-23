@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Camera, ImageIcon, Palette, Search } from 'lucide-react'
+import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Camera, ImageIcon, Palette, Search, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { Button }           from '@/components/ui/button'
@@ -41,6 +41,7 @@ import {
   creerMembreCaptationAction,
   modifierMembreCaptationAction,
   toggleActifMembreCaptationAction,
+  supprimerMembreCaptationAction,
 } from '@/app/captation/equipe/actions'
 
 // ── Config ─────────────────────────────────────────────────────────────────
@@ -324,12 +325,14 @@ function MembreModal({
 // ── Carte membre ───────────────────────────────────────────────────────────
 
 function MembreCard({
-  membre, stats, trimestreLabel, onEdit,
+  membre, stats, trimestreLabel, onEdit, isAdmin, onDeleted,
 }: {
   membre:          MembreCaptation
   stats:           StatsParMembre[string] | undefined
   trimestreLabel:  string
   onEdit:          () => void
+  isAdmin:         boolean
+  onDeleted:       (id: string) => void
 }) {
   const [actifLocal, setActifLocal]   = useState(membre.actif)
   const [isPending, startTransition]  = useTransition()
@@ -345,6 +348,16 @@ function MembreCard({
     startTransition(async () => {
       const res = await toggleActifMembreCaptationAction(membre.id, newActif)
       if (!res.success) setActifLocal(!newActif)
+    })
+  }
+
+  function handleSupprimer() {
+    if (!confirm(`Supprimer définitivement ${membre.prenom} ${membre.nom} ? Cette action est irréversible.`)) return
+    startTransition(async () => {
+      const res = await supprimerMembreCaptationAction(membre.id)
+      if (!res.success) { toast.error(res.error); return }
+      toast.success('Membre supprimé')
+      onDeleted(membre.id)
     })
   }
 
@@ -455,6 +468,17 @@ function MembreCard({
                 : <><UserCheck className="h-3.5 w-3.5" />Réactiver</>
             }
           </Button>
+          {isAdmin && (
+            <Button
+              variant="ghost" size="sm"
+              className="min-h-[40px] px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleSupprimer}
+              disabled={isPending}
+              title="Supprimer ce membre"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -560,17 +584,23 @@ const FILTRES: { value: Filtre; label: string }[] = [
 ]
 
 export function EquipeCaptationClient({
-  membres, statsParMembre, trimestreLabel,
+  membres: initialMembres, statsParMembre, trimestreLabel, isAdmin,
 }: {
   membres:         MembreCaptation[]
   statsParMembre:  StatsParMembre
   trimestreLabel:  string
+  isAdmin:         boolean
 }) {
+  const [membres, setMembres]                 = useState<MembreCaptation[]>(initialMembres)
   const [filtre, setFiltre]                   = useState<Filtre>('tous')
   const [search, setSearch]                   = useState('')
   const [sort, setSort]                       = useState<'nom-az' | 'nom-za' | 'role'>('nom-az')
   const [modalOpen, setModalOpen]             = useState(false)
   const [membreEnEdition, setMembreEnEdition] = useState<MembreCaptation | null>(null)
+
+  function handleDeleted(id: string) {
+    setMembres(prev => prev.filter(m => m.id !== id))
+  }
 
   const membresFiltres = membres
     .filter(m => {
@@ -681,6 +711,8 @@ export function EquipeCaptationClient({
               stats={statsParMembre[m.id]}
               trimestreLabel={trimestreLabel}
               onEdit={() => openEdit(m)}
+              isAdmin={isAdmin}
+              onDeleted={handleDeleted}
             />
           ))}
         </div>

@@ -32,7 +32,7 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
   // 1. Inviter via Supabase Auth (envoie un email avec lien de création de mot de passe)
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { prenom, nom },
-    redirectTo: `${origin}/auth/callback`,
+    redirectTo: `${origin}/auth/callback?next=/profil/reset-password`,
   })
   if (inviteError) {
     // Si le compte existe déjà ou rate limit, on continue quand même pour la fiche équipe
