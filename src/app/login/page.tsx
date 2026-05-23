@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle } from 'lucide-react'
 import { LoginButton } from './LoginButton'
+import { ForgotPasswordForm } from './ForgotPasswordForm'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Connexion' }
@@ -81,6 +82,8 @@ export default async function LoginPage({ searchParams }: Props) {
 
           <LoginButton />
         </form>
+
+        <ForgotPasswordForm />
       </div>
     </main>
   )
