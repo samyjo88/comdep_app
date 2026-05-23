@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import Link from "next/link";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { MobileMenu }       from "@/components/nav/MobileMenu";
+import { NotificationBell }    from "@/components/notifications/NotificationBell";
+import { MobileMenuServer }   from "@/components/nav/MobileMenuServer";
 import { ThemeProvider }    from "@/components/providers/ThemeProvider";
 import { ThemeToggle }      from "@/components/nav/ThemeToggle";
 import { UserMenu }             from "@/components/nav/UserMenu";
@@ -54,7 +54,7 @@ export default function RootLayout({
             <header className="sticky top-0 z-40 h-12 border-b bg-card/95 backdrop-blur-sm shadow-sm shrink-0">
               <div className="container mx-auto px-4 max-w-7xl h-full flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <MobileMenu />
+                  <MobileMenuServer />
                   <Link
                     href="/dashboard"
                     className="flex items-center gap-2.5 font-bold text-sm hover:opacity-80 transition-opacity"
