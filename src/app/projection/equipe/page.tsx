@@ -26,12 +26,13 @@ async function getData() {
   const supabase = await createClient() as any
 
   // Fetch membres + full planning history (date filtering done client-side)
-  const [membresRes, planningRes] = await Promise.all([
+  const [membresRes, planningRes, roleRes] = await Promise.all([
     supabase.from('membres_projection')
       .select('id, nom, prenom, telephone, email, roles, actif, notes, created_at')
       .order('nom', { ascending: true }),
     supabase.from('planning_projection')
       .select('membre_id, role_du_jour, cultes(date_culte)'),
+    supabase.rpc('get_my_role'),
   ])
 
   const trimestreStart = getTrimestreStart()
@@ -47,19 +48,21 @@ async function getData() {
     }))
 
   return {
-    membres:          ((membresRes.data ?? []) as Row[]) as Membre[],
+    membres:        ((membresRes.data ?? []) as Row[]) as Membre[],
     planning,
-    trimestreLabel:   getTrimestreLabel(),
+    trimestreLabel: getTrimestreLabel(),
+    isAdmin:        roleRes.data === 'admin' || roleRes.data === 'super_admin',
   }
 }
 
 async function PageContent() {
-  const { membres, planning, trimestreLabel } = await getData()
+  const { membres, planning, trimestreLabel, isAdmin } = await getData()
   return (
     <EquipeClient
       membres={membres}
       planning={planning}
       trimestreLabel={trimestreLabel}
+      isAdmin={isAdmin}
     />
   )
 }

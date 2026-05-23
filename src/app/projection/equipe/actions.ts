@@ -30,7 +30,7 @@ export async function createMembreAction(payload: MembrePayload) {
 
     const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { prenom, nom },
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: `${origin}/auth/callback?next=/profil/reset-password`,
     })
 
     if (inviteError) {
@@ -77,6 +77,23 @@ export async function toggleActifAction(id: string, actif: boolean) {
     .from('membres_projection')
     .update({ actif })
     .eq('id', id)
+  if (error) return { error: error.message as string }
+  revalidatePath('/projection/equipe')
+  return {}
+}
+
+export async function supprimerMembreProjectionAction(id: string): Promise<{ error?: string }> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const { data: role } = await supabase.rpc('get_my_role')
+  if (role !== 'admin' && role !== 'super_admin') {
+    return { error: 'Accès refusé : seuls les administrateurs peuvent supprimer des membres' }
+  }
+
+  const { error } = await supabase.from('membres_projection').delete().eq('id', id)
   if (error) return { error: error.message as string }
   revalidatePath('/projection/equipe')
   return {}

@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Search } from 'lucide-react'
+import { Plus, Phone, Mail, Loader2, UserX, UserCheck, Users, Search, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
@@ -28,7 +28,7 @@ import {
 
 import { useIsMobile } from '@/hooks/use-media-query'
 import {
-  creerMembre, modifierMembre, modifierActiveMembre,
+  creerMembre, modifierMembre, modifierActiveMembre, supprimerMembre,
 } from '@/lib/sonorisation/membres-actions'
 import type { MembreSon, RoleSon } from '@/lib/supabase/types'
 
@@ -251,7 +251,14 @@ function MembreModal({
 
 // ── Carte membre ───────────────────────────────────────────────────────────
 
-function MembreCard({ membre, onEdit }: { membre: MembreSon; onEdit: () => void }) {
+function MembreCard({
+  membre, onEdit, isAdmin, onDeleted,
+}: {
+  membre: MembreSon
+  onEdit: () => void
+  isAdmin: boolean
+  onDeleted: (id: number) => void
+}) {
   const [actifLocal, setActifLocal] = useState(membre.actif)
   const [isPending, startTransition] = useTransition()
 
@@ -269,6 +276,16 @@ function MembreCard({ membre, onEdit }: { membre: MembreSon; onEdit: () => void 
   function handleDesactiver() {
     if (actifLocal && !confirm(`Désactiver ${membre.prenom} ${membre.nom} ?`)) return
     handleToggleActif(!actifLocal)
+  }
+
+  function handleSupprimer() {
+    if (!confirm(`Supprimer définitivement ${membre.prenom} ${membre.nom} ? Cette action est irréversible.`)) return
+    startTransition(async () => {
+      const res = await supprimerMembre(membre.id)
+      if (!res.success) { toast.error(res.error); return }
+      toast.success('Membre supprimé')
+      onDeleted(membre.id)
+    })
   }
 
   return (
@@ -347,6 +364,17 @@ function MembreCard({ membre, onEdit }: { membre: MembreSon; onEdit: () => void 
               <><UserCheck className="h-3.5 w-3.5" /> Réactiver</>
             )}
           </Button>
+          {isAdmin && (
+            <Button
+              variant="ghost" size="sm"
+              className="min-h-[44px] px-2.5 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleSupprimer}
+              disabled={isPending}
+              title="Supprimer ce membre"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -357,12 +385,17 @@ function MembreCard({ membre, onEdit }: { membre: MembreSon; onEdit: () => void 
 
 type Filtre = 'tous' | 'actifs' | 'inactifs'
 
-export function EquipeClient({ membres }: { membres: MembreSon[] }) {
+export function EquipeClient({ membres: initialMembres, isAdmin }: { membres: MembreSon[]; isAdmin: boolean }) {
+  const [membres, setMembres]                 = useState<MembreSon[]>(initialMembres)
   const [filtre, setFiltre]                   = useState<Filtre>('actifs')
   const [search, setSearch]                   = useState('')
   const [sort, setSort]                       = useState<'nom-az' | 'nom-za' | 'role'>('nom-az')
   const [modalOpen, setModalOpen]             = useState(false)
   const [membreEnEdition, setMembreEnEdition] = useState<MembreSon | null>(null)
+
+  function handleDeleted(id: number) {
+    setMembres(prev => prev.filter(m => m.id !== id))
+  }
 
   const membresFiltres = membres
     .filter(m => {
@@ -473,7 +506,7 @@ export function EquipeClient({ membres }: { membres: MembreSon[] }) {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {membresFiltres.map(m => (
-            <MembreCard key={m.id} membre={m} onEdit={() => openEdit(m)} />
+            <MembreCard key={m.id} membre={m} onEdit={() => openEdit(m)} isAdmin={isAdmin} onDeleted={handleDeleted} />
           ))}
         </div>
       )}
