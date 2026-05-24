@@ -120,6 +120,15 @@ export async function toggleActifMembreCaptationAction(
 ): Promise<ActionResult> {
   try {
     const db = await getDb()
+    const { data: { user } } = await db.auth.getUser()
+    if (!user) return { success: false, error: 'Non authentifié' }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: role } = await (db as any).rpc('get_my_role')
+    if (role !== 'admin' && role !== 'super_admin') {
+      return { success: false, error: 'Accès refusé : seuls les administrateurs peuvent modifier le statut des membres' }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (db as any)
       .from('membres_captation')

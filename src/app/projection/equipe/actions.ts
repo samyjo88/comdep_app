@@ -73,6 +73,14 @@ export async function updateMembreAction(id: string, payload: Partial<MembrePayl
 export async function toggleActifAction(id: string, actif: boolean) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  const { data: role } = await supabase.rpc('get_my_role')
+  if (role !== 'admin' && role !== 'super_admin') {
+    return { error: 'Accès refusé : seuls les administrateurs peuvent modifier le statut des membres' }
+  }
+
   const { error } = await supabase
     .from('membres_projection')
     .update({ actif })
