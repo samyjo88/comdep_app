@@ -440,13 +440,17 @@ function MemberCard({
         {/* Footer: toggle + edit + delete */}
         <div className="flex items-center justify-between pt-1 border-t">
           <div className="flex items-center gap-2">
-            <Switch
-              checked={membre.actif}
-              onCheckedChange={v => onToggle(membre.id, v)}
-            />
-            <span className="text-xs text-muted-foreground">
-              {membre.actif ? 'Actif' : 'Inactif'}
-            </span>
+            {isAdmin && (
+              <>
+                <Switch
+                  checked={membre.actif}
+                  onCheckedChange={v => onToggle(membre.id, v)}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {membre.actif ? 'Actif' : 'Inactif'}
+                </span>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <Button

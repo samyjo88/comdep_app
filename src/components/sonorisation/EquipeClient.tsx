@@ -307,12 +307,14 @@ function MembreCard({
               </Badge>
             </div>
           </div>
-          <Switch
-            checked={actifLocal}
-            onCheckedChange={handleToggleActif}
-            disabled={isPending}
-            title={actifLocal ? 'Cliquer pour désactiver' : 'Cliquer pour activer'}
-          />
+          {isAdmin && (
+            <Switch
+              checked={actifLocal}
+              onCheckedChange={handleToggleActif}
+              disabled={isPending}
+              title={actifLocal ? 'Cliquer pour désactiver' : 'Cliquer pour activer'}
+            />
+          )}
         </div>
       </CardHeader>
 
@@ -345,25 +347,27 @@ function MembreCard({
           <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={onEdit} disabled={isPending}>
             Modifier
           </Button>
-          <Button
-            variant="ghost" size="sm"
-            className={cn(
-              'flex-1 min-h-[44px] gap-1 text-xs',
-              actifLocal
-                ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
-                : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
-            )}
-            onClick={handleDesactiver}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : actifLocal ? (
-              <><UserX className="h-3.5 w-3.5" /> Désactiver</>
-            ) : (
-              <><UserCheck className="h-3.5 w-3.5" /> Réactiver</>
-            )}
-          </Button>
+          {isAdmin && (
+            <Button
+              variant="ghost" size="sm"
+              className={cn(
+                'flex-1 min-h-[44px] gap-1 text-xs',
+                actifLocal
+                  ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
+                  : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
+              )}
+              onClick={handleDesactiver}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : actifLocal ? (
+                <><UserX className="h-3.5 w-3.5" /> Désactiver</>
+              ) : (
+                <><UserCheck className="h-3.5 w-3.5" /> Réactiver</>
+              )}
+            </Button>
+          )}
           {isAdmin && (
             <Button
               variant="ghost" size="sm"
