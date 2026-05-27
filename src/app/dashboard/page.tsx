@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { archiverCultesPassés } from '@/lib/annonces'
-import { getModulesAccessibles } from '@/lib/dashboard/modules-access'
+import { getModulesAccessibles, getMyRole } from '@/lib/dashboard/modules-access'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -955,7 +955,7 @@ const DEPT_COLORS: Record<string, { badge: string; avatarBg: string; avatarText:
   },
 }
 
-function SectionEquipe({ membres }: { membres: MembreUnifie[] }) {
+function SectionEquipe({ membres, isAdmin }: { membres: MembreUnifie[], isAdmin: boolean }) {
   return (
     <section id="equipe">
       <div className="flex items-center justify-between mb-4">
@@ -965,7 +965,7 @@ function SectionEquipe({ membres }: { membres: MembreUnifie[] }) {
             {membres.length} membre{membres.length > 1 ? 's' : ''} actif{membres.length > 1 ? 's' : ''}
           </p>
         </div>
-        <AjouterMembreDialog />
+        {isAdmin && <AjouterMembreDialog />}
       </div>
 
       {membres.length === 0 ? (
@@ -1056,11 +1056,13 @@ function Skeleton() {
 // ── Contenu principal ──────────────────────────────────────────────────────
 
 async function PageContent() {
-  const [d, modulesAccessibles] = await Promise.all([
+  const [d, modulesAccessibles, role] = await Promise.all([
     getDashboardData(),
     getModulesAccessibles(),
+    getMyRole(),
   ])
   const a = d.alerteAnnonces
+  const isAdmin = role === 'super_admin' || role === 'admin'
 
   const canSee = (key: string) => modulesAccessibles == null || modulesAccessibles.includes(key)
 
@@ -1158,7 +1160,7 @@ async function PageContent() {
       </section>
 
       {/* Liste complète de l'équipe */}
-      <SectionEquipe membres={d.equipeUnifiee} />
+      <SectionEquipe membres={d.equipeUnifiee} isAdmin={isAdmin} />
 
       {/* Statistiques */}
       <section id="stats">
