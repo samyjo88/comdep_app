@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { headers }        from 'next/headers'
-import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type Departement = 'son' | 'captation' | 'community' | 'annonces' | 'projection'
@@ -58,13 +57,13 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
   }
 
   // 4. Ajouter à la table département (fiche équipe pour les plannings)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = await createClient() as any
+  // Utiliser le client admin pour bypasser les RLS sur les tables de membres
+  const deptClient = createAdminClient()
 
   let insertError: { message: string } | null = null
 
   if (data.departement === 'son') {
-    const { error } = await supabase.from('membres_son').insert({
+    const { error } = await deptClient.from('membres_son').insert({
       prenom,
       nom,
       email,
@@ -75,7 +74,7 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
     insertError = error
     revalidatePath('/sonorisation/equipe')
   } else if (data.departement === 'captation') {
-    const { error } = await supabase.from('membres_captation').insert({
+    const { error } = await deptClient.from('membres_captation').insert({
       prenom,
       nom,
       email,
@@ -86,7 +85,7 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
     insertError = error
     revalidatePath('/captation/equipe')
   } else if (data.departement === 'community') {
-    const { error } = await supabase.from('membres_cm').insert({
+    const { error } = await deptClient.from('membres_cm').insert({
       prenom,
       nom,
       email,
@@ -98,7 +97,7 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
     insertError = error
     revalidatePath('/community')
   } else if (data.departement === 'annonces') {
-    const { error } = await supabase.from('membres_annonces').insert({
+    const { error } = await deptClient.from('membres_annonces').insert({
       prenom,
       nom,
       email,
@@ -109,7 +108,7 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
     insertError = error
     revalidatePath('/annonces/equipe')
   } else if (data.departement === 'projection') {
-    const { error } = await supabase.from('membres_projection').insert({
+    const { error } = await deptClient.from('membres_projection').insert({
       prenom,
       nom,
       email,
