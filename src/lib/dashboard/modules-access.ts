@@ -1,4 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient }      from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+export async function getMyRole(): Promise<string | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supabase = await createClient() as any
+  const { data: role } = await supabase.rpc('get_my_role')
+  return (role as string | null) ?? null
+}
 
 export async function getModulesAccessibles(): Promise<string[] | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,12 +23,15 @@ export async function getModulesAccessibles(): Promise<string[] | null> {
   const email = user.email as string | undefined
   if (!email) return []
 
+  // Utiliser le client admin pour bypasser les RLS et lire les tables de membres
+  const admin = createAdminClient()
+
   const [sonRes, captationRes, cmRes, annoncesRes, projRes] = await Promise.all([
-    supabase.from('membres_son').select('id').eq('email', email).limit(1),
-    supabase.from('membres_captation').select('id').eq('email', email).limit(1),
-    supabase.from('membres_cm').select('id').eq('email', email).limit(1),
-    supabase.from('membres_annonces').select('id').eq('email', email).limit(1),
-    supabase.from('membres_projection').select('id').eq('email', email).limit(1),
+    admin.from('membres_son').select('id').eq('email', email).limit(1),
+    admin.from('membres_captation').select('id').eq('email', email).limit(1),
+    admin.from('membres_cm').select('id').eq('email', email).limit(1),
+    admin.from('membres_annonces').select('id').eq('email', email).limit(1),
+    admin.from('membres_projection').select('id').eq('email', email).limit(1),
   ])
 
   const modules: string[] = []
