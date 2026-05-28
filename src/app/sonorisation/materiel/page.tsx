@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { MaterielForm } from '@/components/sonorisation/materiel-form'
 import { MaterielFiltres } from '@/components/sonorisation/materiel-filtres'
+import { MaterielTableClient } from '@/components/sonorisation/MaterielTableClient'
 import { AchatsSection } from '@/components/sonorisation/AchatsSection'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -348,7 +349,7 @@ async function PageContent({ searchParams }: Props) {
             {(q || categorie) ? ' (filtré)' : ' au total'}
           </p>
         </div>
-        <MaterielTableau items={items} />
+        <MaterielTableClient items={items} />
       </div>
 
       <div className="border-t pt-6">
