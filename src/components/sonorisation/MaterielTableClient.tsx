@@ -1,13 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { Pencil, Wrench, AlertCircle, Package } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { Pencil, Trash2, MoreHorizontal, Wrench, AlertCircle, Package } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { MaterielModal } from '@/components/sonorisation/MaterielModal'
+import { supprimerMateriel } from '@/lib/sonorisation/actions'
 import { CATEGORIE_LABEL, STATUT_CONFIG } from '@/lib/sonorisation/constants'
 import type { MaterielSono, EtatMateriel } from '@/lib/supabase/types'
 
@@ -35,10 +40,16 @@ interface Props {
 export function MaterielTableClient({ items }: Props) {
   const [editMateriel, setEditMateriel] = useState<MaterielSono | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [, startTransition] = useTransition()
 
   function openEdit(item: MaterielSono) {
     setEditMateriel(item)
     setModalOpen(true)
+  }
+
+  function handleDelete(item: MaterielSono) {
+    if (!confirm(`Supprimer "${item.nom}" ? Cette action est irréversible.`)) return
+    startTransition(async () => { await supprimerMateriel(item.id) })
   }
 
   if (items.length === 0) {
@@ -75,10 +86,25 @@ export function MaterielTableClient({ items }: Props) {
                   <Badge variant="outline" className={`text-xs font-medium ${etatCfg.className}`}>
                     {etatCfg.label}
                   </Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}
-                    aria-label="Modifier">
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Actions">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openEdit(item)}>
+                        <Pencil className="h-4 w-4 mr-2" /> Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(item)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -190,15 +216,30 @@ export function MaterielTableClient({ items }: Props) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => openEdit(item)}
-                      aria-label="Modifier"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Actions"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEdit(item)}>
+                          <Pencil className="h-4 w-4 mr-2" /> Modifier
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(item)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               )
