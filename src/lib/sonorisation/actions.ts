@@ -2,10 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { CategorieMateriel, EtatMateriel, StatutMateriel } from '@/lib/supabase/types'
 
-// Client sans générique Database (compatibilité supabase-js 2.105)
+// Client utilisateur (respecte le RLS)
 async function getDb() {
   const cookieStore = await cookies()
   return createServerClient(
@@ -21,6 +22,28 @@ async function getDb() {
       },
     }
   )
+}
+
+// Client admin (bypass RLS) — uniquement côté serveur, jamais exposé au client
+function getDbAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } })
+}
+
+// Vérifie que l'utilisateur est autorisé à écrire sur materiel_sono :
+// soit il a le rôle responsable+, soit il est membre actif de l'équipe sono.
+// Utilise le client admin pour lire membres_son sans blocage RLS.
+async function canWriteMateriel(userEmail: string): Promise<boolean> {
+  const admin = getDbAdmin()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (admin as any)
+    .from('membres_son')
+    .select('id')
+    .ilike('email', userEmail)
+    .eq('actif', true)
+    .limit(1)
+  return Array.isArray(data) && data.length > 0
 }
 
 // ── Types partagés ─────────────────────────────────────────────────────────
@@ -63,14 +86,16 @@ export async function creerMateriel(payload: MaterielPayload): Promise<ActionRes
     statut: payload.statut ?? 'disponible',
     created_by: user.id,
   }
-  // Omettre les champs ajoutés par la migration 018 s'ils sont null
-  // pour éviter l'erreur "column not found in schema cache" si la migration
-  // n'a pas encore été appliquée.
   if (insertData.date_envoi_reparation === null) delete insertData.date_envoi_reparation
   if (insertData.description_reparation === null) delete insertData.description_reparation
 
+  // Utiliser le client admin si l'utilisateur est membre sono (son rôle global
+  // peut être 'membre' qui ne passe pas la policy RLS INSERT).
+  const isSono = user.email ? await canWriteMateriel(user.email) : false
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any).from('materiel_sono').insert(insertData)
+  const client: any = isSono ? getDbAdmin() : db
+
+  const { error } = await client.from('materiel_sono').insert(insertData)
 
   if (error) return { success: false, error: (error as { message: string }).message }
 
@@ -91,11 +116,11 @@ export async function modifierMateriel(id: number, payload: MaterielPayload): Pr
   if (updateData.date_envoi_reparation === null) delete updateData.date_envoi_reparation
   if (updateData.description_reparation === null) delete updateData.description_reparation
 
+  const isSono = user.email ? await canWriteMateriel(user.email) : false
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any)
-    .from('materiel_sono')
-    .update(updateData)
-    .eq('id', id)
+  const client: any = isSono ? getDbAdmin() : db
+
+  const { error } = await client.from('materiel_sono').update(updateData).eq('id', id)
 
   if (error) return { success: false, error: (error as { message: string }).message }
 
@@ -111,8 +136,11 @@ export async function modifierStatutMateriel(id: number, statut: StatutMateriel)
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
 
+  const isSono = user.email ? await canWriteMateriel(user.email) : false
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any).from('materiel_sono').update({ statut }).eq('id', id)
+  const client: any = isSono ? getDbAdmin() : db
+
+  const { error } = await client.from('materiel_sono').update({ statut }).eq('id', id)
   if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/sonorisation/inventaire')
@@ -126,8 +154,11 @@ export async function supprimerMateriel(id: number): Promise<ActionResult> {
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
 
+  const isSono = user.email ? await canWriteMateriel(user.email) : false
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any).from('materiel_sono').delete().eq('id', id)
+  const client: any = isSono ? getDbAdmin() : db
+
+  const { error } = await client.from('materiel_sono').delete().eq('id', id)
   if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/sonorisation/materiel')
