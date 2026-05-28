@@ -33,6 +33,7 @@ const schema = z
   .object({
     nom:                    z.string().min(1, 'Le nom est obligatoire'),
     categorie:              z.enum(['microphone', 'enceinte', 'mixette', 'cable', 'autre']),
+    statut:                 z.enum(['disponible', 'emprunte', 'en_maintenance', 'hors_service']),
     quantite_total:         z.number().int().min(1, 'Minimum 1'),
     quantite_disponible:    z.number().int().min(0, 'Minimum 0'),
     etat:                   z.enum(['neuf', 'bon', 'use', 'en_panne']),
@@ -65,6 +66,7 @@ interface Props {
 const defaultValues: FormValues = {
   nom:                    '',
   categorie:              'autre',
+  statut:                 'disponible',
   quantite_total:         1,
   quantite_disponible:    1,
   etat:                   'bon',
@@ -82,6 +84,7 @@ function toFormValues(m: MaterielSono): FormValues {
     nom:                    m.nom,
     categorie:              (['microphone','enceinte','mixette','cable'].includes(m.categorie)
                               ? m.categorie : 'autre') as FormValues['categorie'],
+    statut:                 m.statut,
     quantite_total:         m.quantite_total,
     quantite_disponible:    m.quantite_disponible,
     etat:                   m.etat,
@@ -135,9 +138,27 @@ function FormBody({
           </FormItem>
         )} />
 
+        <FormField control={form.control} name="statut" render={({ field }) => (
+          <FormItem>
+            <FormLabel>Statut <span className="text-destructive">*</span></FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl><SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger></FormControl>
+              <SelectContent>
+                <SelectItem value="disponible">✅ Disponible</SelectItem>
+                <SelectItem value="emprunte">🔵 Emprunté</SelectItem>
+                <SelectItem value="en_maintenance">🟡 En maintenance</SelectItem>
+                <SelectItem value="hors_service">🔴 Hors service</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
         <FormField control={form.control} name="etat" render={({ field }) => (
           <FormItem>
-            <FormLabel>État <span className="text-destructive">*</span></FormLabel>
+            <FormLabel>État physique <span className="text-destructive">*</span></FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl><SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger></FormControl>
               <SelectContent>
@@ -305,6 +326,7 @@ export function MaterielModal({ open, onOpenChange, materiel, onSuccess }: Props
       const payload = {
         nom:                    values.nom,
         categorie:              values.categorie as import('@/lib/supabase/types').CategorieMateriel,
+        statut:                 values.statut as import('@/lib/supabase/types').StatutMateriel,
         quantite_total:         values.quantite_total,
         quantite_disponible:    values.quantite_disponible,
         etat:                   values.etat as import('@/lib/supabase/types').EtatMateriel,
