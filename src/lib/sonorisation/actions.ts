@@ -58,11 +58,19 @@ export async function creerMateriel(payload: MaterielPayload): Promise<ActionRes
   if (!user) return { success: false, error: 'Non authentifié' }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any).from('materiel_sono').insert({
+  const insertData: Record<string, unknown> = {
     ...payload,
     statut: payload.statut ?? 'disponible',
     created_by: user.id,
-  })
+  }
+  // Omettre les champs ajoutés par la migration 018 s'ils sont null
+  // pour éviter l'erreur "column not found in schema cache" si la migration
+  // n'a pas encore été appliquée.
+  if (insertData.date_envoi_reparation === null) delete insertData.date_envoi_reparation
+  if (insertData.description_reparation === null) delete insertData.description_reparation
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (db as any).from('materiel_sono').insert(insertData)
 
   if (error) return { success: false, error: (error as { message: string }).message }
 
@@ -79,9 +87,14 @@ export async function modifierMateriel(id: number, payload: MaterielPayload): Pr
   if (!user) return { success: false, error: 'Non authentifié' }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateData: Record<string, unknown> = { ...payload }
+  if (updateData.date_envoi_reparation === null) delete updateData.date_envoi_reparation
+  if (updateData.description_reparation === null) delete updateData.description_reparation
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (db as any)
     .from('materiel_sono')
-    .update(payload)
+    .update(updateData)
     .eq('id', id)
 
   if (error) return { success: false, error: (error as { message: string }).message }
