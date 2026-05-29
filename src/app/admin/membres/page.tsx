@@ -13,7 +13,7 @@ export default async function MembresAdminPage() {
   const supabase = await createClient() as any
   const { data: role } = await supabase.rpc('get_my_role')
 
-  if (role !== 'super_admin') redirect('/dashboard')
+  if (role !== 'super_admin' && role !== 'admin') redirect('/dashboard')
 
   const admin = createAdminClient()
 
