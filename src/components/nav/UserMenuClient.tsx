@@ -50,7 +50,7 @@ export function UserMenuClient({ initiales, prenom, nom, email, role }: UserMenu
           <p className="text-xs text-muted-foreground truncate">{email}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {role === 'super_admin' && (
+        {(role === 'super_admin' || role === 'admin') && (
           <>
             <DropdownMenuItem asChild>
               <Link href="/admin/membres" className="flex items-center gap-2 cursor-pointer">

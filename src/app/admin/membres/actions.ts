@@ -6,16 +6,16 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
 import type { AppRole }      from '@/lib/supabase/types'
 
-async function assertSuperAdmin() {
+async function assertAdmin() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { data: role } = await supabase.rpc('get_my_role')
-  if (role !== 'super_admin') throw new Error('Accès refusé')
+  if (role !== 'super_admin' && role !== 'admin') throw new Error('Accès refusé')
 }
 
 export async function inviteMemberAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const email      = (formData.get('email')      as string).trim()
     const prenom     = (formData.get('prenom')     as string).trim()
     const nom        = (formData.get('nom')        as string).trim()
@@ -52,7 +52,7 @@ export async function inviteMemberAction(formData: FormData): Promise<{ error?: 
 
 export async function updateRoleAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const userId = formData.get('userId') as string
     const role   = formData.get('role')   as AppRole
 
@@ -69,7 +69,7 @@ export async function updateRoleAction(formData: FormData): Promise<{ error?: st
 
 export async function disableMemberAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const userId = formData.get('userId') as string
 
     const admin = createAdminClient()
@@ -87,7 +87,7 @@ export async function disableMemberAction(formData: FormData): Promise<{ error?:
 
 export async function enableMemberAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const userId = formData.get('userId') as string
 
     const admin = createAdminClient()
@@ -105,7 +105,7 @@ export async function enableMemberAction(formData: FormData): Promise<{ error?: 
 
 export async function resetPasswordAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const email = formData.get('email') as string
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,7 +127,7 @@ export async function resetPasswordAction(formData: FormData): Promise<{ error?:
 
 export async function deleteMembreAction(formData: FormData): Promise<{ error?: string }> {
   try {
-    await assertSuperAdmin()
+    await assertAdmin()
     const userId = formData.get('userId') as string
     const email  = formData.get('email')  as string
 

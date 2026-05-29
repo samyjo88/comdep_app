@@ -105,6 +105,8 @@ async function getDashboardData() {
     materielAlerteRes,
     postsSemaineRes,
     cmSemaineRes,
+    projMembresRes,
+    annoncesMembresRes,
   ] = await Promise.all([
     supabase
       .from('planning_son')
@@ -175,13 +177,23 @@ async function getDashboardData() {
       .select('id, semaine_debut, statut, membres_cm(id, prenom, nom)')
       .eq('semaine_debut', lundi)
       .maybeSingle(),
+    supabase
+      .from('membres_projection')
+      .select('id, prenom, nom, email, telephone, actif')
+      .eq('actif', true),
+    supabase
+      .from('membres_annonces')
+      .select('id, prenom, nom, email, telephone, actif')
+      .eq('actif', true),
   ])
 
-  const prochainSon:      Row | null = sonPlanningRes.data ?? null
-  const membresSon:       Row[]      = sonMembresRes.data ?? []
-  const prochainCulte:    Row | null = cultesRes.data ?? null
-  const membresCaptation: Row[]      = captationMembresRes.data ?? []
-  const membresCM:        Row[]      = cmMembresRes.data ?? []
+  const prochainSon:        Row | null = sonPlanningRes.data ?? null
+  const membresSon:         Row[]      = sonMembresRes.data ?? []
+  const prochainCulte:      Row | null = cultesRes.data ?? null
+  const membresCaptation:   Row[]      = captationMembresRes.data ?? []
+  const membresCM:          Row[]      = cmMembresRes.data ?? []
+  const membresProjection:  Row[]      = projMembresRes.data ?? []
+  const membresAnnonces:    Row[]      = annoncesMembresRes.data ?? []
   const postsPending:     Row[]      = cmPostsEnAttenteRes.data ?? []
   const cantiques:        Row[]      = cantiquesRes.data ?? []
   const membresGeneraux:  Row[]      = membresRes.data ?? []
@@ -320,6 +332,20 @@ async function getDashboardData() {
       departement: 'Community',
       couleur: 'text-green-700 dark:text-green-300',
       bg: 'bg-green-100 dark:bg-green-900/40',
+    })),
+    ...membresProjection.map((m: Row) => ({
+      id: m.id + 30000, prenom: m.prenom, nom: m.nom,
+      email: m.email ?? null, telephone: m.telephone ?? null,
+      departement: 'Projection',
+      couleur: 'text-purple-700 dark:text-purple-300',
+      bg: 'bg-purple-100 dark:bg-purple-900/40',
+    })),
+    ...membresAnnonces.map((m: Row) => ({
+      id: m.id + 40000, prenom: m.prenom, nom: m.nom,
+      email: m.email ?? null, telephone: m.telephone ?? null,
+      departement: 'Annonces',
+      couleur: 'text-amber-700 dark:text-amber-300',
+      bg: 'bg-amber-100 dark:bg-amber-900/40',
     })),
   ]
 
@@ -951,6 +977,16 @@ const DEPT_COLORS: Record<string, { badge: string; avatarBg: string; avatarText:
   Community: {
     badge:      'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
     avatarBg:   'bg-green-600',
+    avatarText: 'text-white',
+  },
+  Projection: {
+    badge:      'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-700',
+    avatarBg:   'bg-purple-600',
+    avatarText: 'text-white',
+  },
+  Annonces: {
+    badge:      'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700',
+    avatarBg:   'bg-amber-500',
     avatarText: 'text-white',
   },
 }
