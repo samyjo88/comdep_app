@@ -125,3 +125,81 @@ export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: 
   revalidatePath('/dashboard')
   return {}
 }
+
+export interface CreerMembreAvecMotDePasseData {
+  prenom:      string
+  nom:         string
+  email:       string
+  telephone:   string | null
+  departement: Departement
+  password:    string
+}
+
+export async function creerMembreAvecMotDePasse(
+  data: CreerMembreAvecMotDePasseData
+): Promise<{ error?: string }> {
+  const email    = data.email.trim()
+  const prenom   = data.prenom.trim()
+  const nom      = data.nom.trim()
+  const password = data.password
+
+  if (!email)    return { error: 'L\'email est obligatoire.' }
+  if (!password) return { error: 'Le mot de passe est obligatoire.' }
+  if (password.length < 8) return { error: 'Le mot de passe doit faire au moins 8 caractères.' }
+
+  const admin = createAdminClient()
+
+  const { data: userData, error: createError } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { prenom, nom },
+  })
+
+  if (createError) return { error: createError.message }
+
+  const userId = userData.user.id
+
+  await admin.from('profiles').upsert({ id: userId, prenom, nom, email, actif: true })
+  await admin.from('user_roles').upsert({ user_id: userId, role: 'membre' })
+
+  const deptClient = createAdminClient()
+  let insertError: { message: string } | null = null
+
+  if (data.departement === 'son') {
+    const { error } = await deptClient.from('membres_son').insert({
+      prenom, nom, email, telephone: data.telephone?.trim() || null, actif: true, role: 'assistant',
+    })
+    insertError = error
+    revalidatePath('/sonorisation/equipe')
+  } else if (data.departement === 'captation') {
+    const { error } = await deptClient.from('membres_captation').insert({
+      prenom, nom, email, telephone: data.telephone?.trim() || null, actif: true, roles: ['cameraman'],
+    })
+    insertError = error
+    revalidatePath('/captation/equipe')
+  } else if (data.departement === 'community') {
+    const { error } = await deptClient.from('membres_cm').insert({
+      prenom, nom, email, telephone: data.telephone?.trim() || null, actif: true, specialites: [], plateformes: [],
+    })
+    insertError = error
+    revalidatePath('/community')
+  } else if (data.departement === 'annonces') {
+    const { error } = await deptClient.from('membres_annonces').insert({
+      prenom, nom, email, telephone: data.telephone?.trim() || null, actif: true, role: 'redacteur',
+    })
+    insertError = error
+    revalidatePath('/annonces/equipe')
+  } else if (data.departement === 'projection') {
+    const { error } = await deptClient.from('membres_projection').insert({
+      prenom, nom, email, telephone: data.telephone?.trim() || null, actif: true, roles: ['operateur_diffusion'],
+    })
+    insertError = error
+    revalidatePath('/projection/equipe')
+  }
+
+  if (insertError) return { error: insertError.message }
+
+  revalidatePath('/dashboard')
+  return {}
+}
