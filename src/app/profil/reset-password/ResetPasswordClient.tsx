@@ -1,29 +1,22 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter }               from 'next/navigation'
-import { KeyRound, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { KeyRound, CheckCircle, AlertCircle } from 'lucide-react'
 import { createClient }            from '@/lib/supabase/client'
 import { Button }                  from '@/components/ui/button'
 import { Input }                   from '@/components/ui/input'
 import { Label }                   from '@/components/ui/label'
 
-export function ResetPasswordClient() {
+interface Props {
+  hasSession: boolean
+}
+
+export function ResetPasswordClient({ hasSession }: Props) {
   const router                   = useRouter()
   const [pending, start]         = useTransition()
   const [error, setError]        = useState('')
   const [success, setSuccess]    = useState(false)
-  const [checking, setChecking]  = useState(true)
-  const [hasSession, setHasSession] = useState(false)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase = createClient() as any
-    supabase.auth.getUser().then(({ data }: { data: { user: unknown } }) => {
-      setHasSession(!!data.user)
-      setChecking(false)
-    })
-  }, [])
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -58,11 +51,7 @@ export function ResetPasswordClient() {
           </div>
         </div>
 
-        {checking ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : !hasSession ? (
+        {!hasSession ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center rounded-lg border border-destructive/50 bg-destructive/10 px-4">
             <AlertCircle className="h-8 w-8 text-destructive" />
             <div>
