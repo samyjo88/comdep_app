@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Shield, UserPlus, Mail, RotateCcw, Ban, CheckCircle, ChevronDown, Trash2, AlertTriangle } from 'lucide-react'
+import { Shield, UserPlus, Mail, RotateCcw, Ban, CheckCircle, ChevronDown, Trash2, AlertTriangle, Layers } from 'lucide-react'
 import { Button }   from '@/components/ui/button'
 import { Input }    from '@/components/ui/input'
 import { Badge }    from '@/components/ui/badge'
@@ -18,7 +18,11 @@ import {
   enableMemberAction,
   resetPasswordAction,
   deleteMembreAction,
+  getDepartementsAction,
+  setDepartementsAction,
+  type Departement,
 } from './actions'
+import { cn } from '@/lib/utils'
 import type { AppRole } from '@/lib/supabase/types'
 
 interface Membre {
@@ -259,6 +263,117 @@ function DeleteDialog({ membre }: { membre: Membre }) {
   )
 }
 
+const ALL_DEPARTEMENTS: { value: Departement; label: string }[] = [
+  { value: 'son',        label: 'Sonorisation' },
+  { value: 'captation',  label: 'Captation' },
+  { value: 'community',  label: 'Community' },
+  { value: 'annonces',   label: 'Annonces' },
+  { value: 'projection', label: 'Projection' },
+]
+
+function DepartementsDialog({ membre }: { membre: Membre }) {
+  const [open, setOpen]           = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [selected, setSelected]   = useState<Departement[]>([])
+  const [error, setError]         = useState('')
+  const [pending, start]          = useTransition()
+
+  async function handleOpen() {
+    setOpen(true)
+    setLoading(true)
+    setError('')
+    const res = await getDepartementsAction(membre.email)
+    setLoading(false)
+    if (res.error) { setError(res.error); return }
+    setSelected(res.departements ?? [])
+  }
+
+  function toggle(dept: Departement) {
+    setSelected(prev =>
+      prev.includes(dept) ? prev.filter(d => d !== dept) : [...prev, dept]
+    )
+  }
+
+  function handleSave() {
+    setError('')
+    start(async () => {
+      const fd = new FormData()
+      fd.set('email', membre.email)
+      fd.set('prenom', membre.prenom)
+      fd.set('nom', membre.nom)
+      fd.set('departements', JSON.stringify(selected))
+      const res = await setDepartementsAction(fd)
+      if (res.error) { setError(res.error); return }
+      setOpen(false)
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={v => { setOpen(v); setError('') }}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={handleOpen}
+          title="Gérer les départements"
+        >
+          <Layers className="h-3.5 w-3.5" />
+          Depts
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Départements — {membre.prenom} {membre.nom}</DialogTitle>
+        </DialogHeader>
+
+        {loading ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">Chargement…</p>
+        ) : (
+          <div className="space-y-3 py-1">
+            <p className="text-xs text-muted-foreground">
+              Cochez les départements auxquels appartient ce membre.
+            </p>
+            <div className="space-y-2">
+              {ALL_DEPARTEMENTS.map(d => (
+                <label
+                  key={d.value}
+                  className={cn(
+                    'flex items-center gap-3 rounded-lg border px-3 py-2.5 cursor-pointer transition-colors',
+                    selected.includes(d.value)
+                      ? 'border-primary/50 bg-primary/5'
+                      : 'border-border hover:bg-muted/50'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(d.value)}
+                    onChange={() => toggle(d.value)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="text-sm font-medium">{d.label}</span>
+                </label>
+              ))}
+            </div>
+
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>
+                Annuler
+              </Button>
+              <Button onClick={handleSave} disabled={pending}>
+                {pending ? 'Enregistrement…' : 'Enregistrer'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function MemberActions({ membre }: { membre: Membre }) {
   const [pending, start] = useTransition()
   const [feedback, setFeedback] = useState('')
@@ -315,6 +430,8 @@ function MemberActions({ membre }: { membre: Membre }) {
           Réactiver
         </Button>
       )}
+
+      <DepartementsDialog membre={membre} />
 
       <DeleteDialog membre={membre} />
 
