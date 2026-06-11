@@ -40,6 +40,7 @@ export default async function ApercuPage({
         rubriques={rubriques}
         nomEglise={process.env.NEXT_PUBLIC_NOM_EGLISE ?? 'Notre Église'}
         statut={data.statut_global}
+        texteInitial={data.texte_genere ?? null}
       />
     </div>
   )

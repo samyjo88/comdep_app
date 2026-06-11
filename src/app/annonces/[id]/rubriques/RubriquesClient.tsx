@@ -944,10 +944,38 @@ function ListeCourriers({
   items:    CourierItem[]
   onChange: (items: CourierItem[]) => void
 }) {
-  function add()             { onChange([...items, { objet: '', contenu: '' }]) }
+  const [resumePending, setResumePending] = useState<number | null>(null)
+
+  function add()             { onChange([...items, { objet: '', contenu: '', resume_ia: '' }]) }
   function remove(i: number) { onChange(items.filter((_, idx) => idx !== i)) }
-  function patch(i: number, k: keyof CourierItem, v: string) {
-    onChange(items.map((item, idx) => idx === i ? { ...item, [k]: v } : item))
+  function patch(i: number, p: Partial<CourierItem>) {
+    onChange(items.map((item, idx) => idx === i ? { ...item, ...p } : item))
+  }
+
+  async function resumer(i: number) {
+    const item = items[i]
+    if (!item.contenu.trim()) {
+      toast.error('Saisis d\'abord le contenu du courrier')
+      return
+    }
+    setResumePending(i)
+    try {
+      const res = await fetch('/api/annonces/resumer-courrier', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ contenu: item.contenu, objet: item.objet }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.error) {
+        toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+        return
+      }
+      patch(i, { resume_ia: json.resume as string })
+    } catch {
+      toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+    } finally {
+      setResumePending(null)
+    }
   }
 
   return (
@@ -955,13 +983,38 @@ function ListeCourriers({
       {items.map((item, i) => (
         <div key={i} className="grid grid-cols-[1fr_auto] gap-2">
           <div className="rounded-lg border p-3 bg-muted/30 space-y-2">
-            <Input placeholder="Objet du courrier" value={item.objet} onChange={e => patch(i, 'objet', e.target.value)} />
+            <Input placeholder="Objet du courrier" value={item.objet} onChange={e => patch(i, { objet: e.target.value })} />
             <Textarea
               placeholder="Contenu brut du courrier — l'IA en rédigera le résumé…"
               value={item.contenu}
-              onChange={e => patch(i, 'contenu', e.target.value)}
+              onChange={e => patch(i, { contenu: e.target.value })}
               rows={3}
             />
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => resumer(i)}
+                disabled={resumePending === i}
+                className="gap-1.5 text-violet-600 border-violet-200 hover:border-violet-300"
+              >
+                {resumePending === i
+                  ? <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Résumé en cours…</>
+                  : <><Sparkles className="h-3.5 w-3.5" /> Résumer avec l&apos;IA</>
+                }
+              </Button>
+            </div>
+            {(item.resume_ia ?? '') !== '' && (
+              <Champ label="Résumé IA (modifiable)">
+                <Textarea
+                  value={item.resume_ia ?? ''}
+                  onChange={e => patch(i, { resume_ia: e.target.value })}
+                  rows={3}
+                  className="bg-white border-violet-200 focus-visible:ring-violet-300"
+                />
+              </Champ>
+            )}
           </div>
           <BoutonSupprimer onClick={() => remove(i)} />
         </div>

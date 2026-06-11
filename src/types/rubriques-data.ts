@@ -136,8 +136,9 @@ export interface EvenementItem {
 }
 
 export interface CourierItem {
-  objet:   string
-  contenu: string                    // contenu brut — l'IA en fait le résumé
+  objet:     string
+  contenu:   string                  // contenu brut du courrier
+  resume_ia?: string                 // résumé généré par l'IA, modifiable
 }
 
 export interface ConferenceData {
