@@ -30,6 +30,7 @@ export interface Annonce {
   id:            string
   culte_id:      string
   statut_global: StatutAnnonce
+  texte_genere?: string | null   // texte complet de l'annonce généré par l'IA
   created_at:    string
   updated_at:    string
 }
