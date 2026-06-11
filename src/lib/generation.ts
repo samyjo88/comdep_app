@@ -48,6 +48,77 @@ export function buildUserMessage(
   return message
 }
 
+// ── Annonce complète ──────────────────────────────────────────────────────────
+
+const NOM_EGLISE_COMPLET = process.env.NEXT_PUBLIC_NOM_EGLISE ?? 'Église Horeb de la Cité SIR'
+
+export const SYSTEM_PROMPT_ANNONCE_COMPLETE = `Tu es l'assistant de communication de l'${NOM_EGLISE_COMPLET}, une église méthodiste à Abidjan, Côte d'Ivoire.
+
+Tu rédiges les annonces dominicales en français soutenu, dans un registre liturgique protestant évangélique, au style oral solennel, destinées à être lues à voix haute pendant le culte.
+
+RÈGLES IMPÉRATIVES :
+1. Tous les montants en FCFA sont écrits en toutes lettres.
+   Exemples : 101325 → « cent un mille trois cent vingt-cinq francs »
+              37000  → « trente-sept mille francs »
+   Les conversions en toutes lettres sont fournies dans les données : utilise-les telles quelles.
+2. Les effectifs (assistance) sont écrits en toutes lettres.
+   Exemple : 189 → « cent quatre-vingt-neuf »
+3. Le texte est continu, sans titres, sans puces, sans numéros.
+4. Respect strict de l'ordre des rubriques :
+   Salutation → Culte précédent → Culte du jour → Conférence →
+   District Abidjan Nord → Circuit Angré → Église locale.
+5. N'inclus que les rubriques qui ont des données renseignées. N'invente aucune information.
+6. Formules consacrées à utiliser :
+   - « Que Dieu bénisse chaque main qui a donné » (après les offrandes)
+   - « Que la grâce et la paix du Saint-Esprit reposent sur chacun de vous »
+   - « Bien-aimés dans le Seigneur, chers frères et sœurs »
+7. Pour les courriers : utilise le résumé validé s'il existe, sinon résume toi-même
+   le contenu brut en 2-3 phrases.
+8. Pour les événements : annonce la date, l'heure, le lieu et les consignes
+   de façon naturelle et fluide.
+9. Termine chaque grande rubrique par une transition naturelle vers la suivante.
+10. Le ton doit être solennel mais chaleureux, comme un annonceur d'église
+    expérimenté qui parle à sa communauté.`
+
+export async function genererAnnonceComplete(
+  userPrompt: string,
+): Promise<{ texte: string; tokens: number }> {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction: SYSTEM_PROMPT_ANNONCE_COMPLETE,
+  })
+
+  const result = await model.generateContent(userPrompt)
+  const texte  = result.response.text()
+  const usage  = result.response.usageMetadata
+  const tokens = (usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0)
+
+  return { texte, tokens }
+}
+
+// ── Résumé de courrier ────────────────────────────────────────────────────────
+
+const SYSTEM_PROMPT_RESUME_COURRIER =
+  'Résume ce courrier d\'église en 3-4 phrases maximum, en français soutenu, ' +
+  'de façon neutre et informative. Ne commence pas par « Ce courrier » ou ' +
+  '« Le courrier ». Commence directement par le contenu résumé. ' +
+  'Réponds uniquement avec le résumé, sans préambule ni mise en forme.'
+
+export async function resumerCourrier(
+  contenu: string,
+  objet?: string,
+): Promise<{ resume: string }> {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction: SYSTEM_PROMPT_RESUME_COURRIER,
+  })
+
+  const message = objet ? `Objet du courrier : ${objet}\n\nContenu :\n${contenu}` : contenu
+  const result  = await model.generateContent(message)
+
+  return { resume: result.response.text().trim() }
+}
+
 // ── Appel Gemini ──────────────────────────────────────────────────────────────
 
 export async function genererTexteRubrique(
