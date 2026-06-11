@@ -29,7 +29,9 @@ import {
   DEFAULT_EGLISE_LOCALE,
   DEFAULT_EVENEMENT,
   DEFAULT_INFO_LOCALE,
+  DEFAULT_ACTIVITE_CLASSE,
   STRUCTURES_EGLISE,
+  CLASSES_METHODISTES,
   TYPES_CULTE,
   type SalutationData,
   type CultePrecedentData,
@@ -41,10 +43,12 @@ import {
   type EvenementItem,
   type CourierItem,
   type InfoLocaleItem,
+  type ActiviteClasseItem,
   type TypeCulte,
   type TypeOuverture,
   type TypeInfoLocale,
   type StructureEglise,
+  type ClasseMethodiste,
 } from '@/types/rubriques-data'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -834,10 +838,6 @@ function RubriqueCulteJour({
 
 // ── Rubriques 4-6 — Informations externes ──────────────────────────────────
 
-function isConferenceRemplie(d: ConferenceData) {
-  return d.evenements.length > 0 && d.evenements.some(e => e.titre.trim() !== '')
-}
-
 function normaliserEvenements(items: EvenementItem[]): EvenementItem[] {
   return items.map(item => ({ ...DEFAULT_EVENEMENT, ...item }))
 }
@@ -899,37 +899,7 @@ function ListeEvenements({
   )
 }
 
-function RubriqueConference({
-  rubrique, onSave,
-}: {
-  rubrique: RubriqueAnnonce
-  onSave:   (data: ConferenceData) => void
-}) {
-  const [d, setD] = useState<ConferenceData>(() => {
-    const parsed = parseOrDefault(rubrique.donnees_brutes, DEFAULT_CONFERENCE)
-    return { ...parsed, evenements: normaliserEvenements(parsed.evenements) }
-  })
-
-  function update(patch: Partial<ConferenceData>) {
-    const next = { ...d, ...patch }
-    setD(next)
-    onSave(next)
-  }
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <SousTitre>Événements</SousTitre>
-        <ListeEvenements items={d.evenements} onChange={ev => update({ evenements: ev })} />
-      </div>
-      <Champ label="Notes complémentaires">
-        <Textarea value={d.notes} onChange={e => update({ notes: e.target.value })} placeholder="Informations additionnelles sur la conférence…" rows={3} />
-      </Champ>
-    </div>
-  )
-}
-
-// ── Rubrique 5 & 6 — District / Circuit (structure identique) ──────────────
+// ── Rubriques 4-6 — Conférence / District / Circuit (structure identique) ──
 
 function isDistrictRempli(d: DistrictData) {
   return (
@@ -1028,12 +998,18 @@ function RubriqueDistrictOuCircuit({
   rubrique, defaultData, onSave,
 }: {
   rubrique:    RubriqueAnnonce
-  defaultData: DistrictData | CircuitData
+  defaultData: ConferenceData | DistrictData | CircuitData
   onSave:      (data: DistrictData) => void
 }) {
   const [d, setD] = useState<DistrictData>(() => {
-    const parsed = parseOrDefault(rubrique.donnees_brutes, defaultData)
-    return { ...parsed, evenements: normaliserEvenements(parsed.evenements) }
+    const parsed = parseOrDefault(rubrique.donnees_brutes, defaultData as DistrictData)
+    // Legacy conférence : l'ancien champ « notes » devient « notes_evenements »
+    const legacy = parsed as DistrictData & { notes?: string }
+    return {
+      ...parsed,
+      notes_evenements: parsed.notes_evenements || legacy.notes || '',
+      evenements: normaliserEvenements(parsed.evenements),
+    }
   })
 
   function update(patch: Partial<DistrictData>) {
@@ -1068,7 +1044,73 @@ function RubriqueDistrictOuCircuit({
 function isEgliseLocaleRemplie(d: EgliseLocaleData) {
   return (
     d.annonces_internes.trim() !== '' ||
-    d.infos.some(i => i.structure !== '' && (i.contenu.trim() !== '' || i.evenement_nom.trim() !== ''))
+    d.infos.some(i => i.structure !== '' && (i.contenu.trim() !== '' || i.evenement_nom.trim() !== '')) ||
+    d.activites_classes.some(a => a.classe !== '' && a.activite.trim() !== '')
+  )
+}
+
+function ListeActivitesClasses({
+  items, onChange,
+}: {
+  items:    ActiviteClasseItem[]
+  onChange: (items: ActiviteClasseItem[]) => void
+}) {
+  function add()             { onChange([...items, { ...DEFAULT_ACTIVITE_CLASSE }]) }
+  function remove(i: number) { onChange(items.filter((_, idx) => idx !== i)) }
+  function patch(i: number, p: Partial<ActiviteClasseItem>) {
+    onChange(items.map((item, idx) => idx === i ? { ...item, ...p } : item))
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={i} className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="rounded-lg border p-3 bg-muted/30 space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Champ label="Classe" required>
+                <Select
+                  value={item.classe || undefined}
+                  onValueChange={v => patch(i, { classe: v as ClasseMethodiste })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Choisir une classe…" /></SelectTrigger>
+                  <SelectContent>
+                    {CLASSES_METHODISTES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Champ>
+              <Champ label="Activité" required>
+                <Input placeholder="ex : Réunion de classe" value={item.activite} onChange={e => patch(i, { activite: e.target.value })} />
+              </Champ>
+              <Input type="date" value={item.date} onChange={e => patch(i, { date: e.target.value })} />
+              <Input type="time" value={item.heure} onChange={e => patch(i, { heure: e.target.value })} />
+              <Input placeholder="Lieu" className="sm:col-span-2" value={item.lieu} onChange={e => patch(i, { lieu: e.target.value })} />
+            </div>
+            <Textarea
+              placeholder="Consignes particulières (une par ligne)…"
+              value={item.consignes}
+              onChange={e => patch(i, { consignes: e.target.value })}
+              rows={2}
+            />
+            <div className="flex flex-wrap items-end gap-3 pt-1">
+              <Champ label="Annoncer jusqu'au">
+                <Input type="date" value={item.date_fin} onChange={e => patch(i, { date_fin: e.target.value })} />
+              </Champ>
+              <label className="flex items-center gap-2 text-sm pb-2.5">
+                <Switch
+                  checked={item.reconductible}
+                  onCheckedChange={v => patch(i, { reconductible: v })}
+                />
+                Reconductible
+              </label>
+            </div>
+          </div>
+          <BoutonSupprimer onClick={() => remove(i)} />
+        </div>
+      ))}
+      <BoutonAjouter onClick={add} label="Ajouter une activité de classe" />
+    </div>
   )
 }
 
@@ -1168,7 +1210,11 @@ function RubriqueEgliseLocale({
 }) {
   const [d, setD] = useState<EgliseLocaleData>(() => {
     const parsed = parseOrDefault(rubrique.donnees_brutes, DEFAULT_EGLISE_LOCALE)
-    return { ...parsed, infos: parsed.infos.map(i => ({ ...DEFAULT_INFO_LOCALE, ...i })) }
+    return {
+      ...parsed,
+      infos: parsed.infos.map(i => ({ ...DEFAULT_INFO_LOCALE, ...i })),
+      activites_classes: parsed.activites_classes.map(a => ({ ...DEFAULT_ACTIVITE_CLASSE, ...a })),
+    }
   })
 
   function update(patch: Partial<EgliseLocaleData>) {
@@ -1182,6 +1228,13 @@ function RubriqueEgliseLocale({
       <div>
         <SousTitre>Informations par structure</SousTitre>
         <ListeInfosLocales items={d.infos} onChange={infos => update({ infos })} />
+      </div>
+      <div className="border-t pt-4">
+        <SousTitre>Activités des classes méthodistes (Horeb · Péniel · Israël)</SousTitre>
+        <ListeActivitesClasses
+          items={d.activites_classes}
+          onChange={activites_classes => update({ activites_classes })}
+        />
       </div>
       <Champ label="Annonces internes générales">
         <Textarea value={d.annonces_internes} onChange={e => update({ annonces_internes: e.target.value })} placeholder="Annonces internes à la communauté…" rows={4} />
@@ -1239,7 +1292,7 @@ function checkRemplie(code: string, data: unknown): boolean {
     case 'salutation':      return isSalutationRemplie({ ...DEFAULT_SALUTATION,       ...(data as SalutationData) })
     case 'culte_precedent': return isCultePrecedentRempli({ ...DEFAULT_CULTE_PRECEDENT, ...(data as CultePrecedentData) })
     case 'culte_jour':      return isCulteJourRempli({ ...DEFAULT_CULTE_JOUR,          ...(data as CulteJourData) })
-    case 'conference':      return isConferenceRemplie({ ...DEFAULT_CONFERENCE,         ...(data as ConferenceData) })
+    case 'conference':      return isDistrictRempli({ ...DEFAULT_CONFERENCE,            ...(data as ConferenceData) })
     case 'district':        return isDistrictRempli({ ...DEFAULT_DISTRICT,             ...(data as DistrictData) })
     case 'circuit':         return isDistrictRempli({ ...DEFAULT_CIRCUIT,              ...(data as CircuitData) })
     case 'eglise_local':    return isEgliseLocaleRemplie({ ...DEFAULT_EGLISE_LOCALE,   ...(data as EgliseLocaleData) })
@@ -1450,16 +1503,13 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
                   onSave={d => scheduleSave(rubrique.id, d)}
                 />
               )}
-              {code === 'conference' && (
-                <RubriqueConference
-                  rubrique={rubrique}
-                  onSave={d => scheduleSave(rubrique.id, d)}
-                />
-              )}
-              {(code === 'district' || code === 'circuit') && (
+              {(code === 'conference' || code === 'district' || code === 'circuit') && (
                 <RubriqueDistrictOuCircuit
                   rubrique={rubrique}
-                  defaultData={code === 'district' ? DEFAULT_DISTRICT : DEFAULT_CIRCUIT}
+                  defaultData={
+                    code === 'conference' ? DEFAULT_CONFERENCE :
+                    code === 'district'   ? DEFAULT_DISTRICT   : DEFAULT_CIRCUIT
+                  }
                   onSave={d => scheduleSave(rubrique.id, d)}
                 />
               )}

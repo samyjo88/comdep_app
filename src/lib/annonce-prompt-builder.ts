@@ -13,8 +13,9 @@ import type {
   EvenementItem,
   CourierItem,
   InfoLocaleItem,
+  ActiviteClasseItem,
 } from '@/types/rubriques-data'
-import { STRUCTURES_EGLISE, TYPES_CULTE } from '@/types/rubriques-data'
+import { STRUCTURES_EGLISE, CLASSES_METHODISTES, TYPES_CULTE } from '@/types/rubriques-data'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -179,6 +180,21 @@ function sectionEgliseLocale(d: Partial<EgliseLocaleData>): string {
       if (i.consignes?.trim()) s += `    Consignes : ${i.consignes.trim().replace(/\n/g, ' ; ')}\n`
     } else {
       s += `${i.type === 'rappel' ? 'Rappel' : 'Annonce'} : ${i.contenu}\n`
+    }
+  }
+  const activites = (d.activites_classes ?? []).filter(
+    (a: ActiviteClasseItem) => a.classe && a.activite?.trim()
+  )
+  if (activites.length > 0) {
+    s += 'Activités des classes méthodistes :\n'
+    for (const a of activites) {
+      const classe = CLASSES_METHODISTES.find(c => c.value === a.classe)?.label ?? a.classe
+      s += `  • [${classe}] ${a.activite}`
+      if (a.date) s += ` — ${dateLongue(a.date)}`
+      if (a.heure) s += ` à ${a.heure}`
+      if (a.lieu) s += `, lieu : ${a.lieu}`
+      s += '\n'
+      if (a.consignes?.trim()) s += `    Consignes : ${a.consignes.trim().replace(/\n/g, ' ; ')}\n`
     }
   }
   s += ligne('Annonces internes générales', d.annonces_internes)
