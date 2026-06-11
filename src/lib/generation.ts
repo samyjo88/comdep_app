@@ -22,13 +22,13 @@ export const PROMPTS_SYSTEME: Record<CodeRubrique, string> = {
 
   culte_jour: `${REGISTRE} Rédige l'annonce du culte du jour. Mentionne, si fournis : l'heure de début, le type de culte (ordinaire, fête ou journée dédicacée avec son nom), le président du culte, l'officiant principal qui apportera la prédication, les assistants et autres présences, le thème, la chorale principale et les groupes qui conduiront la louange, les offrandes prévues (ordinaire et, le cas échéant, spéciale avec son objet) et tout événement spécial. Maximum 150 mots.`,
 
-  conference: `${REGISTRE} Rédige les annonces émanant de la Conférence. Pour chaque événement, mentionne le nom, la date, les heures de début et de fin, le lieu et les éventuelles consignes à observer. Intègre les notes complémentaires. Maximum 150 mots.`,
+  conference: `${REGISTRE} Rédige les annonces émanant de la Conférence. Pour chaque événement, mentionne le nom, la date, les heures de début et de fin, le lieu et les éventuelles consignes à observer. Pour chaque courrier, rédige un résumé fidèle et concis de son contenu, à annoncer à l'assemblée. Intègre les notes complémentaires. Maximum 180 mots.`,
 
   district: `${REGISTRE} Rédige les annonces émanant du District Abidjan Nord. Pour chaque événement, mentionne le nom, la date, les heures, le lieu et les consignes. Pour chaque courrier, rédige un résumé fidèle et concis de son contenu, à annoncer à l'assemblée. Intègre les notes complémentaires. Maximum 180 mots.`,
 
   circuit: `${REGISTRE} Rédige les annonces émanant du Circuit de Angré. Pour chaque événement, mentionne le nom, la date, les heures, le lieu et les consignes. Pour chaque courrier, rédige un résumé fidèle et concis de son contenu, à annoncer à l'assemblée. Intègre les notes complémentaires. Maximum 180 mots.`,
 
-  eglise_local: `${REGISTRE} Rédige les annonces de l'Église locale, regroupées par structure (Comité Moisson, FIMECO, Chorale, Organisation de la Jeunesse, Union des Hommes, Union des Femmes, ECODIM, Mouvement de Réveil, Comité d'Organisation, Conseil, CES, COMEFA…). Pour chaque information : s'il s'agit d'un événement, mentionne le nom, la date, l'heure, le lieu et les consignes ; s'il s'agit d'une annonce ou d'un rappel, restitue son contenu. Termine par les annonces internes générales et tout appel aux dons, présenté avec délicatesse. Maximum 200 mots.`,
+  eglise_local: `${REGISTRE} Rédige les annonces de l'Église locale, regroupées par structure (Comité Moisson, FIMECO, Chorale, Organisation de la Jeunesse, Union des Hommes, Union des Femmes, ECODIM, Mouvement de Réveil, Comité d'Organisation, Conseil, CES, COMEFA…). Pour chaque information : s'il s'agit d'un événement, mentionne le nom, la date, l'heure, le lieu et les consignes ; s'il s'agit d'une annonce ou d'un rappel, restitue son contenu. Annonce ensuite les activités des classes méthodistes (classe Horeb, classe Péniel, classe Israël) avec leur date, heure, lieu et consignes. Termine par les annonces internes générales et tout appel aux dons, présenté avec délicatesse. Maximum 220 mots.`,
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

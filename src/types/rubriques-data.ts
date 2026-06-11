@@ -142,8 +142,11 @@ export interface CourierItem {
 }
 
 export interface ConferenceData {
-  evenements: EvenementItem[]
-  notes:      string
+  evenements:       EvenementItem[]
+  notes_evenements: string
+  courriers:        CourierItem[]
+  notes_courriers:  string
+  notes?:           string          // legacy — repris dans notes_evenements
 }
 
 export interface DistrictData {
@@ -161,6 +164,25 @@ export interface CircuitData {
 }
 
 // ── Rubrique 7 — Église locale ──────────────────────────────────────────────
+
+export type ClasseMethodiste = 'horeb' | 'peniel' | 'israel'
+
+export const CLASSES_METHODISTES: { value: ClasseMethodiste; label: string }[] = [
+  { value: 'horeb',  label: 'Classe Horeb' },
+  { value: 'peniel', label: 'Classe Péniel' },
+  { value: 'israel', label: 'Classe Israël' },
+]
+
+export interface ActiviteClasseItem {
+  classe:        ClasseMethodiste | ''
+  activite:      string             // nom ou description de l'activité
+  date:          string
+  heure:         string
+  lieu:          string
+  consignes:     string             // une consigne par ligne
+  date_fin:      string
+  reconductible: boolean
+}
 
 export interface InfoLocaleItem {
   structure:       StructureEglise | ''
@@ -182,6 +204,7 @@ export interface EvenementLocalItem {
 
 export interface EgliseLocaleData {
   infos:             InfoLocaleItem[]      // informations par structure
+  activites_classes: ActiviteClasseItem[]  // activités des classes méthodistes
   annonces_internes: string
   evenements:        EvenementLocalItem[]  // legacy — préférer infos
   appel_dons:        string
@@ -290,8 +313,10 @@ export const DEFAULT_INFO_LOCALE: InfoLocaleItem = {
 }
 
 export const DEFAULT_CONFERENCE: ConferenceData = {
-  evenements: [],
-  notes:      '',
+  evenements:       [],
+  notes_evenements: '',
+  courriers:        [],
+  notes_courriers:  '',
 }
 
 export const DEFAULT_DISTRICT: DistrictData = {
@@ -308,8 +333,20 @@ export const DEFAULT_CIRCUIT: CircuitData = {
   notes_courriers:  '',
 }
 
+export const DEFAULT_ACTIVITE_CLASSE: ActiviteClasseItem = {
+  classe:        '',
+  activite:      '',
+  date:          '',
+  heure:         '',
+  lieu:          '',
+  consignes:     '',
+  date_fin:      '',
+  reconductible: false,
+}
+
 export const DEFAULT_EGLISE_LOCALE: EgliseLocaleData = {
   infos:             [],
+  activites_classes: [],
   annonces_internes: '',
   evenements:        [],
   appel_dons:        '',

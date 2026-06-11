@@ -244,6 +244,9 @@ async function preChargerInfosActives(db: any, rubriques: RubriqueAnnonce[]): Pr
     if (code === 'eglise_local') {
       const infos = (data.infos as ItemReconductible[] | undefined)?.filter(i => estActif(i, today))
       if (infos?.length) seed.infos = infos
+      const activites = (data.activites_classes as ItemReconductible[] | undefined)
+        ?.filter(a => estActif(a, today))
+      if (activites?.length) seed.activites_classes = activites
     } else if (evenements?.length) {
       seed.evenements = evenements
     }
