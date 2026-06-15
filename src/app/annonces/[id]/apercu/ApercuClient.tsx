@@ -238,6 +238,34 @@ export default function ApercuClient({
     }
   }, [annonceId, culte.date_culte])
 
+  // ── Exporter Word ─────────────────────────────────────────────────────────
+
+  const handleExportWord = useCallback(async () => {
+    setWordPending(true)
+    try {
+      const res = await fetch('/api/annonces/export-word', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ annonce_id: annonceId }),
+      })
+      if (!res.ok) {
+        toast.error('Erreur lors de la génération du document Word.')
+        return
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const a    = dlLinkRef.current!
+      a.href     = url
+      a.download = `Annonces_${culte.date_culte}.doc`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Erreur lors de la génération du document Word.')
+    } finally {
+      setWordPending(false)
+    }
+  }, [annonceId, culte.date_culte])
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -312,8 +340,17 @@ export default function ApercuClient({
         {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
         <a ref={dlLinkRef} className="hidden" />
 
-        <Button variant="outline" size="sm" disabled className="gap-1.5 opacity-50 cursor-not-allowed">
-          <FileCheck className="h-4 w-4" /> Exporter Word
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportWord}
+          disabled={wordPending || !!generating}
+          className="gap-1.5"
+        >
+          {wordPending
+            ? <><Loader2 className="h-4 w-4 animate-spin" /> Génération…</>
+            : <><FileCheck className="h-4 w-4" /> Exporter Word</>
+          }
         </Button>
 
         {!estPasse && (

@@ -132,7 +132,7 @@ function CarteCulte({ culte }: { culte: CulteAvecAnnonce }) {
     ? `/annonces/nouveau?culte=${culte.id}`
     : statut === 'brouillon'
     ? `/annonces/${culte.annonces?.[0]?.id ?? ''}/rubriques`
-    : `/annonces/historique/${culte.annonces?.[0]?.id ?? ''}`
+    : `/annonces/${culte.annonces?.[0]?.id ?? ''}/apercu`
 
   return (
     <Card className="transition-all duration-200 hover:shadow-md hover:border-primary/20">
