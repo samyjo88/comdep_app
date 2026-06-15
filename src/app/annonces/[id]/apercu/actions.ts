@@ -11,6 +11,15 @@ export async function validerRubriqueGeneree(
   return {}
 }
 
+export async function sauvegarderTexteComplet(
+  annonceId: string,
+  texte: string,
+): Promise<{ error?: string }> {
+  const result = await updateAnnonce(annonceId, { texte_genere: texte })
+  if (result.error) return { error: result.error }
+  return {}
+}
+
 export async function publierAnnonce(
   annonceId: string,
 ): Promise<{ error?: string }> {

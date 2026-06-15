@@ -6,12 +6,14 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import {
   ArrowLeft, Sparkles, FileText, FileCheck,
   Loader2, AlertTriangle, CheckCircle2,
+  Copy, Save, Wand2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { publierAnnonce } from './actions'
+import { publierAnnonce, sauvegarderTexteComplet } from './actions'
 import type { SseEvent } from '@/app/api/annonces/generer-tout/route'
 import type { RubriqueAnnonce, Culte } from '@/lib/annonces'
 import type { CodeRubrique } from '@/types/annonces'
@@ -38,17 +40,18 @@ function formatDate(dateStr: string) {
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
-  annonceId: string
-  culte:     Culte
-  rubriques: RubriqueAnnonce[]
-  nomEglise: string
-  statut:    string
+  annonceId:    string
+  culte:        Culte
+  rubriques:    RubriqueAnnonce[]
+  nomEglise:    string
+  statut:       string
+  texteInitial: string | null
 }
 
 // ── Composant ─────────────────────────────────────────────────────────────────
 
 export default function ApercuClient({
-  annonceId, culte, rubriques: initial, nomEglise, statut: initialStatut,
+  annonceId, culte, rubriques: initial, nomEglise, statut: initialStatut, texteInitial,
 }: Props) {
   const router = useRouter()
   const [rubriques, setRubriques]       = useState(initial)
@@ -56,7 +59,9 @@ export default function ApercuClient({
   const [publiePending, setPubliePending] = useState(false)
   const [statut, setStatut]             = useState(initialStatut)
   const [pdfPending, setPdfPending]     = useState(false)
-  const [wordPending, setWordPending]   = useState(false)
+  const [texteComplet, setTexteComplet] = useState<string | null>(texteInitial)
+  const [completPending, setCompletPending] = useState(false)
+  const [savePending, setSavePending]   = useState(false)
   const dlLinkRef = useRef<HTMLAnchorElement>(null)
 
   const estPasse = culte.statut === 'passe'
@@ -159,6 +164,52 @@ export default function ApercuClient({
     router.refresh()
   }, [annonceId, router, pret, total])
 
+  // ── Générer le texte complet de l'annonce ───────────────────────────────
+
+  const handleGenererComplet = useCallback(async () => {
+    setCompletPending(true)
+    try {
+      const res = await fetch('/api/annonces/generer-complet', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ annonce_id: annonceId }),
+      })
+      const json = await res.json()
+      if (!res.ok || json.error) {
+        toast.error('Erreur lors de la génération du texte complet.')
+        return
+      }
+      setTexteComplet(json.texte as string)
+      toast.success('✨ Texte complet de l\'annonce généré')
+    } catch {
+      toast.error('Erreur lors de la génération du texte complet.')
+    } finally {
+      setCompletPending(false)
+    }
+  }, [annonceId])
+
+  const handleCopier = useCallback(async () => {
+    if (!texteComplet) return
+    try {
+      await navigator.clipboard.writeText(texteComplet)
+      toast.success('Texte copié dans le presse-papiers')
+    } catch {
+      toast.error('Impossible de copier le texte.')
+    }
+  }, [texteComplet])
+
+  const handleSauvegarderTexte = useCallback(async () => {
+    if (texteComplet === null) return
+    setSavePending(true)
+    const result = await sauvegarderTexteComplet(annonceId, texteComplet)
+    setSavePending(false)
+    if (result.error) {
+      toast.error('Erreur lors de la sauvegarde du texte.')
+      return
+    }
+    toast.success('Texte sauvegardé')
+  }, [annonceId, texteComplet])
+
   // ── Exporter PDF ─────────────────────────────────────────────────────────
 
   const handleExportPDF = useCallback(async () => {
@@ -258,6 +309,22 @@ export default function ApercuClient({
           </Button>
         )}
 
+        {!estPasse && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGenererComplet}
+            disabled={completPending || !!generating || pret === 0}
+            title={pret === 0 ? 'Remplissez d\'abord les rubriques' : undefined}
+            className="gap-1.5 border-violet-200 text-violet-600 hover:border-violet-300 hover:text-violet-700"
+          >
+            {completPending
+              ? <><Loader2 className="h-4 w-4 animate-spin" /> Génération…</>
+              : <><Wand2 className="h-4 w-4" /> Générer l&apos;annonce complète</>
+            }
+          </Button>
+        )}
+
         <Button
           variant="outline"
           size="sm"
@@ -347,6 +414,61 @@ export default function ApercuClient({
               style={{ width: `${(generating.current / generating.total) * 100}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── Texte complet de l'annonce (IA) ── */}
+      {texteComplet !== null && (
+        <div className="rounded-xl border border-violet-200 bg-violet-50/40 p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
+            <span className="text-sm font-semibold text-violet-700">
+              Texte complet de l&apos;annonce — prêt à être lu
+            </span>
+            <div className="flex-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenererComplet}
+              disabled={completPending}
+              className="gap-1.5 text-violet-600 border-violet-200 hover:border-violet-300"
+            >
+              {completPending
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <Wand2 className="h-3.5 w-3.5" />
+              }
+              Régénérer
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopier}
+              className="gap-1.5"
+            >
+              <Copy className="h-3.5 w-3.5" /> Copier
+            </Button>
+            {!estPasse && (
+              <Button
+                size="sm"
+                onClick={handleSauvegarderTexte}
+                disabled={savePending}
+                className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {savePending
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <Save className="h-3.5 w-3.5" />
+                }
+                Sauvegarder
+              </Button>
+            )}
+          </div>
+          <Textarea
+            value={texteComplet}
+            onChange={e => setTexteComplet(e.target.value)}
+            readOnly={estPasse}
+            rows={18}
+            className="bg-white border-violet-200 focus-visible:ring-violet-300 text-sm leading-7"
+          />
         </div>
       )}
 

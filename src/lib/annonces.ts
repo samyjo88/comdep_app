@@ -170,8 +170,12 @@ export async function createAnnonce(culteId: string): Promise<DbResult<AnnonceAv
 
     if (rubriquesError) return { data: null, error: rubriquesError.message }
 
+    // Pré-charger les informations encore actives (reconduction) — best-effort
+    const rubriquesFinales = await preChargerInfosActives(db, rubriques as RubriqueAnnonce[])
+      .catch(() => rubriques as RubriqueAnnonce[])
+
     return {
-      data: { ...annonce, rubriques_annonce: rubriques as RubriqueAnnonce[] } as AnnonceAvecRubriques,
+      data: { ...annonce, rubriques_annonce: rubriquesFinales } as AnnonceAvecRubriques,
       error: null,
     }
   } catch (e) {
@@ -179,11 +183,92 @@ export async function createAnnonce(culteId: string): Promise<DbResult<AnnonceAv
   }
 }
 
+// ── Pré-chargement des informations actives ────────────────────────────────
+// À la création d'une annonce, reprend depuis l'annonce la plus récente les
+// événements et informations (conférence / district / circuit / église locale)
+// encore valides : date de fin non dépassée, ou marqués reconductibles.
+
+interface ItemReconductible {
+  date?:           string
+  evenement_date?: string
+  date_fin?:       string
+  reconductible?:  boolean
+}
+
+function estActif(item: ItemReconductible, today: string): boolean {
+  if (item.reconductible) return true
+  if (item.date_fin) return item.date_fin >= today
+  const date = item.date || item.evenement_date
+  return !!date && date >= today
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function preChargerInfosActives(db: any, rubriques: RubriqueAnnonce[]): Promise<RubriqueAnnonce[]> {
+  const codes = ['conference', 'district', 'circuit', 'eglise_local']
+  const today = new Date().toISOString().slice(0, 10)
+
+  // Annonce la plus récente (hors celle en cours de création)
+  const annonceIds = new Set(rubriques.map(r => r.annonce_id))
+  const { data: dernieres } = await db
+    .from('annonces')
+    .select('id')
+    .order('created_at', { ascending: false })
+    .limit(5)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const precedenteId = ((dernieres ?? []) as any[]).map(a => a.id).find(id => !annonceIds.has(id))
+  if (!precedenteId) return rubriques
+
+  const { data: precedentes } = await db
+    .from('rubriques_annonce')
+    .select('code_rubrique, donnees_brutes')
+    .eq('annonce_id', precedenteId)
+    .in('code_rubrique', codes)
+    .not('donnees_brutes', 'is', null)
+
+  const derniereParCode = new Map<string, string>()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const r of ((precedentes ?? []) as any[])) {
+    derniereParCode.set(r.code_rubrique, r.donnees_brutes)
+  }
+
+  const resultat = [...rubriques]
+  for (const code of codes) {
+    const json = derniereParCode.get(code)
+    if (!json) continue
+    let data: Record<string, unknown>
+    try { data = JSON.parse(json) } catch { continue }
+
+    const seed: Record<string, unknown> = {}
+    const evenements = (data.evenements as ItemReconductible[] | undefined)
+      ?.filter(e => estActif(e, today))
+    if (code === 'eglise_local') {
+      const infos = (data.infos as ItemReconductible[] | undefined)?.filter(i => estActif(i, today))
+      if (infos?.length) seed.infos = infos
+      const activites = (data.activites_classes as ItemReconductible[] | undefined)
+        ?.filter(a => estActif(a, today))
+      if (activites?.length) seed.activites_classes = activites
+    } else if (evenements?.length) {
+      seed.evenements = evenements
+    }
+
+    if (Object.keys(seed).length === 0) continue
+
+    const cible = resultat.find(r => r.code_rubrique === code)
+    if (!cible) continue
+
+    const donnees = JSON.stringify(seed)
+    await db.from('rubriques_annonce').update({ donnees_brutes: donnees }).eq('id', cible.id)
+    cible.donnees_brutes = donnees
+  }
+
+  return resultat
+}
+
 // ── updateAnnonce ──────────────────────────────────────────────────────────
 
 export async function updateAnnonce(
   id: string,
-  data: { statut_global?: StatutAnnonce },
+  data: { statut_global?: StatutAnnonce; texte_genere?: string | null },
 ): Promise<DbResult<Annonce>> {
   try {
     const db = await getDb()
