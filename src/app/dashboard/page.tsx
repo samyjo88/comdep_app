@@ -104,9 +104,9 @@ async function getDashboardData() {
     projPlanningRes,
     materielAlerteRes,
     postsSemaineRes,
-    cmSemaineRes,
     projMembresRes,
     annoncesMembresRes,
+    planningDimancheRes,
   ] = await Promise.all([
     supabase
       .from('planning_son')
@@ -173,11 +173,6 @@ async function getDashboardData() {
       .lte('date_publication_prevue', dimanche)
       .order('date_publication_prevue', { ascending: true }),
     supabase
-      .from('planning_cm')
-      .select('id, semaine_debut, statut, membres_cm(id, prenom, nom)')
-      .eq('semaine_debut', lundi)
-      .maybeSingle(),
-    supabase
       .from('membres_projection')
       .select('id, prenom, nom, email, telephone, actif')
       .eq('actif', true),
@@ -185,6 +180,11 @@ async function getDashboardData() {
       .from('membres_annonces')
       .select('id, prenom, nom, email, telephone, actif')
       .eq('actif', true),
+    supabase
+      .from('planning_dimanche')
+      .select('id, date_dimanche, departement, slot, membre_id')
+      .eq('date_dimanche', dimanche)
+      .order('slot', { ascending: true }),
   ])
 
   const prochainSon:        Row | null = sonPlanningRes.data ?? null
@@ -200,7 +200,7 @@ async function getDashboardData() {
   const projPlanning:     Row | null = projPlanningRes.data ?? null
   const materielAlerte:   Row[]      = materielAlerteRes.data ?? []
   const postsSemaine:     Row[]      = postsSemaineRes.data ?? []
-  const cmSemaine:        Row | null = cmSemaineRes.data ?? null
+  const assignationsDimanche: Row[]  = planningDimancheRes.data ?? []
 
   let captationAssignments: Row[] = []
   if (prochainCulte?.id) {
@@ -269,10 +269,6 @@ async function getDashboardData() {
     .filter(Boolean)
     .map((m: Row) => `${m.prenom} ${m.nom}`)
     .slice(0, 3)
-
-  const membreCM: string | null = cmSemaine?.membres_cm
-    ? `${cmSemaine.membres_cm.prenom} ${cmSemaine.membres_cm.nom}`
-    : null
 
   // ── Rubriques annonces ─────────────────────────────────────────────────────
 
@@ -397,6 +393,23 @@ async function getDashboardData() {
     nbTaches: postsPending.length,
   }
 
+  // ── Équipe du dimanche (planning centralisé) ──────────────────────────────
+
+  const membresParDeptPlanning: Record<string, Row[]> = {
+    son:        membresSon,
+    projection: membresProjection,
+    captation:  membresCaptation,
+    community:  membresCM,
+    annonces:   membresAnnonces,
+  }
+  const equipeDimanche = (dept: string): string[] =>
+    assignationsDimanche
+      .filter((a: Row) => a.departement === dept)
+      .map((a: Row) => {
+        const m = membresParDeptPlanning[dept].find((m: Row) => String(m.id) === a.membre_id)
+        return m ? `${m.prenom} ${m.nom}` : 'Membre inconnu'
+      })
+
   return {
     dateProchainCulte,
     nbMembresActifs,
@@ -413,11 +426,12 @@ async function getDashboardData() {
       : null,
     sonoInfo, projInfo, annoncesInfo, captationInfo, communityInfo,
     equipe: {
-      dateProchainCulte,
-      son:       { membres: responsablesSon },
-      projection:{ membres: responsablesProj },
-      captation: { membres: responsablesCaptation },
-      cm:        { membre: membreCM },
+      dateDimanche: dimanche,
+      son:        equipeDimanche('son'),
+      projection: equipeDimanche('projection'),
+      captation:  equipeDimanche('captation'),
+      community:  equipeDimanche('community'),
+      annonces:   equipeDimanche('annonces'),
     },
     annoncesWidget: {
       culteDate:    prochainCulte?.date_culte ?? null,
@@ -607,19 +621,21 @@ function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteM
 // ── Widget : Équipe du dimanche ────────────────────────────────────────────
 
 interface EquipeData {
-  dateProchainCulte: string | null
-  son:        { membres: string[] }
-  projection: { membres: string[] }
-  captation:  { membres: string[] }
-  cm:         { membre: string | null }
+  dateDimanche: string
+  son:        string[]
+  projection: string[]
+  captation:  string[]
+  community:  string[]
+  annonces:   string[]
 }
 
 function WidgetEquipe({ data }: { data: EquipeData }) {
   const lignes = [
-    { label: 'Son',        icon: Volume2,  membres: data.son.membres,        couleur: 'text-blue-600 dark:text-blue-400',    bg: 'bg-blue-50 dark:bg-blue-950/40'   },
-    { label: 'Projection', icon: Monitor,  membres: data.projection.membres, couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
-    { label: 'Captation',  icon: Video,    membres: data.captation.membres,  couleur: 'text-red-600 dark:text-red-400',      bg: 'bg-red-50 dark:bg-red-950/40'    },
-    { label: 'CM',         icon: Share2,   membres: data.cm.membre ? [data.cm.membre] : [], couleur: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/40' },
+    { label: 'Son',        icon: Volume2,   membres: data.son,        couleur: 'text-blue-600 dark:text-blue-400',     bg: 'bg-blue-50 dark:bg-blue-950/40'     },
+    { label: 'Projection', icon: Monitor,   membres: data.projection, couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
+    { label: 'Captation',  icon: Video,     membres: data.captation,  couleur: 'text-red-600 dark:text-red-400',       bg: 'bg-red-50 dark:bg-red-950/40'       },
+    { label: 'Community',  icon: Share2,    membres: data.community,  couleur: 'text-green-600 dark:text-green-400',   bg: 'bg-green-50 dark:bg-green-950/40'   },
+    { label: 'Annonces',   icon: Megaphone, membres: data.annonces,   couleur: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-950/40'   },
   ]
   const totalAssignes = lignes.reduce((sum, l) => sum + l.membres.length, 0)
 
@@ -632,11 +648,9 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
             Équipe du dimanche
           </CardTitle>
           <div className="flex items-center gap-2">
-            {data.dateProchainCulte && (
-              <span className="text-xs text-muted-foreground">
-                {capitalize(formatDateCourte(data.dateProchainCulte))}
-              </span>
-            )}
+            <span className="text-xs text-muted-foreground">
+              {capitalize(formatDateCourte(data.dateDimanche))}
+            </span>
             <Link
               href="/dashboard/planning-dimanche"
               className="text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
@@ -647,10 +661,18 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
-        {!data.dateProchainCulte ? (
-          <p className="text-xs text-muted-foreground py-2">Aucun culte planifié</p>
-        ) : totalAssignes === 0 ? (
-          <p className="text-xs text-muted-foreground py-2">Aucun membre assigné</p>
+        {totalAssignes === 0 ? (
+          <div className="py-2 space-y-2">
+            <p className="text-xs text-muted-foreground">
+              Aucun membre programmé pour ce dimanche.
+            </p>
+            <Link
+              href="/dashboard/planning-dimanche"
+              className="text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              Programmer les équipes →
+            </Link>
+          </div>
         ) : (
           lignes.map(({ label, icon: Icon, membres, couleur, bg }) => (
             <div key={label} className="flex items-center gap-3 py-1.5 border-b last:border-0">
