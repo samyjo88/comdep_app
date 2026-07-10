@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, CheckSquare, Calendar, BarChart2, Users,
+  LayoutDashboard, CheckSquare, Calendar, CalendarDays, BarChart2, Users,
   Settings, HelpCircle, Volume2, Megaphone, Video, Share2, Monitor,
 } from 'lucide-react'
 import { CalendrierMini } from './CalendrierMini'
 
 const MENU_ITEMS = [
   { label: 'Dashboard',  href: '/dashboard',    icon: LayoutDashboard },
+  { label: 'Planning dimanche', href: '/dashboard/planning-dimanche', icon: CalendarDays },
   { label: 'Tâches',     href: '/dashboard#taches',    icon: CheckSquare },
   { label: 'Calendrier', href: '/dashboard#calendrier', icon: Calendar },
   { label: 'Analytique', href: '/dashboard#stats',      icon: BarChart2 },
@@ -66,7 +67,7 @@ export function DashboardSidebar({ cultesDates, modulesAccessibles }: Props) {
             {MENU_ITEMS.map(({ label, href, icon: Icon }) => {
               const active = href === '/dashboard'
                 ? pathname === '/dashboard'
-                : false
+                : !href.includes('#') && pathname.startsWith(href)
               return (
                 <Link
                   key={href}
