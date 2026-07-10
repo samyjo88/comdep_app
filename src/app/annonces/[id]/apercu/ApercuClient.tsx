@@ -59,6 +59,7 @@ export default function ApercuClient({
   const [publiePending, setPubliePending] = useState(false)
   const [statut, setStatut]             = useState(initialStatut)
   const [pdfPending, setPdfPending]     = useState(false)
+  const [wordPending, setWordPending]   = useState(false)
   const [texteComplet, setTexteComplet] = useState<string | null>(texteInitial)
   const [completPending, setCompletPending] = useState(false)
   const [savePending, setSavePending]   = useState(false)

@@ -631,11 +631,19 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
             <Users className="h-4 w-4 text-muted-foreground" />
             Équipe du dimanche
           </CardTitle>
-          {data.dateProchainCulte && (
-            <span className="text-xs text-muted-foreground">
-              {capitalize(formatDateCourte(data.dateProchainCulte))}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {data.dateProchainCulte && (
+              <span className="text-xs text-muted-foreground">
+                {capitalize(formatDateCourte(data.dateProchainCulte))}
+              </span>
+            )}
+            <Link
+              href="/dashboard/planning-dimanche"
+              className="text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+            >
+              Planning →
+            </Link>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
