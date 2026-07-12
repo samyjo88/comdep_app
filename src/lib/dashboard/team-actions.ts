@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { headers }        from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { normalizeEmail }    from '@/lib/email'
 
 export type Departement = 'son' | 'captation' | 'community' | 'annonces' | 'projection'
 
@@ -15,7 +16,7 @@ export interface AjouterMembreData {
 }
 
 export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: string }> {
-  const email  = data.email.trim()
+  const email  = normalizeEmail(data.email)
   const prenom = data.prenom.trim()
   const nom    = data.nom.trim()
 
@@ -138,7 +139,7 @@ export interface CreerMembreAvecMotDePasseData {
 export async function creerMembreAvecMotDePasse(
   data: CreerMembreAvecMotDePasseData
 ): Promise<{ error?: string }> {
-  const email    = data.email.trim()
+  const email    = normalizeEmail(data.email)
   const prenom   = data.prenom.trim()
   const nom      = data.nom.trim()
   const password = data.password

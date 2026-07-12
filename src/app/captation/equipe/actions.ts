@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { normalizeEmail } from '@/lib/email'
 import type { RoleCaptation } from '@/types/captation'
 
 export type ActionResult = { success: true } | { success: false; error: string }
@@ -41,9 +42,11 @@ export async function creerMembreCaptationAction(
   payload: MembrePayload,
 ): Promise<ActionResult> {
   try {
+    if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
+
     // If email is provided, send invitation
     if (payload.email) {
-      const email  = payload.email.trim()
+      const email  = payload.email
       const prenom = payload.prenom.trim()
       const nom    = payload.nom.trim()
 
@@ -95,6 +98,8 @@ export async function modifierMembreCaptationAction(
   payload: MembrePayload,
 ): Promise<ActionResult> {
   try {
+    if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
+
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (db as any)

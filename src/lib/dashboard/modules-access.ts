@@ -1,5 +1,6 @@
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { emailIlikePattern } from '@/lib/email'
 
 export async function getMyRole(): Promise<string | null> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,15 +24,18 @@ export async function getModulesAccessibles(): Promise<string[] | null> {
   const email = user.email as string | undefined
   if (!email) return []
 
-  // Utiliser le client admin pour bypasser les RLS et lire les tables de membres
+  // Utiliser le client admin pour bypasser les RLS et lire les tables de membres.
+  // Correspondance insensible à la casse : Supabase Auth stocke l'email en
+  // minuscules alors que les fiches équipe peuvent contenir une casse mixte.
   const admin = createAdminClient()
+  const pattern = emailIlikePattern(email)
 
   const [sonRes, captationRes, cmRes, annoncesRes, projRes] = await Promise.all([
-    admin.from('membres_son').select('id').eq('email', email).limit(1),
-    admin.from('membres_captation').select('id').eq('email', email).limit(1),
-    admin.from('membres_cm').select('id').eq('email', email).limit(1),
-    admin.from('membres_annonces').select('id').eq('email', email).limit(1),
-    admin.from('membres_projection').select('id').eq('email', email).limit(1),
+    admin.from('membres_son').select('id').ilike('email', pattern).limit(1),
+    admin.from('membres_captation').select('id').ilike('email', pattern).limit(1),
+    admin.from('membres_cm').select('id').ilike('email', pattern).limit(1),
+    admin.from('membres_annonces').select('id').ilike('email', pattern).limit(1),
+    admin.from('membres_projection').select('id').ilike('email', pattern).limit(1),
   ])
 
   const modules: string[] = []

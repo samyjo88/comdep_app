@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { RoleAnnonce } from '@/lib/supabase/types'
+import { normalizeEmail } from '@/lib/email'
 
 async function getDb() {
   const cookieStore = await cookies()
@@ -41,6 +42,7 @@ export async function creerMembreAnnonceAction(payload: MembreAnnoncePayload): P
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (db as any).from('membres_annonces').insert({
     ...payload,
+    email: payload.email ? normalizeEmail(payload.email) : null,
     actif: true,
     created_by: user.id,
   })
@@ -60,7 +62,10 @@ export async function modifierMembreAnnonceAction(
   if (!user) return { success: false, error: 'Non authentifié' }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (db as any).from('membres_annonces').update(payload).eq('id', id)
+  const { error } = await (db as any).from('membres_annonces').update({
+    ...payload,
+    email: payload.email ? normalizeEmail(payload.email) : null,
+  }).eq('id', id)
   if (error) return { success: false, error: (error as { message: string }).message }
 
   revalidatePath('/annonces/equipe')
