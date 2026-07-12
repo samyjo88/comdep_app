@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { headers }        from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient }      from '@/lib/supabase/server'
+import { normalizeEmail, emailIlikePattern } from '@/lib/email'
 import type { AppRole }      from '@/lib/supabase/types'
 
 async function assertAdmin() {
@@ -16,7 +17,7 @@ async function assertAdmin() {
 export async function inviteMemberAction(formData: FormData): Promise<{ error?: string }> {
   try {
     await assertAdmin()
-    const email      = (formData.get('email')      as string).trim()
+    const email      = normalizeEmail(formData.get('email') as string)
     const prenom     = (formData.get('prenom')     as string).trim()
     const nom        = (formData.get('nom')        as string).trim()
     const role       = (formData.get('role')       as AppRole) || 'membre'
@@ -129,17 +130,18 @@ export async function deleteMembreAction(formData: FormData): Promise<{ error?: 
   try {
     await assertAdmin()
     const userId = formData.get('userId') as string
-    const email  = formData.get('email')  as string
+    const email   = formData.get('email')  as string
+    const pattern = emailIlikePattern(email)
 
     const admin = createAdminClient()
 
-    // Supprimer des tables département (par email)
+    // Supprimer des tables département (par email, insensible à la casse)
     await Promise.all([
-      admin.from('membres_son').delete().eq('email', email),
-      admin.from('membres_captation').delete().eq('email', email),
-      admin.from('membres_cm').delete().eq('email', email),
-      admin.from('membres_annonces').delete().eq('email', email),
-      admin.from('membres_projection').delete().eq('email', email),
+      admin.from('membres_son').delete().ilike('email', pattern),
+      admin.from('membres_captation').delete().ilike('email', pattern),
+      admin.from('membres_cm').delete().ilike('email', pattern),
+      admin.from('membres_annonces').delete().ilike('email', pattern),
+      admin.from('membres_projection').delete().ilike('email', pattern),
     ])
 
     // Supprimer le rôle et le profil
@@ -164,14 +166,15 @@ export async function getDepartementsAction(
 ): Promise<{ departements?: Departement[]; error?: string }> {
   try {
     await assertAdmin()
-    const admin = createAdminClient()
+    const admin   = createAdminClient()
+    const pattern = emailIlikePattern(email)
 
     const [sonRes, captRes, cmRes, annRes, projRes] = await Promise.all([
-      admin.from('membres_son').select('id').eq('email', email).limit(1),
-      admin.from('membres_captation').select('id').eq('email', email).limit(1),
-      admin.from('membres_cm').select('id').eq('email', email).limit(1),
-      admin.from('membres_annonces').select('id').eq('email', email).limit(1),
-      admin.from('membres_projection').select('id').eq('email', email).limit(1),
+      admin.from('membres_son').select('id').ilike('email', pattern).limit(1),
+      admin.from('membres_captation').select('id').ilike('email', pattern).limit(1),
+      admin.from('membres_cm').select('id').ilike('email', pattern).limit(1),
+      admin.from('membres_annonces').select('id').ilike('email', pattern).limit(1),
+      admin.from('membres_projection').select('id').ilike('email', pattern).limit(1),
     ])
 
     const departements: Departement[] = []
@@ -190,7 +193,8 @@ export async function getDepartementsAction(
 export async function setDepartementsAction(formData: FormData): Promise<{ error?: string }> {
   try {
     await assertAdmin()
-    const email            = formData.get('email') as string
+    const email            = normalizeEmail(formData.get('email') as string)
+    const pattern          = emailIlikePattern(email)
     const prenom           = formData.get('prenom') as string
     const nom              = formData.get('nom') as string
     const departementsRaw  = formData.get('departements') as string
@@ -199,31 +203,31 @@ export async function setDepartementsAction(formData: FormData): Promise<{ error
     const admin = createAdminClient()
 
     // Retirer des départements non sélectionnés
-    if (!departements.includes('son'))        await admin.from('membres_son').delete().eq('email', email)
-    if (!departements.includes('captation'))  await admin.from('membres_captation').delete().eq('email', email)
-    if (!departements.includes('community'))  await admin.from('membres_cm').delete().eq('email', email)
-    if (!departements.includes('annonces'))   await admin.from('membres_annonces').delete().eq('email', email)
-    if (!departements.includes('projection')) await admin.from('membres_projection').delete().eq('email', email)
+    if (!departements.includes('son'))        await admin.from('membres_son').delete().ilike('email', pattern)
+    if (!departements.includes('captation'))  await admin.from('membres_captation').delete().ilike('email', pattern)
+    if (!departements.includes('community'))  await admin.from('membres_cm').delete().ilike('email', pattern)
+    if (!departements.includes('annonces'))   await admin.from('membres_annonces').delete().ilike('email', pattern)
+    if (!departements.includes('projection')) await admin.from('membres_projection').delete().ilike('email', pattern)
 
     // Ajouter dans les départements sélectionnés (uniquement si pas déjà présent)
     if (departements.includes('son')) {
-      const { data } = await admin.from('membres_son').select('id').eq('email', email).limit(1)
+      const { data } = await admin.from('membres_son').select('id').ilike('email', pattern).limit(1)
       if (!data?.length) await admin.from('membres_son').insert({ prenom, nom, email, actif: true, role: 'assistant' })
     }
     if (departements.includes('captation')) {
-      const { data } = await admin.from('membres_captation').select('id').eq('email', email).limit(1)
+      const { data } = await admin.from('membres_captation').select('id').ilike('email', pattern).limit(1)
       if (!data?.length) await admin.from('membres_captation').insert({ prenom, nom, email, actif: true, roles: ['cameraman'] })
     }
     if (departements.includes('community')) {
-      const { data } = await admin.from('membres_cm').select('id').eq('email', email).limit(1)
+      const { data } = await admin.from('membres_cm').select('id').ilike('email', pattern).limit(1)
       if (!data?.length) await admin.from('membres_cm').insert({ prenom, nom, email, actif: true, specialites: [], plateformes: [] })
     }
     if (departements.includes('annonces')) {
-      const { data } = await admin.from('membres_annonces').select('id').eq('email', email).limit(1)
+      const { data } = await admin.from('membres_annonces').select('id').ilike('email', pattern).limit(1)
       if (!data?.length) await admin.from('membres_annonces').insert({ prenom, nom, email, actif: true, role: 'redacteur' })
     }
     if (departements.includes('projection')) {
-      const { data } = await admin.from('membres_projection').select('id').eq('email', email).limit(1)
+      const { data } = await admin.from('membres_projection').select('id').ilike('email', pattern).limit(1)
       if (!data?.length) await admin.from('membres_projection').insert({ prenom, nom, email, actif: true, roles: ['operateur_diffusion'] })
     }
 

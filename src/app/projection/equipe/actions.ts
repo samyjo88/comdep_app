@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { normalizeEmail } from '@/lib/email'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
@@ -16,9 +17,11 @@ type MembrePayload = {
 }
 
 export async function createMembreAction(payload: MembrePayload) {
+  if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
+
   // If email is provided, send invitation
   if (payload.email) {
-    const email  = payload.email.trim()
+    const email  = payload.email
     const prenom = payload.prenom.trim()
     const nom    = payload.nom.trim()
 
@@ -59,6 +62,8 @@ export async function createMembreAction(payload: MembrePayload) {
 }
 
 export async function updateMembreAction(id: string, payload: Partial<MembrePayload>) {
+  if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase
