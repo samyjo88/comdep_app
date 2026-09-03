@@ -11,18 +11,13 @@
 --      complétées (titre, thèmes et tags saisis par l'équipe sont
 --      conservés) ;
 --    · s'il existe déjà avec des paroles, rien n'est modifié.
+--
+--  Une seule instruction SQL, sans table temporaire : exécutable tel
+--  quel dans le SQL Editor Supabase (pooler en mode transaction).
 -- ============================================================
 
-DROP TABLE IF EXISTS _gad_seed;
-
-CREATE TEMP TABLE _gad_seed (
-  numero_gad text PRIMARY KEY,
-  titre      text NOT NULL,
-  paroles    text NOT NULL
-);
-
-INSERT INTO _gad_seed (numero_gad, titre, paroles) VALUES
-  ('1', 'À toi, mon Dieu, mon cœur monte',
+WITH s (numero_gad, titre, paroles) AS (VALUES
+  ('1'::text, 'À toi, mon Dieu, mon cœur monte'::text,
 'Couplet 1
 À toi, mon Dieu, mon cœur monte ;
 En toi mon espoir j’ai mis ;
@@ -249,24 +244,26 @@ Couplet 6
 Je veux toujours obéir à tes lois,
 Chanter ta gloire, invoquer ta puissance,
 Et devant tous, plein de reconnaissance,
-En hymnes saints faire éclater ma voix.');
+En hymnes saints faire éclater ma voix.')
+),
 
--- ── 1. Insertion des cantiques absents ───────────────────────
+-- Complément des paroles manquantes sur les cantiques déjà présents
+upd AS (
+  UPDATE public.cantiques c
+     SET paroles = s.paroles
+    FROM s
+   WHERE c.categorie  = 'gad'
+     AND c.numero_gad = s.numero_gad
+     AND (c.paroles IS NULL OR btrim(c.paroles) = '')
+  RETURNING c.numero_gad
+)
+
+-- Insertion des cantiques absents
 INSERT INTO public.cantiques (categorie, numero_gad, titre, paroles, actif)
 SELECT 'gad', s.numero_gad, s.titre, s.paroles, true
-  FROM _gad_seed s
+  FROM s
  WHERE NOT EXISTS (
    SELECT 1 FROM public.cantiques c
-    WHERE c.categorie = 'gad'
+    WHERE c.categorie  = 'gad'
       AND c.numero_gad = s.numero_gad
  );
-
--- ── 2. Complément des paroles manquantes ─────────────────────
-UPDATE public.cantiques c
-   SET paroles = s.paroles
-  FROM _gad_seed s
- WHERE c.categorie  = 'gad'
-   AND c.numero_gad = s.numero_gad
-   AND (c.paroles IS NULL OR btrim(c.paroles) = '');
-
-DROP TABLE IF EXISTS _gad_seed;
