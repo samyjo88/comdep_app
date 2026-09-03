@@ -226,14 +226,14 @@ function ProchainCulteCard({
             </div>
           </div>
           {setlist ? (
-            <Link href={`/projection/setlists/${setlist.id}`}>
+            <Link href={`/projection/setlists/${setlist.id}/apercu`}>
               <Button variant="outline" size="sm" className="text-xs gap-1 shrink-0">
                 Voir la setlist
                 <ChevronRight className="h-3 w-3" />
               </Button>
             </Link>
           ) : (
-            <Link href={`/projection/setlists/nouveau?culte=${culte.id}`}>
+            <Link href={`/projection/setlists?culte=${culte.id}`}>
               <Button variant="outline" size="sm" className="text-xs gap-1 shrink-0">
                 Créer la setlist
                 <ChevronRight className="h-3 w-3" />
@@ -348,7 +348,7 @@ function DernieresSetlistsCard({ setlists }: { setlists: Row[] }) {
                       </Badge>
                     </div>
                   </div>
-                  <Link href={`/projection/setlists/${s.id}`}>
+                  <Link href={`/projection/setlists/${s.id}/apercu`}>
                     <Button variant="outline" size="sm" className="text-xs gap-1 shrink-0 h-7 px-2">
                       Ouvrir
                       <ChevronRight className="h-3 w-3" />

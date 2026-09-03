@@ -196,7 +196,7 @@ function SetlistCard({
               Modifier la setlist
             </Button>
           </Link>
-          <Link href={`/projection/setlists/${setlist.id}`} target="_blank">
+          <Link href={`/projection/setlists/${setlist.id}/apercu`} target="_blank">
             <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8">
               <Printer className="h-3.5 w-3.5" />
               Voir / Imprimer

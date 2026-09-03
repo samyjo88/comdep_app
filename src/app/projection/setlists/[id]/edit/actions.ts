@@ -86,6 +86,6 @@ export async function updateSetlistStatusAction(
     .eq('id', setlist_id)
   if (error) return { error: error.message as string }
   revalidatePath('/projection/setlists')
-  revalidatePath(`/projection/setlists/${setlist_id}`)
+  revalidatePath(`/projection/setlists/${setlist_id}/apercu`)
   return {}
 }
