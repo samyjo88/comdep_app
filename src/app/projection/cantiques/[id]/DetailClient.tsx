@@ -303,7 +303,7 @@ function StatsSection({
               {setlists.map(s => (
                 <Link
                   key={s.id}
-                  href={`/projection/setlists/${s.id}`}
+                  href={`/projection/setlists/${s.id}/apercu`}
                   className="flex items-center justify-between rounded-lg border bg-muted/20 px-3 py-2 hover:bg-muted/40 transition-colors group"
                 >
                   <div className="min-w-0">

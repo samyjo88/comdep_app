@@ -643,7 +643,7 @@ export default function EditClient({
             Sauvegarder
           </Button>
 
-          <Link href={`/projection/setlists/${setlist.id}`} target="_blank">
+          <Link href={`/projection/setlists/${setlist.id}/apercu`} target="_blank">
             <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs">
               <Eye className="h-3.5 w-3.5" />
               Aperçu
