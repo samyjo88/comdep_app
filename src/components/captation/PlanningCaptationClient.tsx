@@ -8,7 +8,7 @@ import {
   ChevronLeft, ChevronRight, Plus, List, CalendarDays,
   Camera, ImageIcon, Palette, Loader2, AlertCircle, Mail,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 import { Button }                from '@/components/ui/button'
 import { Badge }                  from '@/components/ui/badge'
 import { Card, CardContent }      from '@/components/ui/card'
@@ -72,16 +72,6 @@ const STATUT_ASSIGN_CONFIG: Record<StatutPlanning, { label: string; className: s
 function todayStr(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function dateToStr(d: Date): string {

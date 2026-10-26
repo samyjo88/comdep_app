@@ -10,20 +10,11 @@ import {
   ChevronRight, Monitor, Keyboard, List, Star,
 } from 'lucide-react'
 import type { Metadata } from 'next'
+import { capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
 
 function debutDeMois(): string {
   const d = new Date()

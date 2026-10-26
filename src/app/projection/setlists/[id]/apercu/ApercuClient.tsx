@@ -8,6 +8,7 @@ import {
   ArrowLeft, Printer, FileDown, ClipboardList,
   Check, Eye, EyeOff, Loader2,
 } from 'lucide-react'
+import { capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,16 +57,6 @@ const STATUT_CONFIG: Record<string, { label: string; badge: string }> = {
   brouillon: { label: 'Brouillon', badge: 'bg-muted text-muted-foreground border-border' },
   valide:    { label: 'Validée',   badge: 'bg-info/10 text-info border-info/30' },
   utilise:   { label: 'Utilisée',  badge: 'bg-success/10 text-success border-success/30' },
-}
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function getMomentLabel(val: string | null): string {

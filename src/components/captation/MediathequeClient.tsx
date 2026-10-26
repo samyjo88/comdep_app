@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, HardDrive, FolderOpen, FolderX } from 'lucid
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { cn, formatDateLong as formatDateLongue } from '@/lib/utils'
 import { DossierDriveCard } from '@/components/captation/DossierDriveCard'
 import type { DossierDrive } from '@/types/captation'
 import type { CulteAvecDossier } from '@/app/captation/mediatheque/page'
@@ -17,12 +17,6 @@ const MOIS_NOMS = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
   'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
 ]
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
 
 function capitalize(s: string): string { return s.charAt(0).toUpperCase() + s.slice(1) }
 

@@ -19,6 +19,7 @@ import {
   ListMusic, Loader2, ChevronRight, AlertCircle,
 } from 'lucide-react'
 import { createSetlistAction } from './actions'
+import { capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,16 +55,6 @@ export type Setlist = {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
 
 function formatMois(yyyyMM: string): string {
   const [y, m] = yyyyMM.split('-')

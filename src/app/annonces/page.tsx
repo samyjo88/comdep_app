@@ -12,6 +12,7 @@ import {
 import type { Metadata } from 'next'
 import type { CulteAvecAnnonce } from '@/lib/annonces'
 import { CarteCulteInteractive } from '@/components/annonces/CarteCulteInteractive'
+import { capitalize } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
@@ -24,10 +25,6 @@ function formatDateLongue(dateStr: string): string {
     month:   'long',
     year:    'numeric',
   })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function joursRestants(dateStr: string): number {

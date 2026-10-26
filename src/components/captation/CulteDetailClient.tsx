@@ -10,7 +10,7 @@ import {
   ArrowLeft, Camera, ImageIcon, Palette, Plus, Trash2,
   ChevronDown, Loader2, AlertCircle, Check,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatDateLong as formatDateLongue } from '@/lib/utils'
 import { Button }              from '@/components/ui/button'
 import { Badge }               from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -113,11 +113,6 @@ const STATUT_GLOBAL_CONFIG: Record<StatutGlobal, { label: string; className: str
 // Helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
 function formatDateLimite(dateStr: string | null): { label: string; retard: boolean } | null {

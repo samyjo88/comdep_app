@@ -11,7 +11,7 @@ import {
   ArrowLeft, Pencil, ListPlus, Copy, Check, ChevronDown, ChevronUp,
   FileText, Volume2, Music, CalendarDays, BarChart3, ExternalLink,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, capitalize } from '@/lib/utils'
 import { CantiqueModal } from '@/components/projection/CantiqueModal'
 import type { Cantique } from '../CantiquesClient'
 import type { SetlistRef } from './page'
@@ -63,10 +63,6 @@ function formatDate(dateStr: string | null): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function isDirectAudio(url: string): boolean {

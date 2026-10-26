@@ -12,6 +12,7 @@ import {
 import { ROLES_CONFIG } from '@/types/captation'
 import type { RoleCaptation } from '@/types/captation'
 import type { Metadata } from 'next'
+import { capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
@@ -30,16 +31,6 @@ function finDeMois(): string {
 
 function nomMois(): string {
   return new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-}
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function formatDateLimite(dateStr: string): { label: string; retard: boolean } {

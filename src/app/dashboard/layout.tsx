@@ -2,8 +2,8 @@ import type { ReactNode }          from 'react'
 import { createClient }             from '@/lib/supabase/server'
 import { CalendrierMini }           from '@/components/dashboard/CalendrierMini'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getCultesCalendar(): Promise<string[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const today = new Date().toISOString().slice(0, 10)
   const { data } = await supabase

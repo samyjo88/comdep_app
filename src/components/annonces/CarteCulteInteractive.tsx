@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { modifierCulte, supprimerCulte } from '@/app/annonces/culte-actions'
 import { toast } from 'sonner'
+import { formatDateLong as formatDateLongue } from '@/lib/utils'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -36,12 +37,6 @@ interface CulteMinimal {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1)
