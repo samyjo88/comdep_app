@@ -1,25 +1,32 @@
+import { cache }             from 'react'
 import { createClient }      from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { emailIlikePattern } from '@/lib/email'
 
-export async function getMyRole(): Promise<string | null> {
+// Mis en cache pour la durée de la requête : layouts, pages et actions
+// interrogent le rôle plusieurs fois par rendu.
+export const getMyRole = cache(async (): Promise<string | null> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { data: role } = await supabase.rpc('get_my_role')
   return (role as string | null) ?? null
-}
+})
 
-export async function getModulesAccessibles(): Promise<string[] | null> {
+const ROLES_TOUS_MODULES = ['super_admin', 'admin', 'responsable']
+const ROLES_PAR_EQUIPE   = ['membre', 'redacteur']
+
+export const getModulesAccessibles = cache(async (): Promise<string[] | null> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data: roleData } = await supabase.rpc('get_my_role')
-  const role = roleData as string | null
+  const role = await getMyRole()
 
-  // null = voir tout (admin, super_admin, responsable, rôle inconnu)
-  if (!role || (role !== 'membre' && role !== 'redacteur')) return null
+  // null = voir tout (admin, super_admin, responsable)
+  if (role && ROLES_TOUS_MODULES.includes(role)) return null
+  // Rôle absent ou inconnu : aucun module (refus par défaut)
+  if (!role || !ROLES_PAR_EQUIPE.includes(role)) return []
 
   const email = user.email as string | undefined
   if (!email) return []
@@ -46,4 +53,4 @@ export async function getModulesAccessibles(): Promise<string[] | null> {
   if ((projRes.data      ?? []).length > 0) modules.push('projection')
 
   return modules
-}
+})

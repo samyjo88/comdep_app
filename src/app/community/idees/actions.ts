@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { createServerClient } from '@supabase/ssr'
@@ -32,6 +33,7 @@ export interface IdeaPayload {
 }
 
 export async function createIdeaAction(data: IdeaPayload) {
+  await requireModule('community')
   const { unauthorized } = await requireAuth()
   if (unauthorized) throw new Error('Non autorisé')
 
@@ -49,6 +51,7 @@ export async function createIdeaAction(data: IdeaPayload) {
 }
 
 export async function updateIdeaStatutAction(id: string, statut: string) {
+  await requireModule('community')
   const { unauthorized } = await requireAuth()
   if (unauthorized) throw new Error('Non autorisé')
 

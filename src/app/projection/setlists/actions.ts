@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -7,6 +8,7 @@ export async function createSetlistAction(payload: {
   culte_id?:      string | null
   titre_setlist?: string | null
 }) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
 

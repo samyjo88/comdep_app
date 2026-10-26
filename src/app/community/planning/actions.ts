@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { upsertPlanningWeek } from '@/lib/community'
@@ -11,6 +12,7 @@ async function checkAuth() {
 }
 
 export async function upsertPlanningAction(data: PlanningWeekPayload) {
+  await requireModule('community')
   await checkAuth()
   const result = await upsertPlanningWeek(data)
   if (!result.error) revalidatePath('/community/planning')

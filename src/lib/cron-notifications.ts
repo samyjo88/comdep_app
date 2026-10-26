@@ -26,13 +26,19 @@ export function getSupabaseAdmin(): any {
 
 /**
  * Vérifie le header Authorization: Bearer <CRON_SECRET>.
- * Si CRON_SECRET n'est pas défini (dev local), laisse passer.
- * En production Vercel, CRON_SECRET est injecté automatiquement dans les
- * requêtes cron quand configuré dans les variables d'environnement.
+ * Vercel envoie ce header aux crons dès que CRON_SECRET est défini dans les
+ * variables d'environnement du projet.
+ * Sans CRON_SECRET : accepté en développement local, refusé en production.
  */
 export function verifyCronAuth(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
-  if (!secret) return true
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[cron] CRON_SECRET non défini : requête refusée')
+      return false
+    }
+    return true
+  }
   const auth = req.headers.get('authorization') ?? ''
   return auth === `Bearer ${secret}`
 }

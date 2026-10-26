@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { headers } from 'next/headers'
@@ -41,6 +42,7 @@ export type MembrePayload = {
 export async function creerMembreCaptationAction(
   payload: MembrePayload,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
 
@@ -97,6 +99,7 @@ export async function modifierMembreCaptationAction(
   id:      string,
   payload: MembrePayload,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
 
@@ -123,6 +126,7 @@ export async function toggleActifMembreCaptationAction(
   id:    string,
   actif: boolean,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     const { data: { user } } = await db.auth.getUser()
@@ -152,6 +156,7 @@ export async function toggleActifMembreCaptationAction(
 // ── supprimerMembreCaptationAction ─────────────────────────────────────────
 
 export async function supprimerMembreCaptationAction(id: string): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     const { data: { user } } = await db.auth.getUser()

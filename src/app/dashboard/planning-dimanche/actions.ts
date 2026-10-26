@@ -1,5 +1,6 @@
 'use server'
 
+import { requireRole } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import type { Departement, Slot } from '@/types/planning-dimanche'
@@ -27,6 +28,7 @@ export async function assignerMembre(
   slot:         Slot,
   membreId:     string | null,
 ): Promise<ActionResult> {
+  await requireRole(['super_admin', 'admin', 'responsable', 'redacteur', 'membre'])
   const { supabase, user } = await getDb()
   if (!user) return { success: false, error: 'Non authentifié' }
 
@@ -83,6 +85,7 @@ export async function permuterAssignation(
   cibleDate:     string,
   cibleSlot:     Slot,
 ): Promise<ActionResult> {
+  await requireRole(['super_admin', 'admin', 'responsable', 'redacteur', 'membre'])
   const { supabase, user } = await getDb()
   if (!user) return { success: false, error: 'Non authentifié' }
 

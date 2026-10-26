@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { normalizeEmail } from '@/lib/email'
@@ -17,6 +18,7 @@ type MembrePayload = {
 }
 
 export async function createMembreAction(payload: MembrePayload) {
+  await requireModule('projection')
   if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
 
   // If email is provided, send invitation
@@ -62,6 +64,7 @@ export async function createMembreAction(payload: MembrePayload) {
 }
 
 export async function updateMembreAction(id: string, payload: Partial<MembrePayload>) {
+  await requireModule('projection')
   if (payload.email) payload = { ...payload, email: normalizeEmail(payload.email) }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,6 +79,7 @@ export async function updateMembreAction(id: string, payload: Partial<MembrePayl
 }
 
 export async function toggleActifAction(id: string, actif: boolean) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { data: { user } } = await supabase.auth.getUser()
@@ -96,6 +100,7 @@ export async function toggleActifAction(id: string, actif: boolean) {
 }
 
 export async function supprimerMembreProjectionAction(id: string): Promise<{ error?: string }> {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { data: { user } } = await supabase.auth.getUser()

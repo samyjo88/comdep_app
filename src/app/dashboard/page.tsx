@@ -2,7 +2,6 @@ import { Suspense, type ElementType } from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { archiverCultesPassés } from '@/lib/annonces'
 import { getModulesAccessibles, getMyRole } from '@/lib/dashboard/modules-access'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -83,9 +82,6 @@ interface MembreUnifie {
 // ── Données ────────────────────────────────────────────────────────────────
 
 async function getDashboardData() {
-  // Archiver silencieusement les cultes dont la date est passée
-  await archiverCultesPassés()
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const today    = new Date().toISOString().slice(0, 10)

@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { redirect } from 'next/navigation'
 import { createCulte, createAnnonce } from '@/lib/annonces'
 
@@ -11,6 +12,7 @@ export async function preparerCulte(
   _prev: NouveauCulteState | null,
   formData: FormData,
 ): Promise<NouveauCulteState> {
+  await requireModule('annonces')
   const dateCulte  = (formData.get('date_culte')  as string | null)?.trim() ?? ''
   const theme      = (formData.get('theme')        as string | null)?.trim() || null
   const predicateur = (formData.get('predicateur') as string | null)?.trim() || null

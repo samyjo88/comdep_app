@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
@@ -76,6 +77,7 @@ export type ActionResult = { success: true } | { success: false; error: string }
 // ── Créer un équipement ────────────────────────────────────────────────────
 
 export async function creerMateriel(payload: MaterielPayload): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -107,6 +109,7 @@ export async function creerMateriel(payload: MaterielPayload): Promise<ActionRes
 // ── Modifier un équipement ─────────────────────────────────────────────────
 
 export async function modifierMateriel(id: number, payload: MaterielPayload): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -132,6 +135,7 @@ export async function modifierMateriel(id: number, payload: MaterielPayload): Pr
 // ── Modifier le statut ─────────────────────────────────────────────────────
 
 export async function modifierStatutMateriel(id: number, statut: StatutMateriel): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -150,6 +154,7 @@ export async function modifierStatutMateriel(id: number, statut: StatutMateriel)
 // ── Supprimer un équipement ────────────────────────────────────────────────
 
 export async function supprimerMateriel(id: number): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -174,6 +179,7 @@ export async function ajouterMateriel(
   _prev: MaterielFormState,
   formData: FormData
 ): Promise<MaterielFormState> {
+  await requireModule('son')
   const nom = formData.get('nom') as string
   if (!nom?.trim()) return { error: 'Le nom est obligatoire' }
 

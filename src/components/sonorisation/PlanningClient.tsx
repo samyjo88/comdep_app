@@ -657,7 +657,7 @@ export function PlanningClient({ plannings, membres }: {
   async function envoyerRappels() {
     setRappelEtat('loading')
     try {
-      const res  = await fetch('/api/notifications/rappel-culte')
+      const res  = await fetch('/api/notifications/rappel-culte', { method: 'POST' })
       const json = await res.json() as { success?: boolean; sent?: number; message?: string; error?: string }
       if (!res.ok) throw new Error(json.error ?? 'Erreur serveur')
       const msg = (json.sent ?? 0) === 0

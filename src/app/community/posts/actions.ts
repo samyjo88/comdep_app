@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { createPost, updatePost, deletePost, updateStatutPost } from '@/lib/community'
@@ -12,6 +13,7 @@ async function checkAuth() {
 }
 
 export async function createPostAction(data: PostPayload) {
+  await requireModule('community')
   await checkAuth()
   const result = await createPost(data)
   if (!result.error) revalidatePath('/community/posts')
@@ -19,6 +21,7 @@ export async function createPostAction(data: PostPayload) {
 }
 
 export async function updatePostAction(id: string, data: PostUpdatePayload) {
+  await requireModule('community')
   await checkAuth()
   const result = await updatePost(id, data)
   if (!result.error) revalidatePath('/community/posts')
@@ -26,6 +29,7 @@ export async function updatePostAction(id: string, data: PostUpdatePayload) {
 }
 
 export async function deletePostAction(id: string) {
+  await requireModule('community')
   await checkAuth()
   const result = await deletePost(id)
   if (!result.error) revalidatePath('/community/posts')
@@ -33,6 +37,7 @@ export async function deletePostAction(id: string) {
 }
 
 export async function updateStatutPostAction(id: string, statut: StatutPost) {
+  await requireModule('community')
   await checkAuth()
   const result = await updateStatutPost(id, statut)
   if (!result.error) revalidatePath('/community/posts')

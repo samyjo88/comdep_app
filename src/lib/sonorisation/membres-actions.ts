@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
@@ -35,6 +36,7 @@ export type MembrePayload = {
 export type ActionResult = { success: true } | { success: false; error: string }
 
 export async function creerMembre(payload: MembrePayload): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -85,6 +87,7 @@ export async function creerMembre(payload: MembrePayload): Promise<ActionResult>
 }
 
 export async function modifierMembre(id: number, payload: MembrePayload): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -98,6 +101,7 @@ export async function modifierMembre(id: number, payload: MembrePayload): Promis
 }
 
 export async function modifierActiveMembre(id: number, actif: boolean): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -117,6 +121,7 @@ export async function modifierActiveMembre(id: number, actif: boolean): Promise<
 }
 
 export async function supprimerMembre(id: number): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
