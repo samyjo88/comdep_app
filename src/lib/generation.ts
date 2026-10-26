@@ -12,7 +12,10 @@ async function appelerClaude(
   userMessage: string,
   maxTokens = 4000,
 ): Promise<{ texte: string; tokens: number }> {
-  const response = await anthropic.messages.create({
+  // En cas de refus du modèle, l'API relance la requête sur un modèle de repli
+  const response = await anthropic.beta.messages.create({
+    betas:         ['server-side-fallback-2026-07-01'],
+    fallbacks:     'default',
     model:         MODELE_CLAUDE,
     max_tokens:    maxTokens,
     output_config: { effort: 'medium' },
@@ -31,7 +34,7 @@ async function appelerClaude(
   }
 
   const texte = response.content
-    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+    .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === 'text')
     .map((block) => block.text)
     .join('')
     .trim()
