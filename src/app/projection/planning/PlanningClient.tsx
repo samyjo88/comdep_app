@@ -67,10 +67,10 @@ const ROLES_PLANNING = [
 const STATUT_ORDER: PlanningEntry['statut'][] = ['planifie', 'confirme', 'present', 'absent']
 
 const STATUT_BADGE: Record<PlanningEntry['statut'], { label: string; cls: string }> = {
-  planifie: { label: 'Planifié', cls: 'bg-gray-100 text-gray-700 border-gray-200' },
-  confirme: { label: 'Confirmé', cls: 'bg-blue-100 text-blue-700 border-blue-200' },
-  present:  { label: 'Présent',  cls: 'bg-green-100 text-green-700 border-green-200' },
-  absent:   { label: 'Absent',   cls: 'bg-red-100 text-red-700 border-red-200' },
+  planifie: { label: 'Planifié', cls: 'bg-muted text-foreground border-border' },
+  confirme: { label: 'Confirmé', cls: 'bg-info/15 text-info border-info/30' },
+  present:  { label: 'Présent',  cls: 'bg-success/15 text-success border-success/30' },
+  absent:   { label: 'Absent',   cls: 'bg-danger/15 text-danger border-danger/30' },
 }
 
 function nextMonth(year: number, month: number) {
@@ -101,11 +101,11 @@ function getCulteGlobalBadge(culte: CulteForPlanning): { label: string; cls: str
   }
 
   if (!hasDiffusion || !hasProclaim) {
-    return { label: '⚠ Incomplet', cls: 'bg-red-100 text-red-700 border-red-200' }
+    return { label: '⚠ Incomplet', cls: 'bg-danger/15 text-danger border-danger/30' }
   }
-  if (allPresent)  return { label: '✓ Couvert', cls: 'bg-green-100 text-green-700 border-green-200' }
-  if (allCovered)  return { label: 'Confirmé',  cls: 'bg-blue-100 text-blue-700 border-blue-200' }
-  return { label: 'Planifié', cls: 'bg-gray-100 text-gray-700 border-gray-200' }
+  if (allPresent)  return { label: '✓ Couvert', cls: 'bg-success/15 text-success border-success/30' }
+  if (allCovered)  return { label: 'Confirmé',  cls: 'bg-info/15 text-info border-info/30' }
+  return { label: 'Planifié', cls: 'bg-muted text-foreground border-border' }
 }
 
 function getSetlistLink(culte: CulteForPlanning): {
@@ -411,7 +411,7 @@ function RappelDialog({
           Un email de rappel sera envoyé aux opérateurs assignés à ce culte
           (Diffusion &amp; Proclaim).
         </p>
-        {result && <p className="text-sm text-green-700 font-medium">{result}</p>}
+        {result && <p className="text-sm text-success font-medium">{result}</p>}
         {error  && <p className="text-sm text-destructive">{error}</p>}
         <DialogFooter>
           <Button variant="outline" size="sm" onClick={onClose} disabled={pending}>

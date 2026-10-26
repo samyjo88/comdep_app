@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { updateRubrique, getAnnonceAvecCulte } from '@/lib/annonces'
 import type { StatutReconduite } from '@/types/annonces'
 
@@ -7,6 +8,7 @@ export async function sauvegarderStatutReconduite(
   rubriqueId: string,
   statut: StatutReconduite,
 ): Promise<{ error?: string }> {
+  await requireModule('annonces')
   const result = await updateRubrique(rubriqueId, { reconduire: statut })
   if (result.error) return { error: result.error }
   return {}
@@ -16,6 +18,7 @@ export async function sauvegarderDateValidite(
   rubriqueId: string,
   date: string | null,
 ): Promise<{ error?: string }> {
+  await requireModule('annonces')
   const result = await updateRubrique(rubriqueId, { date_validite: date || null })
   if (result.error) return { error: result.error }
   return {}
@@ -25,6 +28,7 @@ export async function appliquerReconductes(
   annoncePrecedenteId: string,
   annonceProchainId: string,
 ): Promise<{ error?: string }> {
+  await requireModule('annonces')
   const [precRes, prochRes] = await Promise.all([
     getAnnonceAvecCulte(annoncePrecedenteId),
     getAnnonceAvecCulte(annonceProchainId),

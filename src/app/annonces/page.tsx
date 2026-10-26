@@ -12,6 +12,7 @@ import {
 import type { Metadata } from 'next'
 import type { CulteAvecAnnonce } from '@/lib/annonces'
 import { CarteCulteInteractive } from '@/components/annonces/CarteCulteInteractive'
+import { capitalize } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
 
@@ -24,10 +25,6 @@ function formatDateLongue(dateStr: string): string {
     month:   'long',
     year:    'numeric',
   })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function joursRestants(dateStr: string): number {
@@ -58,13 +55,13 @@ function BadgeStatut({ statut }: { statut: ReturnType<typeof statutAnnonce> }) {
   switch (statut) {
     case 'publie':
       return (
-        <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 gap-1 text-xs">
+        <Badge className="bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30 hover:bg-success/15 dark:hover:bg-success/5 gap-1 text-xs">
           <Send className="h-3 w-3" /> Publié
         </Badge>
       )
     case 'valide':
       return (
-        <Badge className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40 gap-1 text-xs">
+        <Badge className="bg-info/15 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30 hover:bg-info/15 dark:hover:bg-info/5 gap-1 text-xs">
           <CheckCircle2 className="h-3 w-3" /> Validé
         </Badge>
       )
@@ -187,14 +184,14 @@ function CompteARebours({ culte }: { culte: CulteAvecAnnonce }) {
   const { completes, total } = rubriquesCompletes(culte)
 
   const couleur =
-    jours <= 2 ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40'          :
-    jours <= 5 ? 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40'   :
-                 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/40'
+    jours <= 2 ? 'border-danger/30 dark:border-danger/30 bg-danger/10 dark:bg-danger/5'          :
+    jours <= 5 ? 'border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/5'   :
+                 'border-success/30 dark:border-success/30 bg-success/10 dark:bg-success/5'
 
   const couleurTexte =
-    jours <= 2 ? 'text-red-700 dark:text-red-300'      :
-    jours <= 5 ? 'text-amber-700 dark:text-amber-300'  :
-                 'text-emerald-700 dark:text-emerald-300'
+    jours <= 2 ? 'text-danger dark:text-danger'      :
+    jours <= 5 ? 'text-warning dark:text-warning'  :
+                 'text-success dark:text-success'
 
   return (
     <Card className={`border-2 ${couleur}`}>
@@ -260,17 +257,17 @@ async function PageContent() {
       {alerteUrgente && (
         <div className={`flex items-start gap-3 rounded-xl border px-4 py-3 ${
           alerteUrgente.jours === 0
-            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40'
-            : 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40'
+            ? 'border-danger/30 dark:border-danger/30 bg-danger/10 dark:bg-danger/5'
+            : 'border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/5'
         }`}>
           <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${
-            alerteUrgente.jours === 0 ? 'text-red-500' : 'text-amber-500'
+            alerteUrgente.jours === 0 ? 'text-danger' : 'text-warning'
           }`} />
           <div className="flex-1 min-w-0">
             <p className={`text-sm font-semibold ${
               alerteUrgente.jours === 0
-                ? 'text-red-800 dark:text-red-200'
-                : 'text-amber-800 dark:text-amber-200'
+                ? 'text-danger dark:text-danger'
+                : 'text-warning dark:text-warning'
             }`}>
               {alerteUrgente.jours === 0
                 ? "C'est aujourd'hui ! L'annonce n'est pas encore validée"
@@ -281,8 +278,8 @@ async function PageContent() {
             </p>
             <p className={`text-xs mt-0.5 ${
               alerteUrgente.jours === 0
-                ? 'text-red-700 dark:text-red-300'
-                : 'text-amber-700 dark:text-amber-300'
+                ? 'text-danger dark:text-danger'
+                : 'text-warning dark:text-warning'
             }`}>
               {capitalize(formatDateLongue(alerteUrgente.culte.date_culte))}
               {alerteUrgente.statut === 'aucune' && ' — Aucune annonce créée'}

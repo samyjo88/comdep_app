@@ -39,7 +39,7 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="flex flex-col items-center gap-2 py-2 text-center text-sm">
-        <CheckCircle className="h-5 w-5 text-green-500" />
+        <CheckCircle className="h-5 w-5 text-success" />
         <p className="font-medium">E-mail envoyé !</p>
         <p className="text-muted-foreground text-xs">Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.</p>
       </div>
@@ -55,9 +55,9 @@ export function ForgotPasswordForm() {
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="vous@eglise.fr"
+          placeholder="vous@exemple.com"
           required
-          className="h-10"
+          className="h-11 rounded-xl"
         />
       </div>
       {error && (
@@ -66,7 +66,7 @@ export function ForgotPasswordForm() {
           <span>{error}</span>
         </div>
       )}
-      <Button type="submit" className="w-full h-10" disabled={pending}>
+      <Button type="submit" className="h-11 w-full rounded-xl" disabled={pending}>
         {pending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
         {pending ? 'Envoi…' : 'Envoyer le lien de réinitialisation'}
       </Button>

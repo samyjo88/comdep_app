@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -13,6 +14,7 @@ export async function addSetlistItemAction(payload: {
   moment_culte?:     string | null
   tonalite_utilisee?: string | null
 }) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
 
@@ -34,6 +36,7 @@ export async function addSetlistItemAction(payload: {
 }
 
 export async function removeSetlistItemAction(item_id: string) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase.from('setlist_items').delete().eq('id', item_id)
@@ -44,6 +47,7 @@ export async function removeSetlistItemAction(item_id: string) {
 export async function reorderSetlistItemsAction(
   items: { id: string; position: number }[],
 ) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const results: AnyMap[] = await Promise.all(
@@ -64,6 +68,7 @@ export async function updateSetlistItemAction(
     notes_operateur?:   string | null
   },
 ) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase
@@ -78,6 +83,7 @@ export async function updateSetlistStatusAction(
   setlist_id: string,
   statut: 'brouillon' | 'valide' | 'utilise',
 ) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase

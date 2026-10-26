@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireModule } from '@/lib/auth/guards'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 import type { RoleCaptation } from '@/types/captation'
@@ -190,6 +191,12 @@ function buildEmailHtml(opts: {
 // ── POST /api/captation/rappel ─────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  try {
+    await requireModule('captation')
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 403 })
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let resend: any
   try {

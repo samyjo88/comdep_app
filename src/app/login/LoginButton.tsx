@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 export function LoginButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" className="w-full h-10 mt-2" disabled={pending}>
+    <Button type="submit" className="mt-2 h-11 w-full rounded-xl text-[15px] shadow-sm shadow-primary/20" disabled={pending}>
       {pending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
       {pending ? 'Connexion…' : 'Se connecter'}
     </Button>

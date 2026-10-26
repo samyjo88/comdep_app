@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -13,6 +14,7 @@ export interface ModifierCulteData {
 export async function modifierCulte(
   data: ModifierCulteData,
 ): Promise<{ error?: string }> {
+  await requireModule('annonces')
   const supabase = createAdminClient()
 
   const { error } = await supabase
@@ -31,6 +33,7 @@ export async function modifierCulte(
 }
 
 export async function supprimerCulte(id: string): Promise<{ error?: string }> {
+  await requireModule('annonces')
   const supabase = createAdminClient()
 
   // Cascade: rubriques → annonces → culte (in case DB cascade isn't set)

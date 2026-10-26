@@ -79,8 +79,8 @@ const TONALITES = [
 
 const STATUT_CONFIG = {
   brouillon: { label: 'Brouillon', badge: 'bg-muted text-muted-foreground border-border' },
-  valide:    { label: 'Validée',   badge: 'bg-blue-50 text-blue-700 border-blue-200' },
-  utilise:   { label: 'Utilisée',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  valide:    { label: 'Validée',   badge: 'bg-info/10 text-info border-info/30' },
+  utilise:   { label: 'Utilisée',  badge: 'bg-success/10 text-success border-success/30' },
 }
 
 function LibCantiqueRow({
@@ -106,7 +106,7 @@ function LibCantiqueRow({
     >
       <span
         className={`shrink-0 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${
-          isGad ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+          isGad ? 'bg-info/15 text-info' : 'bg-warning/15 text-warning'
         }`}
       >
         {isGad ? (cantique.numero_gad ?? 'GAD') : '🎤'}
@@ -161,7 +161,7 @@ function SetlistItemRow({
   return (
     <div
       className={`flex items-start gap-2 px-3 py-3 bg-card rounded-lg border transition-all duration-500 ${
-        flash ? 'ring-2 ring-green-400 bg-green-50 dark:bg-green-950/20' : ''
+        flash ? 'ring-2 ring-success bg-success/10 dark:bg-success/5' : ''
       } ${removing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
     >
       <div
@@ -179,7 +179,7 @@ function SetlistItemRow({
         <div className="flex items-center gap-2 min-w-0">
           <span
             className={`shrink-0 text-[11px] font-mono font-semibold px-1.5 py-0.5 rounded ${
-              isGad ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+              isGad ? 'bg-info/15 text-info' : 'bg-warning/15 text-warning'
             }`}
           >
             {isGad ? (c.numero_gad ?? 'GAD') : '🎤'}
@@ -605,13 +605,13 @@ export default function EditClient({
           </span>
           {stats.gad > 0 && (
             <span className="flex items-center gap-1 text-xs">
-              <Music2 className="h-3.5 w-3.5 text-blue-500" />
+              <Music2 className="h-3.5 w-3.5 text-info" />
               {stats.gad} GAD
             </span>
           )}
           {stats.chorale > 0 && (
             <span className="flex items-center gap-1 text-xs">
-              <Mic2 className="h-3.5 w-3.5 text-amber-500" />
+              <Mic2 className="h-3.5 w-3.5 text-warning" />
               {stats.chorale} Chorale
             </span>
           )}
@@ -622,10 +622,10 @@ export default function EditClient({
             <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /><span className="text-muted-foreground">Sauvegarde…</span></>
           )}
           {saveState === 'saved' && (
-            <><Check className="h-3.5 w-3.5 text-emerald-600" /><span className="text-emerald-600">Sauvegardé</span></>
+            <><Check className="h-3.5 w-3.5 text-success" /><span className="text-success">Sauvegardé</span></>
           )}
           {saveState === 'unsaved' && (
-            <><AlertCircle className="h-3.5 w-3.5 text-amber-500" /><span className="text-amber-600">Non sauvegardé</span></>
+            <><AlertCircle className="h-3.5 w-3.5 text-warning" /><span className="text-warning">Non sauvegardé</span></>
           )}
         </div>
 

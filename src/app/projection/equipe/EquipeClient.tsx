@@ -45,13 +45,13 @@ const ROLES = [
     value:   'operateur_diffusion',
     label:   'Diffusion écrans',
     emoji:   '🖥️',
-    badgeCls: 'bg-blue-50 text-blue-700 border-blue-200',
+    badgeCls: 'bg-info/10 text-info border-info/30',
   },
   {
     value:   'operateur_proclaim',
     label:   'Remplissage Proclaim',
     emoji:   '⌨️',
-    badgeCls: 'bg-amber-50 text-amber-700 border-amber-200',
+    badgeCls: 'bg-warning/10 text-warning border-warning/30',
   },
 ] as const
 
@@ -559,14 +559,14 @@ function StatsTable({
                 {hasDiffusion && (
                   <td className="text-center px-4 py-2.5 tabular-nums">
                     {r.diffusion > 0
-                      ? <span className="font-semibold text-blue-700">{r.diffusion}</span>
+                      ? <span className="font-semibold text-info">{r.diffusion}</span>
                       : <span className="text-muted-foreground/40">—</span>}
                   </td>
                 )}
                 {hasProclaim && (
                   <td className="text-center px-4 py-2.5 tabular-nums">
                     {r.proclaim > 0
-                      ? <span className="font-semibold text-amber-700">{r.proclaim}</span>
+                      ? <span className="font-semibold text-warning">{r.proclaim}</span>
                       : <span className="text-muted-foreground/40">—</span>}
                   </td>
                 )}

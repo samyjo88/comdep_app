@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -17,6 +18,7 @@ const SEARCH_SELECT = [
 ].join(', ')
 
 export async function searchCantiquesAction(query: string) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const q = query.trim()
@@ -70,6 +72,7 @@ export async function searchCantiquesAction(query: string) {
 }
 
 export async function createCantiqueAction(payload: CantiquePayload) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase.from('cantiques').insert(payload)
@@ -79,6 +82,7 @@ export async function createCantiqueAction(payload: CantiquePayload) {
 }
 
 export async function updateCantiqueAction(id: string, payload: CantiquePayload) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase.from('cantiques').update(payload).eq('id', id)
@@ -89,6 +93,7 @@ export async function updateCantiqueAction(id: string, payload: CantiquePayload)
 }
 
 export async function deleteCantiqueAction(id: string) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase.from('cantiques').delete().eq('id', id)

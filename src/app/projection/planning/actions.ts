@@ -1,5 +1,7 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
+import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -8,6 +10,7 @@ export async function upsertPlanningAction(payload: {
   role_du_jour: string
   membre_id:    string | null
 }) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { culte_id, role_du_jour, membre_id } = payload
@@ -37,6 +40,7 @@ export async function updatePlanningStatusAction(
   planning_id: string,
   statut: 'planifie' | 'confirme' | 'present' | 'absent',
 ) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase
@@ -53,6 +57,7 @@ export async function createCulteAction(payload: {
   theme?:       string | null
   predicateur?: string | null
 }) {
+  await requireModule('projection')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase = await createClient() as any
   const { error } = await supabase.from('cultes').insert({
@@ -62,6 +67,7 @@ export async function createCulteAction(payload: {
     statut:      'a_venir',
   })
   if (error) return { error: error.message as string }
+  await rattacherCulte(payload.date_culte)
   revalidatePath('/projection/planning')
   return {}
 }

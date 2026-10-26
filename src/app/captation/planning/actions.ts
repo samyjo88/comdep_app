@@ -1,5 +1,7 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
+import { requireModule } from '@/lib/auth/guards'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -27,6 +29,7 @@ async function getDb() {
 // ── creerCulteAction ───────────────────────────────────────────────────────
 
 export async function creerCulteAction(dateCulte: string): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,6 +43,7 @@ export async function creerCulteAction(dateCulte: string): Promise<ActionResult>
       return { success: false, error: msg }
     }
 
+    await rattacherCulte(dateCulte)
     revalidatePath('/captation/planning')
     return { success: true }
   } catch (e) {
@@ -54,6 +58,7 @@ export async function upsertAssignmentAction(
   membreId: string,
   role:     RoleCaptation,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,6 +84,7 @@ export async function deleteAssignmentAction(
   culteId: string,
   role:    RoleCaptation,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -103,6 +109,7 @@ export async function updateStatutAssignmentAction(
   id:     string,
   statut: StatutPlanning,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

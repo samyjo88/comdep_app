@@ -172,7 +172,7 @@ export function AjouterMembreDialog() {
         {/* ── Mode invitation ── */}
         {mode === 'invitation' && (
           <>
-            <div className="flex items-start gap-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 px-3 py-2.5 text-xs text-blue-700 dark:text-blue-300">
+            <div className="flex items-start gap-2.5 rounded-lg bg-info/10 dark:bg-info/5 border border-info/30 dark:border-info/30 px-3 py-2.5 text-xs text-info dark:text-info">
               <Mail className="h-3.5 w-3.5 shrink-0 mt-0.5" />
               <span>
                 Un email d&apos;invitation sera envoyé pour que la personne crée son propre mot de passe.
@@ -195,7 +195,7 @@ export function AjouterMembreDialog() {
         {/* ── Mode mot de passe direct ── */}
         {mode === 'direct' && (
           <>
-            <div className="flex items-start gap-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-300">
+            <div className="flex items-start gap-2.5 rounded-lg bg-warning/10 dark:bg-warning/5 border border-warning/30 dark:border-warning/30 px-3 py-2.5 text-xs text-warning dark:text-warning">
               <KeyRound className="h-3.5 w-3.5 shrink-0 mt-0.5" />
               <span>
                 Le compte est créé immédiatement. Transmettez le mot de passe à la personne

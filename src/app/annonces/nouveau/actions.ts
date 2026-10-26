@@ -1,7 +1,9 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { redirect } from 'next/navigation'
 import { createCulte, createAnnonce } from '@/lib/annonces'
+import { rattacherCulte } from '@/lib/cultes'
 
 export type NouveauCulteState =
   | { error: string }
@@ -11,6 +13,7 @@ export async function preparerCulte(
   _prev: NouveauCulteState | null,
   formData: FormData,
 ): Promise<NouveauCulteState> {
+  await requireModule('annonces')
   const dateCulte  = (formData.get('date_culte')  as string | null)?.trim() ?? ''
   const theme      = (formData.get('theme')        as string | null)?.trim() || null
   const predicateur = (formData.get('predicateur') as string | null)?.trim() || null
@@ -33,6 +36,9 @@ export async function preparerCulte(
     }
     return { error: `Erreur lors de la création du culte : ${msg}` }
   }
+
+  // Le culte apparaît aussi dans le planning son (rappels automatiques)
+  await rattacherCulte(dateCulte)
 
   // Créer l'annonce avec ses 7 rubriques
   const annonceResult = await createAnnonce(culteResult.data.id)

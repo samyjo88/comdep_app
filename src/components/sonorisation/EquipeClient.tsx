@@ -35,9 +35,9 @@ import type { MembreSon, RoleSon } from '@/lib/supabase/types'
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const ROLE_CONFIG: Record<RoleSon, { label: string; className: string }> = {
-  responsable: { label: 'Responsable', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  responsable: { label: 'Responsable', className: 'bg-info/15 text-info border-info/30' },
   technicien:  { label: 'Technicien',  className: 'bg-violet-100 text-violet-800 border-violet-200' },
-  assistant:   { label: 'Assistant',   className: 'bg-gray-100 text-gray-700 border-gray-200' },
+  assistant:   { label: 'Assistant',   className: 'bg-muted text-foreground border-border' },
 }
 
 const AVATAR_COLORS = [
@@ -354,7 +354,7 @@ function MembreCard({
                 'flex-1 min-h-[44px] gap-1 text-xs',
                 actifLocal
                   ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
-                  : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
+                  : 'text-success hover:text-success hover:bg-success/10',
               )}
               onClick={handleDesactiver}
               disabled={isPending}

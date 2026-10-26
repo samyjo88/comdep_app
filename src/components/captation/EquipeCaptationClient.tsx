@@ -53,7 +53,7 @@ const AVATAR_COLORS = [
 ]
 
 const ROLE_BADGE_CONFIG: Record<RoleCaptation, { label: string; className: string; icone: string }> = {
-  cameraman:     { label: 'Caméraman',    className: 'bg-blue-50 text-blue-700 border-blue-200',     icone: '🎥' },
+  cameraman:     { label: 'Caméraman',    className: 'bg-info/10 text-info border-info/30',     icone: '🎥' },
   photographe:   { label: 'Photographe',  className: 'bg-purple-50 text-purple-700 border-purple-200', icone: '📷' },
   infographiste: { label: 'Infographiste',className: 'bg-orange-50 text-orange-700 border-orange-200', icone: '🎨' },
 }
@@ -435,7 +435,7 @@ function MembreCard({
           <span className={cn(
             'text-xs font-medium px-2 py-0.5 rounded-full',
             nbCultes > 0
-              ? 'bg-emerald-50 text-emerald-700'
+              ? 'bg-success/10 text-success'
               : 'bg-muted text-muted-foreground',
           )}>
             {nbCultes} culte{nbCultes !== 1 ? 's' : ''} — {trimestreLabel}
@@ -459,7 +459,7 @@ function MembreCard({
                 'flex-1 min-h-[40px] gap-1 text-xs',
                 actifLocal
                   ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
-                  : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
+                  : 'text-success hover:text-success hover:bg-success/10',
               )}
               onClick={() => handleToggleActif(!actifLocal)}
               disabled={isPending}
@@ -540,7 +540,7 @@ function TableauStatsTrimestrielle({
                     </TableCell>
                     <TableCell className="text-center tabular-nums">
                       {s.cameraman > 0 ? (
-                        <span className="font-semibold text-blue-700">{s.cameraman}</span>
+                        <span className="font-semibold text-info">{s.cameraman}</span>
                       ) : (
                         <span className="text-muted-foreground/40">—</span>
                       )}

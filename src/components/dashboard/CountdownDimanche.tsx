@@ -28,14 +28,17 @@ interface Props {
 }
 
 export function CountdownDimanche({ prochainCulteDate, nbMembresActifs, tachesEnAttente }: Props) {
-  const target = prochainDimanche9h()
-  const [remaining, setRemaining] = useState<number>(() => Math.max(0, target.getTime() - Date.now()))
+  // Calculé uniquement côté navigateur : l'heure du serveur (UTC) diffère
+  // de celle de l'utilisateur, ce qui provoquait une erreur d'hydratation.
+  const [target, setTarget]       = useState<Date | null>(null)
+  const [remaining, setRemaining] = useState(0)
 
   useEffect(() => {
     const t = prochainDimanche9h()
-    const interval = setInterval(() => {
-      setRemaining(Math.max(0, t.getTime() - Date.now()))
-    }, 1000)
+    const tick = () => setRemaining(Math.max(0, t.getTime() - Date.now()))
+    setTarget(t)
+    tick()
+    const interval = setInterval(tick, 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -44,23 +47,28 @@ export function CountdownDimanche({ prochainCulteDate, nbMembresActifs, tachesEn
   const hours   = Math.floor((totalSeconds % 86400) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
+  const pret    = target !== null
 
   const cultePlanifie = prochainCulteDate !== null
 
   return (
-    <div className="rounded-2xl bg-emerald-800 dark:bg-emerald-900 text-white p-5 shadow-sm">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#3d6b27] via-brand-green to-[#86a93b] p-6 text-white shadow-lg shadow-primary/20 animate-rise">
+      {/* Croix stylisée en filigrane */}
+      <svg aria-hidden viewBox="0 0 100 140" className="pointer-events-none absolute right-6 top-1/2 h-56 -translate-y-1/2 text-white/[0.07] sm:right-1/3">
+        <path fill="currentColor" d="M40 0h20v40h40v20H60v80H40V60H0V40h40z" />
+      </svg>
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
         {/* Compte à rebours */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-4 w-4 text-emerald-300" />
-            <p className="text-sm font-medium text-emerald-200 uppercase tracking-wide">
+            <Clock className="h-4 w-4 text-white/70" />
+            <p className="text-sm font-medium text-white/80 uppercase tracking-wide">
               Prochain dimanche
             </p>
           </div>
-          <p className="text-base font-semibold capitalize mb-3 text-emerald-100">
-            {formatDimanche(target)}
+          <p className="text-base font-semibold capitalize mb-3 text-white">
+            {pret ? formatDimanche(target) : '\u00a0'}
           </p>
           {/* Timer */}
           <div className="flex items-end gap-3">
@@ -71,10 +79,10 @@ export function CountdownDimanche({ prochainCulteDate, nbMembresActifs, tachesEn
               { val: seconds, label: 'SEC' },
             ].map(({ val, label }) => (
               <div key={label} className="text-center">
-                <div className="text-3xl font-black tabular-nums leading-none text-white">
-                  {padZ(val)}
+                <div className="min-w-[3.25rem] rounded-xl bg-white/12 px-2 py-2 font-display text-3xl font-bold tabular-nums leading-none text-white ring-1 ring-white/15 backdrop-blur-sm">
+                  {pret ? padZ(val) : '--'}
                 </div>
-                <div className="text-[10px] font-medium text-emerald-300 mt-0.5">{label}</div>
+                <div className="text-[10px] font-medium text-white/70 mt-0.5">{label}</div>
               </div>
             ))}
           </div>
@@ -84,8 +92,8 @@ export function CountdownDimanche({ prochainCulteDate, nbMembresActifs, tachesEn
         <div className="flex flex-col gap-3 sm:items-end">
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
             cultePlanifie
-              ? 'bg-emerald-600/60 text-emerald-100'
-              : 'bg-amber-500/30 text-amber-200'
+              ? 'bg-white/20 text-white ring-1 ring-white/30'
+              : 'bg-brand-gold/25 text-brand-gold ring-1 ring-brand-gold/40'
           }`}>
             {cultePlanifie
               ? <><CheckCircle2 className="h-3.5 w-3.5" /> Culte planifié</>
@@ -95,14 +103,14 @@ export function CountdownDimanche({ prochainCulteDate, nbMembresActifs, tachesEn
 
           <div className="flex gap-4 sm:gap-6">
             <div className="text-center">
-              <p className="text-2xl font-black tabular-nums text-white">{nbMembresActifs}</p>
-              <p className="text-[11px] text-emerald-300">Membres actifs</p>
+              <p className="font-display text-2xl font-bold tabular-nums text-white">{nbMembresActifs}</p>
+              <p className="text-[11px] text-white/70">Membres actifs</p>
             </div>
             <div className="text-center">
-              <p className={`text-2xl font-black tabular-nums ${tachesEnAttente > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>
+              <p className={`font-display text-2xl font-bold tabular-nums ${tachesEnAttente > 0 ? 'text-brand-gold' : 'text-white/70'}`}>
                 {tachesEnAttente}
               </p>
-              <p className="text-[11px] text-emerald-300">Tâches en attente</p>
+              <p className="text-[11px] text-white/70">Tâches en attente</p>
             </div>
           </div>
         </div>

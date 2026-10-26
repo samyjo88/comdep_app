@@ -192,8 +192,8 @@ async function PageContent() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+              <div className="flex items-start gap-2.5 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm text-danger">
+                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-danger" />
                 <span className="font-medium">Aucun CM assigné cette semaine</span>
               </div>
             )}
@@ -233,42 +233,42 @@ async function PageContent() {
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 bg-green-50/40">
+        <Card className="border-success/30 bg-success/5">
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-medium text-green-700 uppercase tracking-wide">
+            <CardTitle className="text-xs font-medium text-success uppercase tracking-wide">
               Publiés
             </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold tabular-nums text-green-700">{d.publies}</p>
-            <p className="text-xs text-green-600/80 mt-0.5">posts en ligne</p>
+            <p className="text-3xl font-bold tabular-nums text-success">{d.publies}</p>
+            <p className="text-xs text-success/80 mt-0.5">posts en ligne</p>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200 bg-amber-50/40">
+        <Card className="border-warning/30 bg-warning/5">
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-medium text-amber-700 uppercase tracking-wide">
+            <CardTitle className="text-xs font-medium text-warning uppercase tracking-wide">
               En attente
             </CardTitle>
-            <Clock className="h-4 w-4 text-amber-600" />
+            <Clock className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold tabular-nums text-amber-700">{d.enAttente}</p>
-            <p className="text-xs text-amber-600/80 mt-0.5">à traiter</p>
+            <p className="text-3xl font-bold tabular-nums text-warning">{d.enAttente}</p>
+            <p className="text-xs text-warning/80 mt-0.5">à traiter</p>
           </CardContent>
         </Card>
 
-        <Card className="border-red-200 bg-red-50/40">
+        <Card className="border-danger/30 bg-danger/5">
           <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-xs font-medium text-red-700 uppercase tracking-wide">
+            <CardTitle className="text-xs font-medium text-danger uppercase tracking-wide">
               Annulés
             </CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
+            <XCircle className="h-4 w-4 text-danger" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold tabular-nums text-red-700">{d.annules}</p>
-            <p className="text-xs text-red-600/80 mt-0.5">cette semaine</p>
+            <p className="text-3xl font-bold tabular-nums text-danger">{d.annules}</p>
+            <p className="text-xs text-danger/80 mt-0.5">cette semaine</p>
           </CardContent>
         </Card>
       </div>
@@ -311,7 +311,7 @@ async function PageContent() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Clock className="h-4 w-4 text-amber-500" />
+              <Clock className="h-4 w-4 text-warning" />
               Posts à publier dans les 24h
             </CardTitle>
             <Button asChild variant="ghost" size="sm" className="text-xs h-7 px-2">
@@ -359,7 +359,7 @@ async function PageContent() {
                         </div>
                       </div>
                       <div className="text-right shrink-0 space-y-1">
-                        <p className={`text-xs font-semibold tabular-nums ${urgent ? 'text-red-600' : 'text-muted-foreground'}`}>
+                        <p className={`text-xs font-semibold tabular-nums ${urgent ? 'text-danger' : 'text-muted-foreground'}`}>
                           {formatHeure(post.date_publication_prevue)}
                         </p>
                         <p className="text-[10px] text-muted-foreground">
@@ -445,10 +445,10 @@ async function PageContent() {
 
 function PrioriteBadge({ priorite }: { priorite: string }) {
   const MAP: Record<string, { label: string; className: string }> = {
-    urgente: { label: '🔴 Urgente', className: 'border-red-300 text-red-700 bg-red-50' },
+    urgente: { label: '🔴 Urgente', className: 'border-danger/30 text-danger bg-danger/10' },
     haute:   { label: '🟠 Haute',   className: 'border-orange-300 text-orange-700 bg-orange-50' },
     normale: { label: '🟡 Normale', className: 'border-yellow-300 text-yellow-700 bg-yellow-50' },
-    basse:   { label: '⚪ Basse',   className: 'border-slate-200 text-slate-500 bg-slate-50' },
+    basse:   { label: '⚪ Basse',   className: 'border-border text-muted-foreground bg-muted' },
   }
   const cfg = MAP[priorite] ?? MAP.normale
   return (

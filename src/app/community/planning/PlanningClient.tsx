@@ -119,8 +119,8 @@ export default function PlanningClient({ semaine, planning, membre, membres, pos
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+          <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+            <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
             <span>Aucun CM assigné à cette semaine</span>
           </div>
         )}
@@ -146,7 +146,7 @@ export default function PlanningClient({ semaine, planning, membre, membres, pos
           {saving && <span className="text-xs text-muted-foreground">Enregistrement…</span>}
         </div>
 
-        {err && <p className="text-xs text-red-600">{err}</p>}
+        {err && <p className="text-xs text-danger">{err}</p>}
       </div>
 
       {/* ── Stats semaine ───────────────────────────────────────────────── */}
@@ -155,13 +155,13 @@ export default function PlanningClient({ semaine, planning, membre, membres, pos
           <p className="text-2xl font-bold tabular-nums">{totalPosts}</p>
           <p className="text-xs text-muted-foreground mt-0.5">Posts prévus</p>
         </div>
-        <div className="rounded-xl border border-green-200 bg-green-50/50 p-3 text-center">
-          <p className="text-2xl font-bold tabular-nums text-green-700">{publiesPosts}</p>
-          <p className="text-xs text-green-600/80 mt-0.5">Publiés</p>
+        <div className="rounded-xl border border-success/30 bg-success/5 p-3 text-center">
+          <p className="text-2xl font-bold tabular-nums text-success">{publiesPosts}</p>
+          <p className="text-xs text-success/80 mt-0.5">Publiés</p>
         </div>
-        <div className="rounded-xl border border-blue-200 bg-blue-50/50 p-3 text-center">
-          <p className="text-2xl font-bold tabular-nums text-blue-700">{taux}%</p>
-          <p className="text-xs text-blue-600/80 mt-0.5">Taux pub.</p>
+        <div className="rounded-xl border border-info/30 bg-info/5 p-3 text-center">
+          <p className="text-2xl font-bold tabular-nums text-info">{taux}%</p>
+          <p className="text-xs text-info/80 mt-0.5">Taux pub.</p>
         </div>
       </div>
 

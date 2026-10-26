@@ -4,7 +4,9 @@
  *
  * Vérifications :
  *  1. Matériel en panne (hors_service) ou en réparation → alerte responsable
- *  2. Culte dans les 48h → rappel aux membres assignés
+ *  2. Tout culte programmé (dimanche ou semaine) a sa ligne de planning son
+ *  3. Culte dans les 3 jours sans responsable son → relance des responsables
+ *  4. Culte dans les 48h → rappel aux membres assignés
  */
 import { NextRequest, NextResponse } from 'next/server'
 import {
@@ -70,7 +72,52 @@ export async function GET(req: NextRequest) {
     await sendNotificationEmails(emailsResponsables, titre, message, '/sonorisation/materiel')
   }
 
-  // ── 2. Rappel 48h avant un culte planifié ─────────────────────────────
+  // ── 2. Cultes programmés dans les autres modules → planning son ───────
+
+  const in14j = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+  const { data: cultesAVenir } = await supabase
+    .from('cultes')
+    .select('*')
+    .gte('date_culte', dateToISO(now))
+    .lte('date_culte', dateToISO(in14j))
+  const culteParDate = new Map<string, AnyRow>(
+    ((cultesAVenir ?? []) as AnyRow[]).map(c => [c.date_culte as string, c]),
+  )
+  if (culteParDate.size > 0) {
+    await supabase.from('planning_son').upsert(
+      [...culteParDate.keys()].map(d => ({ date_culte: d, statut: 'planifie' })),
+      { onConflict: 'date_culte', ignoreDuplicates: true },
+    )
+  }
+
+  const quand = (date: string) => {
+    const c = culteParDate.get(date)
+    const h = c?.heure_debut ? ` à ${String(c.heure_debut).slice(0, 5).replace(':', 'h')}` : ''
+    return `${formatDateFr(date)}${h}`
+  }
+  const lienCulte = (date: string) =>
+    culteParDate.get(date) ? `/cultes/${culteParDate.get(date)!.id}` : '/sonorisation/planning'
+
+  // ── 3. Relance : personne n'est désigné à la sono à J-3 ───────────────
+
+  const in3j = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+  const { data: sansResponsable } = await supabase
+    .from('planning_son')
+    .select('date_culte')
+    .gte('date_culte', dateToISO(now))
+    .lte('date_culte', dateToISO(in3j))
+    .is('responsable_id', null)
+    .neq('statut', 'passe')
+
+  for (const p of (sansResponsable ?? []) as AnyRow[]) {
+    const date    = p.date_culte as string
+    const titre   = `⚠️ Sono à désigner — ${quand(date)}`
+    const message = `Aucun responsable son n'est encore désigné pour le culte du ${quand(date)}. Merci de désigner qui sera à la sono.`
+    inputs.push({ emails: emailsResponsables, module: 'son', titre, message, lien: lienCulte(date) })
+    await sendNotificationEmails(emailsResponsables, titre, message, lienCulte(date))
+  }
+
+  // ── 4. Rappel 48h avant un culte planifié ─────────────────────────────
 
   const { data: cultesSon, error: cultesErr } = await supabase
     .from('planning_son')
@@ -101,14 +148,15 @@ export async function GET(req: NextRequest) {
       .map((m: AnyRow) => m.email as string)
       .filter(Boolean)
 
-    const dateFr  = formatDateFr(culte.date_culte as string)
+    const dateFr  = quand(culte.date_culte as string)
+    const lien    = lienCulte(culte.date_culte as string)
     const titre   = `🔔 Rappel service son — ${dateFr}`
     const message = `Tu es assigné(e) pour assurer la sonorisation du culte du ${dateFr}. Prépare ton matériel.`
 
-    inputs.push({ emails, module: 'son', titre, message, lien: '/sonorisation/planning' })
+    inputs.push({ emails, module: 'son', titre, message, lien })
 
     // E-mail en complément de la notification in-app
-    await sendNotificationEmails(emails, titre, message, '/sonorisation/planning')
+    await sendNotificationEmails(emails, titre, message, lien)
   }
 
   // ── Insertion avec déduplication ───────────────────────────────────────
@@ -121,6 +169,7 @@ export async function GET(req: NextRequest) {
     checks:   {
       materielEnAlerte: (materiel ?? []).length,
       cultesIn48h:      (cultesSon ?? []).length,
+      sonADesigner:     (sansResponsable ?? []).length,
     },
     inserted,
     skipped,

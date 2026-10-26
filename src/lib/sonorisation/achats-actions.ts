@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -33,6 +34,7 @@ export type AchatPayload = {
 export type ActionResult = { success: true } | { success: false; error: string }
 
 export async function creerAchat(payload: AchatPayload): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -51,6 +53,7 @@ export async function creerAchat(payload: AchatPayload): Promise<ActionResult> {
 }
 
 export async function modifierStatutAchat(id: number, statut: StatutAchat): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -64,6 +67,7 @@ export async function modifierStatutAchat(id: number, statut: StatutAchat): Prom
 }
 
 export async function supprimerAchat(id: number): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }

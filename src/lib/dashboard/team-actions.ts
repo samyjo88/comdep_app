@@ -1,5 +1,6 @@
 'use server'
 
+import { requireRole, ROLES_ADMIN } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { headers }        from 'next/headers'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -16,6 +17,7 @@ export interface AjouterMembreData {
 }
 
 export async function ajouterMembre(data: AjouterMembreData): Promise<{ error?: string }> {
+  await requireRole(ROLES_ADMIN)
   const email  = normalizeEmail(data.email)
   const prenom = data.prenom.trim()
   const nom    = data.nom.trim()
@@ -139,6 +141,7 @@ export interface CreerMembreAvecMotDePasseData {
 export async function creerMembreAvecMotDePasse(
   data: CreerMembreAvecMotDePasseData
 ): Promise<{ error?: string }> {
+  await requireRole(ROLES_ADMIN)
   const email    = normalizeEmail(data.email)
   const prenom   = data.prenom.trim()
   const nom      = data.nom.trim()

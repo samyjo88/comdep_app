@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireModule } from '@/lib/auth/guards'
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
 
@@ -141,9 +142,15 @@ function buildEmailHtml(prenom: string, role: string, dateFr: string): string {
 </html>`
 }
 
-// ── Route GET ──────────────────────────────────────────────────────────────
+// ── Route POST ─────────────────────────────────────────────────────────────
 
-export async function GET() {
+export async function POST() {
+  try {
+    await requireModule('son')
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 403 })
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let resend: any
   try {

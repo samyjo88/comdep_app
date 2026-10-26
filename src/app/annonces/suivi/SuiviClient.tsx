@@ -43,9 +43,9 @@ const STATUT_OPTIONS: { value: StatutReconduite; label: string }[] = [
 
 function statutBadge(statut: StatutReconduite) {
   switch (statut) {
-    case 'oui':      return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs">✅ Reconduire</Badge>
-    case 'modifier': return <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 text-xs">✏️ À mettre à jour</Badge>
-    case 'non':      return <Badge className="bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs">❌ Ne pas reconduire</Badge>
+    case 'oui':      return <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15 text-xs">✅ Reconduire</Badge>
+    case 'modifier': return <Badge className="bg-warning/15 text-warning border-warning/30 hover:bg-warning/15 text-xs">✏️ À mettre à jour</Badge>
+    case 'non':      return <Badge className="bg-danger/15 text-danger border-danger/30 hover:bg-danger/15 text-xs">❌ Ne pas reconduire</Badge>
     default:         return <Badge variant="outline" className="text-xs text-muted-foreground">🔵 À définir</Badge>
   }
 }
@@ -138,11 +138,11 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
 
   if (!cultePrecedent || !annoncePrecedente) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+      <div className="rounded-xl border border-warning/30 bg-warning/10 p-6 flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
         <div>
-          <p className="font-medium text-amber-800">Aucun culte précédent trouvé</p>
-          <p className="text-sm text-amber-600 mt-1">
+          <p className="font-medium text-warning">Aucun culte précédent trouvé</p>
+          <p className="text-sm text-warning mt-1">
             Les reconductes sont disponibles une fois qu&apos;un culte passé a été préparé et documenté.
           </p>
         </div>
@@ -165,7 +165,7 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
           {cultePrecedent.theme && (
             <p className="text-xs text-muted-foreground mt-0.5">{cultePrecedent.theme}</p>
           )}
-          <Badge className="mt-2 bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-100 text-xs">
+          <Badge className="mt-2 bg-muted text-muted-foreground border-border hover:bg-muted text-xs">
             {rubriques.filter(r => r.texte_final).length}/{rubriques.length} rubriques avec texte
           </Badge>
         </div>
@@ -195,7 +195,7 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
           </div>
 
           {prochainCulte && !annonceProchainId && (
-            <div className="flex items-center gap-2 text-xs text-amber-600 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-warning rounded-md border border-warning/30 bg-warning/10 px-3 py-2">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
               Ce culte n&apos;a pas d&apos;annonce — créez-la via &laquo; Nouveau culte &raquo;.
             </div>
@@ -234,7 +234,7 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
                   key={rubrique.id}
                   className={cn(
                     rowAccent(statut),
-                    expire && 'bg-red-50/60',
+                    expire && 'bg-danger/5',
                   )}
                 >
                   {/* Rubrique */}
@@ -245,7 +245,7 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
                         {config?.label ?? code}
                       </span>
                       {expire && (
-                        <Badge className="w-fit bg-red-100 text-red-700 border-red-200 hover:bg-red-100 text-xs gap-1">
+                        <Badge className="w-fit bg-danger/15 text-danger border-danger/30 hover:bg-danger/15 text-xs gap-1">
                           <AlertTriangle className="h-3 w-3" /> Expirée
                         </Badge>
                       )}
@@ -294,7 +294,7 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
                       onBlur={e => handleDateBlur(rubrique.id, e.target.value)}
                       className={cn(
                         'h-8 text-xs w-36',
-                        expire && 'border-red-300 focus-visible:ring-red-400',
+                        expire && 'border-danger/30 focus-visible:ring-danger',
                       )}
                     />
                   </TableCell>
@@ -353,13 +353,13 @@ export default function SuiviClient({ cultePrecedent, cultesAvenir }: Props) {
             Résumé des décisions
           </p>
           <div className="flex flex-wrap gap-3 text-xs">
-            <span className="text-emerald-700 font-medium">
+            <span className="text-success font-medium">
               {Object.values(statuts).filter(s => s === 'oui').length} à reconduire
             </span>
-            <span className="text-amber-700 font-medium">
+            <span className="text-warning font-medium">
               {Object.values(statuts).filter(s => s === 'modifier').length} à mettre à jour
             </span>
-            <span className="text-red-700 font-medium">
+            <span className="text-danger font-medium">
               {Object.values(statuts).filter(s => s === 'non').length} à ne pas reconduire
             </span>
             <span className="text-muted-foreground">

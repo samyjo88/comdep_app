@@ -1,5 +1,7 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
+import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -25,6 +27,7 @@ async function getDb() {
 export type ActionResult = { success: true } | { success: false; error: string }
 
 export async function creerCulte(date_culte: string): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -42,6 +45,8 @@ export async function creerCulte(date_culte: string): Promise<ActionResult> {
     return { success: false, error: msg }
   }
 
+  // Le culte apparaît aussi dans les autres modules (annonces, cantiques, captation)
+  await rattacherCulte(date_culte)
   revalidatePath('/sonorisation/planning')
   return { success: true }
 }
@@ -51,6 +56,7 @@ export async function modifierAssignation(
   role: 'responsable' | 'assistant1' | 'assistant2',
   membreId: number | null,
 ): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -69,6 +75,7 @@ export async function modifierAssignation(
 }
 
 export async function modifierStatutCulte(id: number, statut: StatutCulte): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }
@@ -82,6 +89,7 @@ export async function modifierStatutCulte(id: number, statut: StatutCulte): Prom
 }
 
 export async function supprimerCulte(id: number): Promise<ActionResult> {
+  await requireModule('son')
   const db = await getDb()
   const { data: { user } } = await db.auth.getUser()
   if (!user) return { success: false, error: 'Non authentifié' }

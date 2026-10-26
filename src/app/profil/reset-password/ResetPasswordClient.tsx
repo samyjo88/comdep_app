@@ -66,7 +66,7 @@ export function ResetPasswordClient({ hasSession }: Props) {
           </div>
         ) : success ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <CheckCircle className="h-10 w-10 text-green-500" />
+            <CheckCircle className="h-10 w-10 text-success" />
             <p className="text-sm font-medium">Mot de passe défini !</p>
             <p className="text-xs text-muted-foreground">Redirection vers le tableau de bord…</p>
           </div>

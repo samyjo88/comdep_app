@@ -80,7 +80,7 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
     <span className={cn(
       'flex items-center gap-1 text-xs font-medium transition-all',
       status === 'pending' ? 'text-muted-foreground' :
-      status === 'saved'   ? 'text-emerald-600' :
+      status === 'saved'   ? 'text-success' :
                              'text-destructive',
     )}>
       {status === 'pending' && <Loader2 className="h-3 w-3 animate-spin" />}
@@ -415,12 +415,12 @@ function PanneauRubrique({
         <div className="flex items-center gap-2 shrink-0">
           <SaveIndicator status={saveStatus} />
           {iaValide && (
-            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs gap-1">
+            <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15 text-xs gap-1">
               <Sparkles className="h-3 w-3" /> IA validé
             </Badge>
           )}
           {rempli ? (
-            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs gap-1">
+            <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15 text-xs gap-1">
               <CheckCircle2 className="h-3 w-3" /> Rempli
             </Badge>
           ) : (
@@ -937,12 +937,12 @@ function ListeCourriers({
       })
       const json = await res.json()
       if (!res.ok || json.error) {
-        toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+        toast.error(`Erreur lors du résumé : ${json.error ?? res.statusText}`)
         return
       }
       patch(i, { resume_ia: json.resume as string })
     } catch {
-      toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+      toast.error('Erreur réseau lors du résumé.')
     } finally {
       setResumePending(null)
     }
@@ -1268,7 +1268,7 @@ function BarreProgression({ remplies, total }: { remplies: number; total: number
         />
       </div>
       {pct === 100 && (
-        <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
+        <p className="text-xs text-success font-medium mt-2 flex items-center gap-1">
           <CheckCircle2 className="h-3.5 w-3.5" /> Toutes les rubriques sont remplies !
         </p>
       )}
@@ -1371,7 +1371,7 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
       const json = await res.json()
 
       if (!res.ok || json.error) {
-        toast.error('Erreur de génération. Vérifie ta clé API.')
+        toast.error(`Erreur de génération : ${json.error ?? res.statusText}`)
         setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
         return
       }
@@ -1387,7 +1387,7 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
         },
       }))
     } catch {
-      toast.error('Erreur de génération. Vérifie ta clé API.')
+      toast.error('Erreur réseau lors de la génération.')
       setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
     }
   }, [])

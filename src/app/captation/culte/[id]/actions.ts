@@ -1,5 +1,6 @@
 'use server'
 
+import { requireModule } from '@/lib/auth/guards'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
@@ -36,6 +37,7 @@ export async function upsertAssignmentAction(
   membreId: string,
   role:     RoleCaptation,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,6 +59,7 @@ export async function deleteAssignmentAction(
   culteId: string,
   role:    RoleCaptation,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,6 +81,7 @@ export async function updateStatutAssignmentAction(
   culteId: string,
   statut:  StatutPlanning,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,6 +112,7 @@ export async function creerLivraisonAction(
   culteId: string,
   payload: LivraisonPayload,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,6 +132,7 @@ export async function updateStatutLivraisonAction(
   culteId: string,
   statut:  StatutLivraison,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,6 +152,7 @@ export async function supprimerLivraisonAction(
   id:      string,
   culteId: string,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,6 +174,7 @@ export async function sauvegarderNotesAction(
   culteId: string,
   notes:   string,
 ): Promise<ActionResult> {
+  await requireModule('captation')
   try {
     const db = await getDb()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -39,9 +39,9 @@ import type { MembreAnnonce, RoleAnnonce } from '@/lib/supabase/types'
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const ROLE_CONFIG: Record<RoleAnnonce, { label: string; className: string; icone: string }> = {
-  responsable: { label: 'Responsable', icone: '👑', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  responsable: { label: 'Responsable', icone: '👑', className: 'bg-info/15 text-info border-info/30' },
   redacteur:   { label: 'Rédacteur',   icone: '✍️', className: 'bg-violet-100 text-violet-800 border-violet-200' },
-  lecteur:     { label: 'Lecteur',     icone: '🎙️', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+  lecteur:     { label: 'Lecteur',     icone: '🎙️', className: 'bg-warning/15 text-warning border-warning/30' },
 }
 
 const AVATAR_COLORS = [
@@ -370,7 +370,7 @@ function MembreCard({
                 'flex-1 min-h-[44px] gap-1 text-xs',
                 actifLocal
                   ? 'text-destructive hover:text-destructive hover:bg-destructive/10'
-                  : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50',
+                  : 'text-success hover:text-success hover:bg-success/10',
               )}
               onClick={() => handleToggleActif(!actifLocal)}
               disabled={isPending}

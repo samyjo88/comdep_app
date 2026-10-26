@@ -13,11 +13,11 @@ import { Badge }             from '@/components/ui/badge'
 export const metadata: Metadata = { title: 'Paramètres' }
 
 const ROLE_CFG: Record<AppRole, { label: string; cls: string }> = {
-  super_admin: { label: 'Super Admin',  cls: 'bg-red-100    dark:bg-red-900/40    text-red-700    dark:text-red-300'    },
+  super_admin: { label: 'Super Admin',  cls: 'bg-danger/15    dark:bg-danger/5    text-danger    dark:text-danger'    },
   admin:       { label: 'Admin',        cls: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' },
-  responsable: { label: 'Responsable',  cls: 'bg-blue-100   dark:bg-blue-900/40   text-blue-700   dark:text-blue-300'   },
-  redacteur:   { label: 'Rédacteur',    cls: 'bg-amber-100  dark:bg-amber-900/40  text-amber-700  dark:text-amber-300'  },
-  membre:      { label: 'Membre',       cls: 'bg-slate-100  dark:bg-slate-800/60  text-slate-700  dark:text-slate-300'  },
+  responsable: { label: 'Responsable',  cls: 'bg-info/15   dark:bg-info/5   text-info   dark:text-info'   },
+  redacteur:   { label: 'Rédacteur',    cls: 'bg-warning/15  dark:bg-warning/5  text-warning  dark:text-warning'  },
+  membre:      { label: 'Membre',       cls: 'bg-muted  dark:bg-muted  text-foreground  dark:text-muted-foreground'  },
 }
 
 interface SettingCard {
@@ -34,8 +34,8 @@ const SETTING_CARDS: SettingCard[] = [
   {
     href:        '/profil',
     icon:        User,
-    iconBg:      'bg-emerald-50 dark:bg-emerald-950/40',
-    iconColor:   'text-emerald-600 dark:text-emerald-400',
+    iconBg:      'bg-success/10 dark:bg-success/5',
+    iconColor:   'text-success dark:text-success',
     title:       'Mon profil',
     description: 'Informations personnelles, mot de passe et notifications e-mail',
     adminOnly:   false,
@@ -80,8 +80,8 @@ export default async function AdminPage() {
       {/* En-tête */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800">
-            <Settings className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted dark:bg-muted">
+            <Settings className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
           </div>
           <div>
             <h1 className="text-xl font-bold">Paramètres</h1>

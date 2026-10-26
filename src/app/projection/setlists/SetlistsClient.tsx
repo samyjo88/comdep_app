@@ -19,6 +19,7 @@ import {
   ListMusic, Loader2, ChevronRight, AlertCircle,
 } from 'lucide-react'
 import { createSetlistAction } from './actions'
+import { capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -55,16 +56,6 @@ export type Setlist = {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
 function formatMois(yyyyMM: string): string {
   const [y, m] = yyyyMM.split('-')
   const d = new Date(parseInt(y), parseInt(m) - 1, 1)
@@ -80,8 +71,8 @@ function setlistTitre(s: Setlist): string {
 
 const STATUT_CONFIG: Record<string, { label: string; badge: string }> = {
   brouillon: { label: 'Brouillon', badge: 'bg-muted text-muted-foreground border-border' },
-  valide:    { label: 'Validée',   badge: 'bg-blue-50 text-blue-700 border-blue-200' },
-  utilise:   { label: 'Utilisée',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  valide:    { label: 'Validée',   badge: 'bg-info/10 text-info border-info/30' },
+  utilise:   { label: 'Utilisée',  badge: 'bg-success/10 text-success border-success/30' },
 }
 
 const FILTRE_OPTIONS = [
@@ -143,13 +134,13 @@ function SetlistCard({
             </span>
             {nbGad > 0 && (
               <span className="flex items-center gap-1">
-                <Music2 className="h-3.5 w-3.5 text-blue-500" />
+                <Music2 className="h-3.5 w-3.5 text-info" />
                 {nbGad} GAD
               </span>
             )}
             {nbChorale > 0 && (
               <span className="flex items-center gap-1">
-                <Mic2 className="h-3.5 w-3.5 text-amber-500" />
+                <Mic2 className="h-3.5 w-3.5 text-warning" />
                 {nbChorale} Chorale
               </span>
             )}
@@ -170,8 +161,8 @@ function SetlistCard({
                   variant="outline"
                   className={`shrink-0 text-[11px] gap-1 py-0.5 whitespace-nowrap ${
                     isGad
-                      ? 'border-blue-200 bg-blue-50/50 text-blue-700'
-                      : 'border-amber-200 bg-amber-50/50 text-amber-700'
+                      ? 'border-info/30 bg-info/5 text-info'
+                      : 'border-warning/30 bg-warning/5 text-warning'
                   }`}
                 >
                   <span className="font-mono font-medium">

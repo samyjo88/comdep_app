@@ -93,8 +93,8 @@ export function RechercheRapide() {
                       variant="outline"
                       className={
                         c.categorie === 'gad'
-                          ? 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 shrink-0 text-[11px] px-1.5'
-                          : 'bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 shrink-0 text-[11px] px-1.5'
+                          ? 'bg-info/15 text-info border-info/30 hover:bg-info/15 shrink-0 text-[11px] px-1.5'
+                          : 'bg-warning/15 text-warning border-warning/30 hover:bg-warning/15 shrink-0 text-[11px] px-1.5'
                       }
                     >
                       {c.categorie === 'gad' ? 'GAD' : 'Chorale'}

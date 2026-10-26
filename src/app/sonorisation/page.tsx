@@ -102,9 +102,9 @@ async function PageContent() {
 
       {/* Alerte maintenance */}
       {alertes > 0 && (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-800 leading-relaxed">
+        <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
+          <AlertTriangle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+          <div className="text-sm text-warning leading-relaxed">
             <span className="font-semibold">Attention requise —</span>{' '}
             {d.enReparation > 0 && (
               <span>
@@ -117,7 +117,7 @@ async function PageContent() {
                 {d.nettoyageUrgent} nettoyage{d.nettoyageUrgent > 1 ? 's' : ''} urgent{d.nettoyageUrgent > 1 ? 's' : ''}
               </span>
             )}
-            {' '}— <Link href="/sonorisation/materiel" className="underline underline-offset-2 hover:text-amber-900">
+            {' '}— <Link href="/sonorisation/materiel" className="underline underline-offset-2 hover:text-warning">
               Voir le matériel
             </Link>
           </div>
@@ -129,13 +129,13 @@ async function PageContent() {
 
         {/* ── Matériel ── */}
         <Link href="/sonorisation/materiel" className="group">
-          <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-blue-200 cursor-pointer">
+          <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-info/30 cursor-pointer">
             <CardHeader className="pb-3 flex flex-row items-start justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Matériel
               </CardTitle>
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors shrink-0">
-                <Package2 className="h-5 w-5 text-blue-600" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-info/10 group-hover:bg-info/15 transition-colors shrink-0">
+                <Package2 className="h-5 w-5 text-info" />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -146,18 +146,18 @@ async function PageContent() {
 
               <div className="flex flex-wrap gap-2">
                 {d.enReparation > 0 && (
-                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200 gap-1">
+                  <Badge variant="outline" className="text-xs bg-danger/10 text-danger border-danger/30 gap-1">
                     <Wrench className="h-3 w-3" />
                     {d.enReparation} en réparation
                   </Badge>
                 )}
                 {d.nettoyageUrgent > 0 && (
-                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                  <Badge variant="outline" className="text-xs bg-warning/10 text-warning border-warning/30">
                     {d.nettoyageUrgent} nettoyage{d.nettoyageUrgent > 1 ? 's' : ''} urgent{d.nettoyageUrgent > 1 ? 's' : ''}
                   </Badge>
                 )}
                 {d.enReparation === 0 && d.nettoyageUrgent === 0 && (
-                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 gap-1">
+                  <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30 gap-1">
                     <CheckCircle2 className="h-3 w-3" />
                     Tout en ordre
                   </Badge>
@@ -222,13 +222,13 @@ async function PageContent() {
 
         {/* ── Planning ── */}
         <Link href="/sonorisation/planning" className="group">
-          <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-emerald-200 cursor-pointer">
+          <Card className="h-full transition-all duration-200 hover:shadow-md hover:border-success/30 cursor-pointer">
             <CardHeader className="pb-3 flex flex-row items-start justify-between">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Planning
               </CardTitle>
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 group-hover:bg-emerald-100 transition-colors shrink-0">
-                <CalendarDays className="h-5 w-5 text-emerald-600" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-success/10 group-hover:bg-success/15 transition-colors shrink-0">
+                <CalendarDays className="h-5 w-5 text-success" />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -242,7 +242,7 @@ async function PageContent() {
 
               <div className="flex flex-wrap gap-2">
                 {d.prochainCulte ? (
-                  <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
+                  <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30 gap-1">
                     <CalendarDays className="h-3 w-3" />
                     Prochain : {formatDateCourte(d.prochainCulte.date_culte)}
                   </Badge>

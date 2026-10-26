@@ -17,10 +17,10 @@ import { CATEGORIE_LABEL, STATUT_CONFIG } from '@/lib/sonorisation/constants'
 import type { MaterielSono, EtatMateriel } from '@/lib/supabase/types'
 
 const ETAT_CONFIG: Record<EtatMateriel, { label: string; className: string }> = {
-  neuf:     { label: 'Neuf',     className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  bon:      { label: 'Bon état', className: 'bg-green-100 text-green-800 border-green-200' },
-  use:      { label: 'Usé',      className: 'bg-amber-100 text-amber-800 border-amber-200' },
-  en_panne: { label: 'En panne', className: 'bg-red-100 text-red-800 border-red-200' },
+  neuf:     { label: 'Neuf',     className: 'bg-success/15 text-success border-success/30' },
+  bon:      { label: 'Bon état', className: 'bg-success/15 text-success border-success/30' },
+  use:      { label: 'Usé',      className: 'bg-warning/15 text-warning border-warning/30' },
+  en_panne: { label: 'En panne', className: 'bg-danger/15 text-danger border-danger/30' },
 }
 
 function isNettoyageUrgent(date: string | null): boolean {
@@ -126,12 +126,12 @@ export function MaterielTableClient({ items }: Props) {
               {(item.en_reparation || urgentNettoyage) && (
                 <div className="flex flex-wrap gap-2">
                   {item.en_reparation && (
-                    <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 text-xs text-danger bg-danger/10 border border-danger/30 rounded-full px-2 py-0.5">
                       <Wrench className="h-3 w-3" /> En réparation
                     </span>
                   )}
                   {urgentNettoyage && (
-                    <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 text-xs text-warning bg-warning/10 border border-warning/30 rounded-full px-2 py-0.5">
                       <AlertCircle className="h-3 w-3" /> Nettoyage urgent
                     </span>
                   )}
@@ -198,17 +198,17 @@ export function MaterielTableClient({ items }: Props) {
                     {formatDate(item.dernier_nettoyage)}
                   </TableCell>
                   <TableCell>
-                    <span className={`text-sm ${urgentNettoyage ? 'font-semibold text-amber-600' : 'text-muted-foreground'}`}>
+                    <span className={`text-sm ${urgentNettoyage ? 'font-semibold text-warning' : 'text-muted-foreground'}`}>
                       {formatDate(item.prochain_nettoyage)}
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       {item.en_reparation && (
-                        <span title="En réparation"><Wrench className="h-4 w-4 text-red-500" /></span>
+                        <span title="En réparation"><Wrench className="h-4 w-4 text-danger" /></span>
                       )}
                       {urgentNettoyage && (
-                        <span title="Nettoyage urgent (≤ 7 jours)"><AlertCircle className="h-4 w-4 text-amber-500" /></span>
+                        <span title="Nettoyage urgent (≤ 7 jours)"><AlertCircle className="h-4 w-4 text-warning" /></span>
                       )}
                       {!item.en_reparation && !urgentNettoyage && (
                         <span className="text-muted-foreground/40 text-xs">—</span>

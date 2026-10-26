@@ -7,7 +7,7 @@ import {
   Volume2, Monitor, Video, Share2, Megaphone,
   CalendarDays, LayoutGrid, ArrowLeftRight, Users, CheckCircle2,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, capitalize, formatDateLong as formatDateLongue } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,20 +43,10 @@ const SLOTS: Slot[] = [1, 2]
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
-
 function formatDateCourte(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
     day: 'numeric', month: 'short', year: 'numeric',
   })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function cle(date: string, dept: Departement, slot: Slot): string {
@@ -152,7 +142,7 @@ function VueParDimanche({ dimanches, parCle, membres, disabled, onAssign, onSwap
                 <Badge variant="outline" className={cn(
                   'text-xs gap-1',
                   complet
-                    ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    ? 'bg-success/10 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30'
                     : 'text-muted-foreground',
                 )}>
                   {complet && <CheckCircle2 className="h-3 w-3" />}

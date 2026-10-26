@@ -10,7 +10,7 @@ import {
   ArrowLeft, Camera, ImageIcon, Palette, Plus, Trash2,
   ChevronDown, Loader2, AlertCircle, Check,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, formatDateLong as formatDateLongue } from '@/lib/utils'
 import { Button }              from '@/components/ui/button'
 import { Badge }               from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,16 +58,16 @@ const ROLE_ICON: Record<RoleCaptation, typeof Camera> = {
 
 const STATUT_ASSIGN_CONFIG: Record<StatutPlanning, { label: string; className: string }> = {
   planifie:  { label: 'Planifié',  className: 'bg-yellow-50  text-yellow-700  border-yellow-200  dark:bg-yellow-950  dark:text-yellow-400' },
-  confirme:  { label: 'Confirmé',  className: 'bg-blue-50    text-blue-700    border-blue-200    dark:bg-blue-950    dark:text-blue-400'   },
-  present:   { label: 'Présent',   className: 'bg-green-50   text-green-700   border-green-200   dark:bg-green-950   dark:text-green-400'  },
-  absent:    { label: 'Absent',    className: 'bg-red-50     text-red-700     border-red-200     dark:bg-red-950     dark:text-red-400'    },
+  confirme:  { label: 'Confirmé',  className: 'bg-info/10    text-info    border-info/30    dark:bg-info/15    dark:text-info'   },
+  present:   { label: 'Présent',   className: 'bg-success/10   text-success   border-success/30   dark:bg-success/15   dark:text-success'  },
+  absent:    { label: 'Absent',    className: 'bg-danger/10     text-danger     border-danger/30     dark:bg-danger/15     dark:text-danger'    },
 }
 
 const STATUT_LIVRAISON_CONFIG: Record<StatutLivraison, { label: string; className: string }> = {
-  a_faire:   { label: 'À faire',   className: 'bg-red-50     text-red-700     border-red-200'   },
+  a_faire:   { label: 'À faire',   className: 'bg-danger/10     text-danger     border-danger/30'   },
   en_cours:  { label: 'En cours',  className: 'bg-orange-50  text-orange-700  border-orange-200' },
-  livre:     { label: 'Livré',     className: 'bg-blue-50    text-blue-700    border-blue-200'  },
-  valide:    { label: 'Validé',    className: 'bg-green-50   text-green-700   border-green-200' },
+  livre:     { label: 'Livré',     className: 'bg-info/10    text-info    border-info/30'  },
+  valide:    { label: 'Validé',    className: 'bg-success/10   text-success   border-success/30' },
 }
 
 const TYPE_LIVRABLE_LABELS: Record<TypeLivrable, string> = {
@@ -103,9 +103,9 @@ function calculerStatutGlobal(
 
 const STATUT_GLOBAL_CONFIG: Record<StatutGlobal, { label: string; className: string }> = {
   preparation: { label: 'En préparation', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  confirme:    { label: 'Confirmé',       className: 'bg-blue-50   text-blue-700   border-blue-200'   },
+  confirme:    { label: 'Confirmé',       className: 'bg-info/10   text-info   border-info/30'   },
   livrables:   { label: 'Livrables en cours', className: 'bg-purple-50 text-purple-700 border-purple-200' },
-  couvert:     { label: 'Couvert',        className: 'bg-green-50  text-green-700  border-green-200'  },
+  couvert:     { label: 'Couvert',        className: 'bg-success/10  text-success  border-success/30'  },
   archive:     { label: 'Archivé',        className: 'bg-muted     text-muted-foreground border-border' },
 }
 
@@ -113,11 +113,6 @@ const STATUT_GLOBAL_CONFIG: Record<StatutGlobal, { label: string; className: str
 // Helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
-function formatDateLongue(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
-}
 function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1) }
 
 function formatDateLimite(dateStr: string | null): { label: string; retard: boolean } | null {
@@ -169,7 +164,7 @@ function CarteRole({
         >
           <SelectTrigger className={cn(
             'h-9 text-sm',
-            currentMembre === 'none' && 'bg-red-50 border-red-200 text-red-700',
+            currentMembre === 'none' && 'bg-danger/10 border-danger/30 text-danger',
           )}>
             <SelectValue placeholder="Non assigné" />
           </SelectTrigger>
@@ -211,7 +206,7 @@ function CarteRole({
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">
+          <Badge variant="outline" className="text-xs bg-danger/10 text-danger border-danger/30">
             Non assigné
           </Badge>
         )}
@@ -730,7 +725,7 @@ export function CulteDetailClient({
             <span className="text-xs text-muted-foreground animate-pulse">Sauvegarde…</span>
           )}
           {notesSaved && notes.length > 0 && (
-            <span className="text-xs text-green-600 flex items-center gap-1">
+            <span className="text-xs text-success flex items-center gap-1">
               <Check className="h-3 w-3" /> Sauvegardé
             </span>
           )}

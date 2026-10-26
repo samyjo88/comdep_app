@@ -32,10 +32,10 @@ function formatSemaine(dateStr: string): string {
 function StatsCards({ donnees }: { donnees: DonneesRapport }) {
   const items = [
     { label: 'Prévus',    value: donnees.posts_total ?? '—',      className: '' },
-    { label: 'Publiés',   value: donnees.posts_publies ?? '—',    className: 'text-green-700' },
-    { label: 'En attente',value: donnees.posts_en_attente ?? '—', className: 'text-amber-700' },
-    { label: 'Annulés',   value: donnees.posts_annules ?? '—',    className: 'text-red-700' },
-    { label: 'Taux pub.', value: donnees.taux_publication != null ? `${donnees.taux_publication}%` : '—', className: 'text-blue-700' },
+    { label: 'Publiés',   value: donnees.posts_publies ?? '—',    className: 'text-success' },
+    { label: 'En attente',value: donnees.posts_en_attente ?? '—', className: 'text-warning' },
+    { label: 'Annulés',   value: donnees.posts_annules ?? '—',    className: 'text-danger' },
+    { label: 'Taux pub.', value: donnees.taux_publication != null ? `${donnees.taux_publication}%` : '—', className: 'text-info' },
   ]
   return (
     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -172,7 +172,7 @@ export default function RapportsClient({
       </div>
 
       {genErr && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
           {genErr}
         </div>
       )}

@@ -12,6 +12,35 @@ async function appelerClaude(
   userMessage: string,
   maxTokens = 4000,
 ): Promise<{ texte: string; tokens: number }> {
+  try {
+    return await envoyerRequete(systemPrompt, userMessage, maxTokens)
+  } catch (err) {
+    throw new Error(messageErreurClaude(err), { cause: err })
+  }
+}
+
+// Traduit les erreurs de l'API Claude en message lisible pour l'interface
+function messageErreurClaude(err: unknown): string {
+  if (err instanceof Anthropic.AuthenticationError) {
+    return 'Clé API Claude invalide (ANTHROPIC_API_KEY).'
+  }
+  if (err instanceof Anthropic.BadRequestError && /credit balance/i.test(err.message)) {
+    return 'Crédit Claude insuffisant : rechargez le compte sur console.anthropic.com.'
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return 'Trop de requêtes vers Claude, réessayez dans un instant.'
+  }
+  if (err instanceof Anthropic.APIError) {
+    return `Erreur de l'API Claude (${err.status ?? 'réseau'}) : ${err.message}`
+  }
+  return err instanceof Error ? err.message : 'Erreur inconnue'
+}
+
+async function envoyerRequete(
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens: number,
+): Promise<{ texte: string; tokens: number }> {
   // En cas de refus du modèle, l'API relance la requête sur un modèle de repli
   const response = await anthropic.beta.messages.create({
     betas:         ['server-side-fallback-2026-07-01'],
@@ -155,4 +184,15 @@ export async function genererTexteRubrique(
   const userMessage  = buildUserMessage(codeRubrique, donnees, annoncePrecedente)
 
   return appelerClaude(systemPrompt, userMessage)
+}
+
+// ── Test de connexion ─────────────────────────────────────────────────────────
+
+export async function testerConnexionClaude(): Promise<{ modele: string; reponse: string }> {
+  const { texte } = await appelerClaude(
+    'Tu réponds uniquement par le mot demandé.',
+    'Réponds « OK ».',
+    500,
+  )
+  return { modele: MODELE_CLAUDE, reponse: texte }
 }
