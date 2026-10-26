@@ -68,13 +68,13 @@ function BadgeStatut({ statut }: { statut: StatutAnnonce }) {
   switch (statut) {
     case 'publie':
       return (
-        <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 gap-1 text-xs">
+        <Badge className="bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30 hover:bg-success/15 gap-1 text-xs">
           <Send className="h-3 w-3" /> Publié
         </Badge>
       )
     case 'valide':
       return (
-        <Badge className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100 gap-1 text-xs">
+        <Badge className="bg-info/15 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30 hover:bg-info/15 gap-1 text-xs">
           <CheckCircle2 className="h-3 w-3" /> Validé
         </Badge>
       )

@@ -21,12 +21,12 @@ import { cn } from '@/lib/utils'
 interface ModuleCfg { icon: ElementType; couleur: string; bg: string }
 
 const MODULE_CFG: Record<string, ModuleCfg> = {
-  son:        { icon: Volume2,  couleur: 'text-blue-600   dark:text-blue-400',   bg: 'bg-blue-50   dark:bg-blue-950/40'   },
+  son:        { icon: Volume2,  couleur: 'text-info   dark:text-info',   bg: 'bg-info/10   dark:bg-info/5'   },
   projection: { icon: Monitor,  couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
-  annonces:   { icon: Megaphone,couleur: 'text-amber-600  dark:text-amber-400',  bg: 'bg-amber-50  dark:bg-amber-950/40'  },
-  captation:  { icon: Video,    couleur: 'text-red-600    dark:text-red-400',    bg: 'bg-red-50    dark:bg-red-950/40'    },
-  cm:         { icon: Share2,   couleur: 'text-green-600  dark:text-green-400',  bg: 'bg-green-50  dark:bg-green-950/40'  },
-  general:    { icon: BellRing, couleur: 'text-slate-600  dark:text-slate-400',  bg: 'bg-slate-100 dark:bg-slate-800/60'  },
+  annonces:   { icon: Megaphone,couleur: 'text-warning  dark:text-warning',  bg: 'bg-warning/10  dark:bg-warning/5'  },
+  captation:  { icon: Video,    couleur: 'text-danger    dark:text-danger',    bg: 'bg-danger/10    dark:bg-danger/5'    },
+  cm:         { icon: Share2,   couleur: 'text-success  dark:text-success',  bg: 'bg-success/10  dark:bg-success/5'  },
+  general:    { icon: BellRing, couleur: 'text-muted-foreground  dark:text-muted-foreground',  bg: 'bg-muted dark:bg-muted'  },
 }
 
 // ── Temps relatif ──────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ export function NotificationBell() {
               Notifications
             </SheetTitle>
             {nonLues > 0 && (
-              <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-xs">
+              <Badge className="bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 hover:bg-danger/15 dark:hover:bg-danger/5 text-xs">
                 {nonLues} non lue{nonLues > 1 ? 's' : ''}
               </Badge>
             )}

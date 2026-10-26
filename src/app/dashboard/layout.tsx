@@ -1,7 +1,6 @@
 import type { ReactNode }          from 'react'
 import { createClient }             from '@/lib/supabase/server'
-import { DashboardSidebar }         from '@/components/dashboard/DashboardSidebar'
-import { getModulesAccessibles }    from '@/lib/dashboard/modules-access'
+import { CalendrierMini }           from '@/components/dashboard/CalendrierMini'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getCultesCalendar(): Promise<string[]> {
@@ -18,17 +17,21 @@ async function getCultesCalendar(): Promise<string[]> {
 }
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const [cultesDates, modulesAccessibles] = await Promise.all([
-    getCultesCalendar(),
-    getModulesAccessibles(),
-  ])
+  const cultesDates = await getCultesCalendar()
 
   return (
-    <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 3rem)' }}>
-      <DashboardSidebar cultesDates={cultesDates} modulesAccessibles={modulesAccessibles} />
-      <main className="flex-1 overflow-y-auto bg-muted/30">
-        {children}
-      </main>
+    <div className="flex flex-1 bg-muted/30">
+      <main className="min-w-0 flex-1">{children}</main>
+
+      {/* Calendrier des cultes, sur grand écran */}
+      <aside className="hidden w-72 shrink-0 border-l bg-card px-5 py-6 2xl:block">
+        <div className="sticky top-18">
+          <p className="mb-3 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Calendrier des cultes
+          </p>
+          <CalendrierMini cultesDates={cultesDates} />
+        </div>
+      </aside>
     </div>
   )
 }

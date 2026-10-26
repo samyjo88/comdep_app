@@ -312,22 +312,22 @@ async function getDashboardData() {
       id: m.id, prenom: m.prenom, nom: m.nom,
       email: m.email ?? null, telephone: m.telephone ?? null,
       departement: 'Sonorisation',
-      couleur: 'text-blue-700 dark:text-blue-300',
-      bg: 'bg-blue-100 dark:bg-blue-900/40',
+      couleur: 'text-info dark:text-info',
+      bg: 'bg-info/15 dark:bg-info/5',
     })),
     ...membresCaptation.map((m: Row) => ({
       id: m.id + 10000, prenom: m.prenom, nom: m.nom,
       email: m.email ?? null, telephone: m.telephone ?? null,
       departement: 'Captation',
-      couleur: 'text-red-700 dark:text-red-300',
-      bg: 'bg-red-100 dark:bg-red-900/40',
+      couleur: 'text-danger dark:text-danger',
+      bg: 'bg-danger/15 dark:bg-danger/5',
     })),
     ...membresCM.map((m: Row) => ({
       id: m.id + 20000, prenom: m.prenom, nom: m.nom,
       email: m.email ?? null, telephone: m.telephone ?? null,
       departement: 'Community',
-      couleur: 'text-green-700 dark:text-green-300',
-      bg: 'bg-green-100 dark:bg-green-900/40',
+      couleur: 'text-success dark:text-success',
+      bg: 'bg-success/15 dark:bg-success/5',
     })),
     ...membresProjection.map((m: Row) => ({
       id: m.id + 30000, prenom: m.prenom, nom: m.nom,
@@ -340,8 +340,8 @@ async function getDashboardData() {
       id: m.id + 40000, prenom: m.prenom, nom: m.nom,
       email: m.email ?? null, telephone: m.telephone ?? null,
       departement: 'Annonces',
-      couleur: 'text-amber-700 dark:text-amber-300',
-      bg: 'bg-amber-100 dark:bg-amber-900/40',
+      couleur: 'text-warning dark:text-warning',
+      bg: 'bg-warning/15 dark:bg-warning/5',
     })),
   ]
 
@@ -444,21 +444,21 @@ async function getDashboardData() {
 function BadgeStatut({ statut }: { statut: StatutModule }) {
   if (statut === 'ok') {
     return (
-      <Badge className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 gap-1 text-xs shrink-0">
+      <Badge className="bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30 hover:bg-success/15 dark:hover:bg-success/5 gap-1 text-xs shrink-0">
         <CheckCircle2 className="h-3 w-3" /> Tout va bien
       </Badge>
     )
   }
   if (statut === 'urgent') {
     return (
-      <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 gap-1 text-xs shrink-0">
+      <Badge className="bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 hover:bg-danger/15 dark:hover:bg-danger/5 gap-1 text-xs shrink-0">
         <Zap className="h-3 w-3" /> Urgent
       </Badge>
     )
   }
   if (statut === 'action') {
     return (
-      <Badge className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 gap-1 text-xs shrink-0">
+      <Badge className="bg-warning/15 dark:bg-warning/5 text-warning dark:text-warning border-warning/30 dark:border-warning/30 hover:bg-warning/15 dark:hover:bg-warning/5 gap-1 text-xs shrink-0">
         <AlertCircle className="h-3 w-3" /> Action requise
       </Badge>
     )
@@ -476,18 +476,20 @@ interface CarteModuleProps {
   icon:    ElementType
   label:   string
   href:    string
-  iconCls: string
+  module:  string
+  iconCls?: string
   info:    ModuleInfo
   primary?: boolean
 }
 
-function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteModuleProps) {
+function CarteModule({ icon: Icon, label, href, module, iconCls = 'bg-module/10 text-module', info, primary }: CarteModuleProps) {
   if (primary) {
     return (
-      <Card className="flex flex-col h-full bg-emerald-800 dark:bg-emerald-900 text-white border-emerald-900 hover:shadow-lg transition-all duration-200">
+      <Card data-module={module} className="card-hover relative flex h-full flex-col overflow-hidden border-0 bg-gradient-to-br from-[#3d6b27] via-brand-green to-[#86a93b] text-white shadow-lg shadow-primary/20">
+        <Icon aria-hidden className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 text-white/10" />
         <CardHeader className="pb-3">
           <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-700/60 shrink-0">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/25 shrink-0">
               <Icon className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0 flex-1 space-y-1">
@@ -506,27 +508,27 @@ function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteM
             {info.prochainCulte ? (
               <>
                 <div className="flex items-center gap-1.5">
-                  <CalendarDays className="h-3.5 w-3.5 text-emerald-300 shrink-0" />
-                  <span className="text-xs text-emerald-200 truncate">
+                  <CalendarDays className="h-3.5 w-3.5 text-white/70 shrink-0" />
+                  <span className="text-xs text-white/85 truncate">
                     {capitalize(formatDateLongue(info.prochainCulte.date))}
                   </span>
                 </div>
                 {info.prochainCulte.responsables.length > 0 && (
                   <div className="flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5 text-emerald-300 shrink-0" />
-                    <span className="text-xs text-emerald-200 truncate">
+                    <Users className="h-3.5 w-3.5 text-white/70 shrink-0" />
+                    <span className="text-xs text-white/85 truncate">
                       {info.prochainCulte.responsables.join(', ')}
                     </span>
                   </div>
                 )}
               </>
             ) : (
-              <p className="text-xs text-emerald-300">Aucun culte planifié</p>
+              <p className="text-xs text-white/70">Aucun culte planifié</p>
             )}
             {info.nbTaches > 0 && (
               <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-amber-300 shrink-0" />
-                <span className="text-xs text-amber-200 font-medium">
+                <Clock className="h-3.5 w-3.5 text-brand-gold shrink-0" />
+                <span className="text-xs text-brand-gold font-medium">
                   {info.nbTaches} tâche{info.nbTaches > 1 ? 's' : ''} en attente
                 </span>
               </div>
@@ -547,7 +549,7 @@ function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteM
   }
 
   return (
-    <Card className="flex flex-col h-full transition-all duration-200 hover:shadow-md hover:border-primary/20">
+    <Card data-module={module} className="card-hover flex flex-col h-full">
       <CardHeader className="pb-3">
         <div className="flex items-start gap-3">
           <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${iconCls}`}>
@@ -583,8 +585,8 @@ function CarteModule({ icon: Icon, label, href, iconCls, info, primary }: CarteM
           )}
           {info.nbTaches > 0 && (
             <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
-              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+              <Clock className="h-3.5 w-3.5 text-warning dark:text-warning shrink-0" />
+              <span className="text-xs text-warning dark:text-warning font-medium">
                 {info.nbTaches} tâche{info.nbTaches > 1 ? 's' : ''} en attente
               </span>
             </div>
@@ -612,10 +614,10 @@ interface EquipeData {
 
 function WidgetEquipe({ data }: { data: EquipeData }) {
   const lignes = [
-    { label: 'Son',        icon: Volume2,  membres: data.son.membres,        couleur: 'text-blue-600 dark:text-blue-400',    bg: 'bg-blue-50 dark:bg-blue-950/40'   },
+    { label: 'Son',        icon: Volume2,  membres: data.son.membres,        couleur: 'text-info dark:text-info',    bg: 'bg-info/10 dark:bg-info/5'   },
     { label: 'Projection', icon: Monitor,  membres: data.projection.membres, couleur: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/40' },
-    { label: 'Captation',  icon: Video,    membres: data.captation.membres,  couleur: 'text-red-600 dark:text-red-400',      bg: 'bg-red-50 dark:bg-red-950/40'    },
-    { label: 'CM',         icon: Share2,   membres: data.cm.membre ? [data.cm.membre] : [], couleur: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-950/40' },
+    { label: 'Captation',  icon: Video,    membres: data.captation.membres,  couleur: 'text-danger dark:text-danger',      bg: 'bg-danger/10 dark:bg-danger/5'    },
+    { label: 'CM',         icon: Share2,   membres: data.cm.membre ? [data.cm.membre] : [], couleur: 'text-success dark:text-success', bg: 'bg-success/10 dark:bg-success/5' },
   ]
   const totalAssignes = lignes.reduce((sum, l) => sum + l.membres.length, 0)
 
@@ -635,7 +637,7 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
             )}
             <Link
               href="/dashboard/planning-dimanche"
-              className="text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:underline"
+              className="text-xs font-medium text-success dark:text-success hover:underline"
             >
               Planning →
             </Link>
@@ -661,8 +663,8 @@ function WidgetEquipe({ data }: { data: EquipeData }) {
                 }
               </div>
               {membres.length > 0
-                ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
-                : <AlertCircle  className="h-3.5 w-3.5 text-amber-400 dark:text-amber-300 shrink-0" />
+                ? <CheckCircle2 className="h-3.5 w-3.5 text-success dark:text-success shrink-0" />
+                : <AlertCircle  className="h-3.5 w-3.5 text-amber-400 dark:text-warning shrink-0" />
               }
             </div>
           ))
@@ -691,17 +693,17 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
   const valide  = data.statutGlobal === 'publie' || data.statutGlobal === 'valide'
 
   return (
-    <Card className={urgent ? 'border-red-200 dark:border-red-800' : ''}>
+    <Card className={urgent ? 'border-danger/30 dark:border-danger/30' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Megaphone className={`h-4 w-4 ${urgent ? 'text-red-500' : 'text-muted-foreground'}`} />
+            <Megaphone className={`h-4 w-4 ${urgent ? 'text-danger' : 'text-muted-foreground'}`} />
             Annonces
           </CardTitle>
           <div className="flex items-center gap-2">
             {data.joursAvant !== null && (
               <span className={`text-xs font-medium tabular-nums ${
-                urgent ? (data.joursAvant === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400')
+                urgent ? (data.joursAvant === 0 ? 'text-danger dark:text-danger' : 'text-warning dark:text-warning')
                 : 'text-muted-foreground'
               }`}>
                 {data.joursAvant === 0 ? 'Aujourd\'hui' : `J-${data.joursAvant}`}
@@ -724,11 +726,11 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
             {urgent && (
               <div className={`flex items-start gap-2 rounded-lg px-3 py-2 ${
                 data.joursAvant === 0
-                  ? 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800'
-                  : 'bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800'
+                  ? 'bg-danger/10 dark:bg-danger/5 border border-danger/30 dark:border-danger/30'
+                  : 'bg-warning/10 dark:bg-warning/5 border border-warning/30 dark:border-warning/30'
               }`}>
-                <AlertTriangle className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${data.joursAvant === 0 ? 'text-red-500' : 'text-amber-500'}`} />
-                <p className={`text-xs font-medium ${data.joursAvant === 0 ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'}`}>
+                <AlertTriangle className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${data.joursAvant === 0 ? 'text-danger' : 'text-warning'}`} />
+                <p className={`text-xs font-medium ${data.joursAvant === 0 ? 'text-danger dark:text-danger' : 'text-warning dark:text-warning'}`}>
                   {data.joursAvant === 0
                     ? 'C\'est aujourd\'hui ! Annonce non validée'
                     : data.joursAvant === 1
@@ -741,9 +743,9 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
 
             {/* Statut validé */}
             {valide && (
-              <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+              <div className="flex items-center gap-2 rounded-lg bg-success/10 dark:bg-success/5 border border-success/30 dark:border-success/30 px-3 py-2">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                <p className="text-xs font-medium text-success dark:text-success">
                   {data.statutGlobal === 'publie' ? 'Annonce publiée' : 'Annonce validée'}
                 </p>
               </div>
@@ -752,7 +754,7 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{data.ok} / {data.total} rubriques validées</span>
-                <span className={`font-medium ${pct === 100 ? 'text-emerald-600 dark:text-emerald-400' : urgent ? 'text-red-600 dark:text-red-400' : ''}`}>
+                <span className={`font-medium ${pct === 100 ? 'text-success dark:text-success' : urgent ? 'text-danger dark:text-danger' : ''}`}>
                   {pct}%
                 </span>
               </div>
@@ -766,13 +768,13 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/40 p-2">
-                <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300 tabular-nums">{data.ok}</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 leading-tight">Prêtes</p>
+              <div className="rounded-lg bg-success/10 dark:bg-success/5 p-2">
+                <p className="text-lg font-bold text-success dark:text-success tabular-nums">{data.ok}</p>
+                <p className="text-xs text-success dark:text-success leading-tight">Prêtes</p>
               </div>
-              <div className="rounded-lg bg-amber-50 dark:bg-amber-900/40 p-2">
-                <p className="text-lg font-bold text-amber-700 dark:text-amber-300 tabular-nums">{data.enCours}</p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 leading-tight">En cours</p>
+              <div className="rounded-lg bg-warning/10 dark:bg-warning/5 p-2">
+                <p className="text-lg font-bold text-warning dark:text-warning tabular-nums">{data.enCours}</p>
+                <p className="text-xs text-warning dark:text-warning leading-tight">En cours</p>
               </div>
               <div className="rounded-lg bg-muted p-2">
                 <p className="text-lg font-bold text-muted-foreground tabular-nums">{data.aFaire}</p>
@@ -783,7 +785,7 @@ function WidgetAnnonces({ data }: { data: AnnoncesWidgetData }) {
               <Button
                 variant="outline"
                 size="sm"
-                className={`w-full gap-1.5 text-xs h-8 mt-1 ${urgent ? 'border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40' : ''}`}
+                className={`w-full gap-1.5 text-xs h-8 mt-1 ${urgent ? 'border-danger/30 dark:border-danger/30 text-danger dark:text-danger hover:bg-danger/10 dark:hover:bg-danger/5' : ''}`}
               >
                 <FileText className="h-3.5 w-3.5" />
                 {data.annonceId ? 'Préparer les annonces' : 'Créer une annonce'}
@@ -808,7 +810,7 @@ interface MaterielWidgetData {
 function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
   const aDesAlerts = data.total > 0
   return (
-    <Card className={aDesAlerts ? 'border-red-200 dark:border-red-800' : ''}>
+    <Card className={aDesAlerts ? 'border-danger/30 dark:border-danger/30' : ''}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -816,7 +818,7 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
             Matériel en alerte
           </CardTitle>
           {aDesAlerts && (
-            <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 gap-1 text-xs">
+            <Badge className="bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 hover:bg-danger/15 dark:hover:bg-danger/5 gap-1 text-xs">
               <AlertTriangle className="h-3 w-3" />
               {data.total} alerte{data.total > 1 ? 's' : ''}
             </Badge>
@@ -826,18 +828,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
       <CardContent className="space-y-2 pt-0">
         {!aDesAlerts ? (
           <div className="flex items-center gap-2 py-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
-            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">Tout le matériel est en ordre</p>
+            <CheckCircle2 className="h-4 w-4 text-success dark:text-success shrink-0" />
+            <p className="text-xs text-success dark:text-success font-medium">Tout le matériel est en ordre</p>
           </div>
         ) : (
           <>
             {data.horsService.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1 mb-1.5">
+                <p className="text-xs font-semibold text-danger dark:text-danger flex items-center gap-1 mb-1.5">
                   <AlertTriangle className="h-3 w-3" /> Hors service ({data.horsService.length})
                 </p>
                 {data.horsService.map((m: Row) => (
-                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-950/40 px-3 py-2">
+                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-danger/10 dark:bg-danger/5 px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{m.nom}</p>
                       {(m.marque || m.modele) && (
@@ -846,7 +848,7 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
                         </p>
                       )}
                     </div>
-                    <Badge className="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40 text-xs shrink-0">
+                    <Badge className="bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 hover:bg-danger/15 dark:hover:bg-danger/5 text-xs shrink-0">
                       Hors service
                     </Badge>
                   </div>
@@ -855,18 +857,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
             )}
             {data.enReparation.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1.5">
+                <p className="text-xs font-semibold text-warning dark:text-warning flex items-center gap-1 mb-1.5">
                   <Wrench className="h-3 w-3" /> En réparation ({data.enReparation.length})
                 </p>
                 {data.enReparation.map((m: Row) => (
-                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2">
+                  <div key={m.id} className="flex items-start gap-2 rounded-lg bg-warning/10 dark:bg-warning/5 px-3 py-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{m.nom}</p>
                       {m.description_reparation && (
                         <p className="text-xs text-muted-foreground truncate">{m.description_reparation}</p>
                       )}
                     </div>
-                    <Badge className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-xs shrink-0">
+                    <Badge className="bg-warning/15 dark:bg-warning/5 text-warning dark:text-warning border-warning/30 dark:border-warning/30 hover:bg-warning/15 dark:hover:bg-warning/5 text-xs shrink-0">
                       Réparation
                     </Badge>
                   </div>
@@ -890,18 +892,18 @@ function WidgetMateriel({ data }: { data: MaterielWidgetData }) {
 // ── Widget : Posts Community Management ───────────────────────────────────
 
 const PLATEFORME_CONFIG: Record<string, { label: string; icone: string; bg: string }> = {
-  facebook:  { label: 'Facebook',  icone: '📘', bg: 'bg-blue-50 dark:bg-blue-950/40'  },
+  facebook:  { label: 'Facebook',  icone: '📘', bg: 'bg-info/10 dark:bg-info/5'  },
   instagram: { label: 'Instagram', icone: '📸', bg: 'bg-pink-50 dark:bg-pink-950/40'  },
-  whatsapp:  { label: 'WhatsApp',  icone: '💬', bg: 'bg-green-50 dark:bg-green-950/40' },
+  whatsapp:  { label: 'WhatsApp',  icone: '💬', bg: 'bg-success/10 dark:bg-success/5' },
 }
 
 const STATUT_POST_CONFIG: Record<string, { label: string; cls: string }> = {
-  a_faire:               { label: 'À faire',    cls: 'bg-slate-100 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/60' },
-  en_creation:           { label: 'En création',cls: 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40' },
+  a_faire:               { label: 'À faire',    cls: 'bg-muted dark:bg-muted text-foreground dark:text-muted-foreground border-border dark:border-border hover:bg-muted dark:hover:bg-muted' },
+  en_creation:           { label: 'En création',cls: 'bg-warning/15 dark:bg-warning/5 text-warning dark:text-warning border-warning/30 dark:border-warning/30 hover:bg-warning/15 dark:hover:bg-warning/5' },
   en_attente_validation: { label: 'En attente', cls: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40' },
-  programme:             { label: 'Programmé',  cls: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/40' },
-  publie:                { label: 'Publié',     cls: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40' },
-  annule:                { label: 'Annulé',     cls: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/40' },
+  programme:             { label: 'Programmé',  cls: 'bg-info/15 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30 hover:bg-info/15 dark:hover:bg-info/5' },
+  publie:                { label: 'Publié',     cls: 'bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30 hover:bg-success/15 dark:hover:bg-success/5' },
+  annule:                { label: 'Annulé',     cls: 'bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 hover:bg-danger/15 dark:hover:bg-danger/5' },
 }
 
 interface PostsCMWidgetData {
@@ -969,17 +971,17 @@ function WidgetPostsCM({ data }: { data: PostsCMWidgetData }) {
 
 const DEPT_COLORS: Record<string, { badge: string; avatarBg: string; avatarText: string }> = {
   Sonorisation: {
-    badge:      'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700',
+    badge:      'bg-info/15 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30',
     avatarBg:   'bg-blue-600',
     avatarText: 'text-white',
   },
   Captation: {
-    badge:      'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700',
+    badge:      'bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30',
     avatarBg:   'bg-red-600',
     avatarText: 'text-white',
   },
   Community: {
-    badge:      'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
+    badge:      'bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30',
     avatarBg:   'bg-green-600',
     avatarText: 'text-white',
   },
@@ -989,7 +991,7 @@ const DEPT_COLORS: Record<string, { badge: string; avatarBg: string; avatarText:
     avatarText: 'text-white',
   },
   Annonces: {
-    badge:      'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700',
+    badge:      'bg-warning/15 dark:bg-warning/5 text-warning dark:text-warning border-warning/30 dark:border-warning/30',
     avatarBg:   'bg-amber-500',
     avatarText: 'text-white',
   },
@@ -1120,12 +1122,12 @@ async function PageContent() {
       {a && canSee('annonces') && (
         <div className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${
           a.jours === 0
-            ? 'border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/40'
-            : 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40'
+            ? 'border-danger/30 dark:border-danger/30 bg-danger/10 dark:bg-danger/5'
+            : 'border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/5'
         }`}>
-          <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${a.jours === 0 ? 'text-red-500' : 'text-amber-500'}`} />
+          <AlertTriangle className={`h-5 w-5 shrink-0 mt-0.5 ${a.jours === 0 ? 'text-danger' : 'text-warning'}`} />
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold ${a.jours === 0 ? 'text-red-800 dark:text-red-200' : 'text-amber-800 dark:text-amber-200'}`}>
+            <p className={`text-sm font-semibold ${a.jours === 0 ? 'text-danger dark:text-danger' : 'text-warning dark:text-warning'}`}>
               {a.jours === 0
                 ? 'C\'est aujourd\'hui ! L\'annonce n\'est pas encore validée'
                 : a.jours === 1
@@ -1133,7 +1135,7 @@ async function PageContent() {
                 : `Le culte est dans ${a.jours} jours — l'annonce n'est pas encore validée`
               }
             </p>
-            <p className={`text-xs mt-0.5 ${a.jours === 0 ? 'text-red-600 dark:text-red-300' : 'text-amber-600 dark:text-amber-300'}`}>
+            <p className={`text-xs mt-0.5 ${a.jours === 0 ? 'text-danger dark:text-danger' : 'text-warning dark:text-warning'}`}>
               {capitalize(formatDateLongue(a.culteDate))}
               {a.statutGlobal == null && ' — Aucune annonce créée'}
               {a.statutGlobal === 'brouillon' && ` — ${a.rubriquesOk}/${a.rubriquesTotal} rubriques complétées`}
@@ -1145,8 +1147,8 @@ async function PageContent() {
           >
             <Button size="sm" className={`text-xs h-7 ${
               a.jours === 0
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-amber-600 hover:bg-amber-700 text-white'
+                ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+                : 'bg-warning hover:bg-warning/90 text-white dark:text-background'
             }`}>
               {a.annonceId ? 'Compléter →' : 'Créer l\'annonce →'}
             </Button>
@@ -1156,43 +1158,36 @@ async function PageContent() {
 
       {/* Accès aux modules */}
       <section id="modules">
-        <h2 className="text-base font-semibold mb-4">Modules</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="text-lg font-semibold mb-4">Modules</h2>
+        <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {canSee('son') && (
             <CarteModule
-              icon={Volume2} label="Sonorisation" href="/sonorisation"
-              iconCls="bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
+              icon={Volume2} label="Sonorisation" href="/sonorisation" module="son"
               info={d.sonoInfo} primary
             />
           )}
           {canSee('projection') && (
             <CarteModule
-              icon={Monitor} label="Projection / Proclaim" href="/projection"
-              iconCls="bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
+              icon={Monitor} label="Projection / Proclaim" href="/projection" module="projection"
               info={d.projInfo}
             />
           )}
           {canSee('annonces') && (
             <CarteModule
-              icon={Megaphone} label="Annonces" href="/annonces"
-              iconCls={d.annoncesInfo.statut === 'urgent'
-                ? 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
-                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-              }
+              icon={Megaphone} label="Annonces" href="/annonces" module="annonces"
+              iconCls={d.annoncesInfo.statut === 'urgent' ? 'bg-danger/10 text-danger' : undefined}
               info={d.annoncesInfo}
             />
           )}
           {canSee('captation') && (
             <CarteModule
-              icon={Video} label="Captation Vidéo" href="/captation"
-              iconCls="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"
+              icon={Video} label="Captation Vidéo" href="/captation" module="captation"
               info={d.captationInfo}
             />
           )}
           {canSee('community') && (
             <CarteModule
-              icon={Share2} label="Community Management" href="/community"
-              iconCls="bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"
+              icon={Share2} label="Community Management" href="/community" module="community"
               info={d.communityInfo}
             />
           )}
@@ -1204,8 +1199,8 @@ async function PageContent() {
 
       {/* Statistiques */}
       <section id="stats">
-        <h2 className="text-base font-semibold mb-4">Statistiques</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-lg font-semibold mb-4">Statistiques</h2>
+        <div className="stagger grid grid-cols-1 md:grid-cols-2 gap-4">
           <WidgetEquipe   data={d.equipe}          />
           <WidgetAnnonces data={d.annoncesWidget}   />
           <WidgetMateriel data={d.materielWidget}   />
@@ -1227,9 +1222,12 @@ export default async function DashboardPage() {
   return (
     <div className="container mx-auto py-7 px-5 max-w-5xl space-y-2">
       <div className="mb-5">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">
-          Vue d&apos;ensemble du département de communication
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+          Horeb Cité SIR
+        </p>
+        <h1 className="mt-1 text-3xl font-bold">Tableau de bord</h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          Vue d&apos;ensemble du comité de communication
         </p>
       </div>
 

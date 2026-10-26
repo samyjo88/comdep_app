@@ -132,10 +132,10 @@ function StatCard({
   couleur:    'blue' | 'amber' | 'violet' | 'emerald'
 }) {
   const bg: Record<typeof couleur, string> = {
-    blue:    'bg-blue-50 text-blue-600',
-    amber:   'bg-amber-50 text-amber-600',
+    blue:    'bg-info/10 text-info',
+    amber:   'bg-warning/10 text-warning',
     violet:  'bg-violet-50 text-violet-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+    emerald: 'bg-success/10 text-success',
   }
   return (
     <Card>
@@ -207,12 +207,12 @@ function ProchainCulteCard({
               {setlist ? (
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   {setlistPrete ? (
-                    <Badge className="text-[11px] px-1.5 py-0 h-5 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 gap-1">
+                    <Badge className="text-[11px] px-1.5 py-0 h-5 bg-success/15 text-success border-success/30 hover:bg-success/15 gap-1">
                       <CheckCircle2 className="h-3 w-3" />
                       Prête · {nbCantiques} cantique{nbCantiques > 1 ? 's' : ''}
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-5 bg-amber-50 text-amber-700 border-amber-200 gap-1">
+                    <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-5 bg-warning/10 text-warning border-warning/30 gap-1">
                       <AlertCircle className="h-3 w-3" />
                       Brouillon · {nbCantiques} cantique{nbCantiques > 1 ? 's' : ''}
                     </Badge>
@@ -274,7 +274,7 @@ function ProchainCulteCard({
                 ) : (
                   <Badge
                     variant="outline"
-                    className="mt-0.5 text-[10px] px-1.5 py-0 h-4 bg-red-50 text-red-600 border-red-200"
+                    className="mt-0.5 text-[10px] px-1.5 py-0 h-4 bg-danger/10 text-danger border-danger/30"
                   >
                     Non assigné
                   </Badge>
@@ -293,8 +293,8 @@ function ProchainCulteCard({
 function DernieresSetlistsCard({ setlists }: { setlists: Row[] }) {
   const STATUT_STYLE: Record<string, string> = {
     brouillon: 'bg-muted text-muted-foreground border-border',
-    valide:    'bg-emerald-50 text-emerald-700 border-emerald-200',
-    utilise:   'bg-blue-50 text-blue-700 border-blue-200',
+    valide:    'bg-success/10 text-success border-success/30',
+    utilise:   'bg-info/10 text-info border-info/30',
   }
 
   return (

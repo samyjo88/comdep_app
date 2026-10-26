@@ -98,8 +98,8 @@ export function MediathequeClient({ cultes: initial, annee, mois, stats: initial
         <Card>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950 shrink-0">
-                <HardDrive className="h-5 w-5 text-blue-500" />
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-info/10 dark:bg-info/15 shrink-0">
+                <HardDrive className="h-5 w-5 text-info" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Espace utilisé</p>
@@ -114,8 +114,8 @@ export function MediathequeClient({ cultes: initial, annee, mois, stats: initial
         <Card>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-50 dark:bg-green-950 shrink-0">
-                <FolderOpen className="h-5 w-5 text-green-500" />
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/10 dark:bg-success/15 shrink-0">
+                <FolderOpen className="h-5 w-5 text-success" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Dossiers créés</p>
@@ -133,13 +133,13 @@ export function MediathequeClient({ cultes: initial, annee, mois, stats: initial
             <div className="flex items-center gap-3">
               <div className={cn(
                 'flex items-center justify-center w-10 h-10 rounded-lg shrink-0',
-                nbManquants > 0 ? 'bg-amber-50 dark:bg-amber-950' : 'bg-muted',
+                nbManquants > 0 ? 'bg-warning/10 dark:bg-warning/15' : 'bg-muted',
               )}>
-                <FolderX className={cn('h-5 w-5', nbManquants > 0 ? 'text-amber-500' : 'text-muted-foreground')} />
+                <FolderX className={cn('h-5 w-5', nbManquants > 0 ? 'text-warning' : 'text-muted-foreground')} />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Sans dossier</p>
-                <p className={cn('text-xl font-bold', nbManquants > 0 ? 'text-amber-600' : '')}>
+                <p className={cn('text-xl font-bold', nbManquants > 0 ? 'text-warning' : '')}>
                   {nbManquants}
                 </p>
               </div>
@@ -175,7 +175,7 @@ export function MediathequeClient({ cultes: initial, annee, mois, stats: initial
                   className={cn(
                     'text-xs shrink-0',
                     culte.dossier
-                      ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400'
+                      ? 'bg-success/10 text-success border-success/30 dark:bg-success/15 dark:text-success'
                       : 'bg-muted text-muted-foreground',
                   )}
                 >

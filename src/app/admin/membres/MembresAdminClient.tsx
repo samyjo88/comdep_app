@@ -44,10 +44,10 @@ const ROLES: { value: AppRole; label: string }[] = [
 
 const ROLE_COLORS: Record<AppRole, string> = {
   super_admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-  admin:       'bg-blue-100   text-blue-800   dark:bg-blue-900/40   dark:text-blue-300',
-  responsable: 'bg-green-100  text-green-800  dark:bg-green-900/40  dark:text-green-300',
+  admin:       'bg-info/15   text-info   dark:bg-info/5   dark:text-info',
+  responsable: 'bg-success/15  text-success  dark:bg-success/5  dark:text-success',
   redacteur:   'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-  membre:      'bg-gray-100   text-gray-700   dark:bg-gray-800      dark:text-gray-300',
+  membre:      'bg-muted   text-foreground   dark:bg-muted      dark:text-muted-foreground',
 }
 
 function RoleBadge({ role }: { role: AppRole | null }) {
@@ -92,7 +92,7 @@ function InviteDialog() {
         </DialogHeader>
         {success ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <CheckCircle className="h-10 w-10 text-green-500" />
+            <CheckCircle className="h-10 w-10 text-success" />
             <p className="text-sm font-medium">Invitation envoyée !</p>
           </div>
         ) : (
@@ -421,7 +421,7 @@ function MemberActions({ membre }: { membre: Membre }) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1.5 text-xs text-green-600 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30"
+          className="h-8 gap-1.5 text-xs text-success hover:text-success hover:bg-success/10 dark:hover:bg-success/5"
           disabled={pending}
           onClick={() => run(enableMemberAction)}
           title="Réactiver le compte"
@@ -495,7 +495,7 @@ export function MembresAdminClient({ membres }: { membres: Membre[] }) {
                 </td>
                 <td className="px-5 py-4">
                   {m.actif ? (
-                    <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-950/20 dark:border-green-800">
+                    <Badge variant="outline" className="text-success border-success/30 bg-success/10 dark:bg-success/5 dark:border-success/30">
                       Actif
                     </Badge>
                   ) : (

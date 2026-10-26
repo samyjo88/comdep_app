@@ -203,10 +203,10 @@ function StatCard({
   couleur:    'blue' | 'violet' | 'amber' | 'emerald'
 }) {
   const bg: Record<typeof couleur, string> = {
-    blue:    'bg-blue-50 text-blue-600',
+    blue:    'bg-info/10 text-info',
     violet:  'bg-violet-50 text-violet-600',
-    amber:   'bg-amber-50 text-amber-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+    amber:   'bg-warning/10 text-warning',
+    emerald: 'bg-success/10 text-success',
   }
   return (
     <Card>
@@ -279,14 +279,14 @@ function ProchainCulteCard({
                       <p className="text-sm font-semibold truncate">
                         {assignment.membres_captation.prenom} {assignment.membres_captation.nom}
                       </p>
-                      <Badge className="text-[10px] px-1.5 py-0 h-4 bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+                      <Badge className="text-[10px] px-1.5 py-0 h-4 bg-success/15 text-success border-success/30 hover:bg-success/15">
                         Assigné
                       </Badge>
                     </div>
                   ) : (
                     <Badge
                       variant="outline"
-                      className="mt-0.5 text-[10px] px-1.5 py-0 h-4 bg-red-50 text-red-600 border-red-200"
+                      className="mt-0.5 text-[10px] px-1.5 py-0 h-4 bg-danger/10 text-danger border-danger/30"
                     >
                       À assigner
                     </Badge>
@@ -308,10 +308,10 @@ function LivraisonsUrgentesCard({ livraisons }: { livraisons: Row[] }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-amber-500" />
+          <AlertCircle className="h-4 w-4 text-warning" />
           Livrables urgents
           {livraisons.length > 0 && (
-            <Badge variant="outline" className="ml-auto text-xs bg-amber-50 text-amber-700 border-amber-200">
+            <Badge variant="outline" className="ml-auto text-xs bg-warning/10 text-warning border-warning/30">
               {livraisons.length}
             </Badge>
           )}
@@ -348,7 +348,7 @@ function LivraisonsUrgentesCard({ livraisons }: { livraisons: Row[] }) {
                   </div>
                   <span
                     className={`text-xs font-medium shrink-0 ${
-                      retard ? 'text-red-600' : 'text-amber-600'
+                      retard ? 'text-danger' : 'text-warning'
                     }`}
                   >
                     {dateLabel}
@@ -393,7 +393,7 @@ function DernieresActivitesCard({ activites }: { activites: Activite[] }) {
               <div key={`${a.type}-${a.id}`} className="flex items-start gap-3">
                 <div className={`mt-0.5 flex items-center justify-center w-7 h-7 rounded-md shrink-0 ${
                   a.type === 'planning'
-                    ? 'bg-blue-50 text-blue-600'
+                    ? 'bg-info/10 text-info'
                     : 'bg-violet-50 text-violet-600'
                 }`}>
                   {a.type === 'planning'

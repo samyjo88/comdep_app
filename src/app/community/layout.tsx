@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
+import { Share2 } from 'lucide-react'
 import { CommunityBreadcrumb, CommunityNavTabs } from '@/components/community/CommunityNavTabs'
-import { PageTransition } from '@/components/PageTransition'
+import { ModuleShell } from '@/components/nav/ModuleShell'
 import { getModulesAccessibles } from '@/lib/dashboard/modules-access'
 import type { Metadata } from 'next'
 
@@ -15,26 +16,14 @@ export default async function CommunityLayout({ children }: { children: React.Re
   const modules = await getModulesAccessibles()
   if (modules !== null && !modules.includes('community')) redirect('/dashboard')
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b bg-card sticky top-12 z-30 shadow-sm">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="flex items-center gap-3 pt-4 pb-1">
-            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 shrink-0 text-xl leading-none">
-              📱
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-base font-bold leading-tight tracking-tight">
-                Community Management
-              </span>
-              <CommunityBreadcrumb />
-            </div>
-          </div>
-
-          <CommunityNavTabs />
-        </div>
-      </div>
-
-      <main><PageTransition>{children}</PageTransition></main>
-    </div>
+    <ModuleShell
+      module="community"
+      titre="Community Management"
+      icon={Share2}
+      breadcrumb={<CommunityBreadcrumb />}
+      onglets={<CommunityNavTabs />}
+    >
+      {children}
+    </ModuleShell>
   )
 }

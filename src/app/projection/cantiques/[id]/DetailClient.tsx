@@ -141,7 +141,7 @@ function ParolesSection({ paroles }: { paroles: string }) {
           className="h-7 gap-1.5 text-xs"
           onClick={handleCopy}
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? 'Copié !' : 'Copier'}
         </Button>
       </CardHeader>
@@ -203,8 +203,8 @@ function RessourcesSection({
       <CardContent className="space-y-3">
         {lienPartition && (
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-emerald-50 shrink-0">
-              <FileText className="h-4 w-4 text-emerald-600" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-success/10 shrink-0">
+              <FileText className="h-4 w-4 text-success" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground">Partition</p>
@@ -223,8 +223,8 @@ function RessourcesSection({
 
         {lienAudio && (
           <div className="flex items-start gap-3">
-            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-blue-50 shrink-0 mt-0.5">
-              <Volume2 className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-md bg-info/10 shrink-0 mt-0.5">
+              <Volume2 className="h-4 w-4 text-info" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-muted-foreground mb-1.5">Audio de référence</p>
@@ -323,8 +323,8 @@ function StatsSection({
                     variant="outline"
                     className={cn(
                       'text-[10px] px-1.5 py-0 h-4 shrink-0 ml-2',
-                      s.statut === 'valide' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                      s.statut === 'utilise' && 'bg-blue-50 text-blue-700 border-blue-200',
+                      s.statut === 'valide' && 'bg-success/10 text-success border-success/30',
+                      s.statut === 'utilise' && 'bg-info/10 text-info border-info/30',
                     )}
                   >
                     {STATUT_LABEL[s.statut] ?? s.statut}
@@ -397,12 +397,12 @@ export function DetailClient({
               <>
                 <Badge
                   variant="outline"
-                  className="bg-blue-100 text-blue-700 border-blue-200 font-bold text-xs px-2"
+                  className="bg-info/15 text-info border-info/30 font-bold text-xs px-2"
                 >
                   GAD
                 </Badge>
                 {cantique.numero_gad && (
-                  <span className="text-3xl font-black tabular-nums text-blue-700 leading-none">
+                  <span className="text-3xl font-black tabular-nums text-info leading-none">
                     {cantique.numero_gad}
                   </span>
                 )}
@@ -410,7 +410,7 @@ export function DetailClient({
             ) : (
               <Badge
                 variant="outline"
-                className="bg-amber-100 text-amber-700 border-amber-200 font-bold text-xs px-2"
+                className="bg-warning/15 text-warning border-warning/30 font-bold text-xs px-2"
               >
                 CHORALE
               </Badge>
@@ -448,9 +448,9 @@ export function DetailClient({
               variant="outline"
               className={cn(
                 'text-xs px-2',
-                cantique.difficulte === 'facile'    && 'bg-green-50 text-green-700 border-green-200',
-                cantique.difficulte === 'moyen'     && 'bg-amber-50 text-amber-700 border-amber-200',
-                cantique.difficulte === 'difficile' && 'bg-red-50 text-red-700 border-red-200',
+                cantique.difficulte === 'facile'    && 'bg-success/10 text-success border-success/30',
+                cantique.difficulte === 'moyen'     && 'bg-warning/10 text-warning border-warning/30',
+                cantique.difficulte === 'difficile' && 'bg-danger/10 text-danger border-danger/30',
               )}
             >
               {DIFFICULTES_LABEL[cantique.difficulte] ?? cantique.difficulte}
@@ -460,8 +460,8 @@ export function DetailClient({
             <Badge key={m} variant="outline" className={cn(
               'text-xs px-2',
               isGad
-                ? 'bg-blue-50 text-blue-600 border-blue-200'
-                : 'bg-amber-50 text-amber-600 border-amber-200',
+                ? 'bg-info/10 text-info border-info/30'
+                : 'bg-warning/10 text-warning border-warning/30',
             )}>
               {MOMENTS_LABEL[m] ?? m}
             </Badge>

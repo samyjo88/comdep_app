@@ -24,10 +24,10 @@ import type { IdeaContenu, Plateforme, PrioritéIdee } from '@/types/community'
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PRIORITES: { value: PrioritéIdee; label: string; className: string }[] = [
-  { value: 'urgente', label: '🔴 Urgente', className: 'border-red-200 bg-red-50 text-red-700' },
+  { value: 'urgente', label: '🔴 Urgente', className: 'border-danger/30 bg-danger/10 text-danger' },
   { value: 'haute',   label: '🟠 Haute',   className: 'border-orange-200 bg-orange-50 text-orange-700' },
   { value: 'normale', label: '🟡 Normale', className: 'border-yellow-200 bg-yellow-50 text-yellow-700' },
-  { value: 'basse',   label: '⚪ Basse',   className: 'border-slate-200 bg-slate-50 text-slate-500' },
+  { value: 'basse',   label: '⚪ Basse',   className: 'border-border bg-muted text-muted-foreground' },
 ]
 
 const STATUTS_IDEE = [
@@ -144,7 +144,7 @@ function IdeaForm({ onDone }: { onDone: () => void }) {
         </div>
       </div>
 
-      {err && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{err}</p>}
+      {err && <p className="text-sm text-danger bg-danger/10 rounded p-2">{err}</p>}
 
       <div className="flex gap-2 pt-1">
         <Button type="submit" className="flex-1" disabled={loading}>

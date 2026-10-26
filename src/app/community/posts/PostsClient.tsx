@@ -57,12 +57,12 @@ function PlateBadge({ plateforme, mobileIconOnly = false }: { plateforme: Platef
 
 function StatutBadge({ statut }: { statut: StatutPost }) {
   const COLOR: Record<StatutPost, string> = {
-    a_faire:               'bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300',
-    en_creation:           'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+    a_faire:               'bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground',
+    en_creation:           'bg-warning/15 dark:bg-warning/5 text-warning dark:text-warning',
     en_attente_validation: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
-    programme:             'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-    publie:                'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300',
-    annule:                'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+    programme:             'bg-info/15 dark:bg-info/5 text-info dark:text-info',
+    publie:                'bg-success/15 dark:bg-success/5 text-success dark:text-success',
+    annule:                'bg-danger/15 dark:bg-danger/5 text-danger dark:text-danger',
   }
   const LABEL: Record<StatutPost, string> = {
     a_faire:               'À faire',
@@ -210,7 +210,7 @@ function PostForm({ planningId, editingPost, onDone }: PostFormProps) {
         </div>
       </div>
 
-      {err && <p className="text-sm text-red-600 bg-red-50 rounded p-2">{err}</p>}
+      {err && <p className="text-sm text-danger bg-danger/10 rounded p-2">{err}</p>}
 
       <div className="flex flex-col-reverse sm:flex-row gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onDone} className="w-full sm:w-auto">
@@ -282,7 +282,7 @@ function ListView({
                 <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => onEdit(post)}>
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-red-500 hover:text-red-700" onClick={() => onDelete(post.id)}>
+                <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-danger hover:text-danger" onClick={() => onDelete(post.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -343,7 +343,7 @@ function ListView({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 text-red-500 hover:text-red-700"
+                      className="h-7 w-7 text-danger hover:text-danger"
                       onClick={() => onDelete(post.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

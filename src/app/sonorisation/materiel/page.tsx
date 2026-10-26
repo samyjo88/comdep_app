@@ -23,10 +23,10 @@ export const metadata: Metadata = {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 const ETAT_CONFIG: Record<EtatMateriel, { label: string; className: string }> = {
-  neuf:     { label: 'Neuf',     className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  bon:      { label: 'Bon état', className: 'bg-green-100 text-green-800 border-green-200' },
-  use:      { label: 'Usé',      className: 'bg-amber-100 text-amber-800 border-amber-200' },
-  en_panne: { label: 'En panne', className: 'bg-red-100 text-red-800 border-red-200' },
+  neuf:     { label: 'Neuf',     className: 'bg-success/15 text-success border-success/30' },
+  bon:      { label: 'Bon état', className: 'bg-success/15 text-success border-success/30' },
+  use:      { label: 'Usé',      className: 'bg-warning/15 text-warning border-warning/30' },
+  en_panne: { label: 'En panne', className: 'bg-danger/15 text-danger border-danger/30' },
 }
 
 function isNettoyageUrgent(date: string | null): boolean {
@@ -65,30 +65,30 @@ function StatCards({ stats }: { stats: Stats }) {
         </CardContent>
       </Card>
 
-      <Card className="border-green-200">
+      <Card className="border-success/30">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-green-700 flex items-center gap-2">
+          <CardTitle className="text-sm font-medium text-success flex items-center gap-2">
             <ShieldCheck className="h-4 w-4" />
             En bon état
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-bold text-green-700">{stats.bon_etat}</p>
+          <p className="text-3xl font-bold text-success">{stats.bon_etat}</p>
           <p className="text-xs text-muted-foreground mt-1">
             {stats.total > 0 ? Math.round((stats.bon_etat / stats.total) * 100) : 0}% du parc
           </p>
         </CardContent>
       </Card>
 
-      <Card className={stats.en_reparation > 0 ? 'border-red-200' : ''}>
+      <Card className={stats.en_reparation > 0 ? 'border-danger/30' : ''}>
         <CardHeader className="pb-2">
-          <CardTitle className={`text-sm font-medium flex items-center gap-2 ${stats.en_reparation > 0 ? 'text-red-700' : 'text-muted-foreground'}`}>
+          <CardTitle className={`text-sm font-medium flex items-center gap-2 ${stats.en_reparation > 0 ? 'text-danger' : 'text-muted-foreground'}`}>
             <Wrench className="h-4 w-4" />
             En réparation
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={`text-3xl font-bold ${stats.en_reparation > 0 ? 'text-red-700' : ''}`}>
+          <p className={`text-3xl font-bold ${stats.en_reparation > 0 ? 'text-danger' : ''}`}>
             {stats.en_reparation}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -97,15 +97,15 @@ function StatCards({ stats }: { stats: Stats }) {
         </CardContent>
       </Card>
 
-      <Card className={stats.nettoyage_urgent > 0 ? 'border-amber-200' : ''}>
+      <Card className={stats.nettoyage_urgent > 0 ? 'border-warning/30' : ''}>
         <CardHeader className="pb-2">
-          <CardTitle className={`text-sm font-medium flex items-center gap-2 ${stats.nettoyage_urgent > 0 ? 'text-amber-700' : 'text-muted-foreground'}`}>
+          <CardTitle className={`text-sm font-medium flex items-center gap-2 ${stats.nettoyage_urgent > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
             <AlertTriangle className="h-4 w-4" />
             Nettoyage urgent
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={`text-3xl font-bold ${stats.nettoyage_urgent > 0 ? 'text-amber-700' : ''}`}>
+          <p className={`text-3xl font-bold ${stats.nettoyage_urgent > 0 ? 'text-warning' : ''}`}>
             {stats.nettoyage_urgent}
           </p>
           <p className="text-xs text-muted-foreground mt-1">nettoyage dans ≤ 7 jours</p>
@@ -152,7 +152,7 @@ function MaterielCartes({ items }: { items: MaterielSono[] }) {
               </span>
               <span>{CATEGORIE_LABEL[item.categorie]}</span>
               {item.prochain_nettoyage && (
-                <span className={urgentNettoyage ? 'text-amber-600 font-semibold' : ''}>
+                <span className={urgentNettoyage ? 'text-warning font-semibold' : ''}>
                   Nettoyage : {formatDate(item.prochain_nettoyage)}
                 </span>
               )}
@@ -162,12 +162,12 @@ function MaterielCartes({ items }: { items: MaterielSono[] }) {
             {(item.en_reparation || urgentNettoyage) && (
               <div className="flex flex-wrap gap-2">
                 {item.en_reparation && (
-                  <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-xs text-danger bg-danger/10 border border-danger/30 rounded-full px-2 py-0.5">
                     <Wrench className="h-3 w-3" /> En réparation
                   </span>
                 )}
                 {urgentNettoyage && (
-                  <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-xs text-warning bg-warning/10 border border-warning/30 rounded-full px-2 py-0.5">
                     <AlertCircle className="h-3 w-3" /> Nettoyage urgent
                   </span>
                 )}
@@ -228,17 +228,17 @@ function MaterielTableauDesktop({ items }: { items: MaterielSono[] }) {
                 {formatDate(item.dernier_nettoyage)}
               </TableCell>
               <TableCell>
-                <span className={`text-sm ${urgentNettoyage ? 'font-semibold text-amber-600' : 'text-muted-foreground'}`}>
+                <span className={`text-sm ${urgentNettoyage ? 'font-semibold text-warning' : 'text-muted-foreground'}`}>
                   {formatDate(item.prochain_nettoyage)}
                 </span>
               </TableCell>
               <TableCell className="text-center">
                 <div className="flex items-center justify-center gap-1.5">
                   {item.en_reparation && (
-                    <span title="En réparation"><Wrench className="h-4 w-4 text-red-500" /></span>
+                    <span title="En réparation"><Wrench className="h-4 w-4 text-danger" /></span>
                   )}
                   {urgentNettoyage && (
-                    <span title="Nettoyage urgent (≤ 7 jours)"><AlertCircle className="h-4 w-4 text-amber-500" /></span>
+                    <span title="Nettoyage urgent (≤ 7 jours)"><AlertCircle className="h-4 w-4 text-warning" /></span>
                   )}
                   {!item.en_reparation && !urgentNettoyage && (
                     <span className="text-muted-foreground/40 text-xs">—</span>

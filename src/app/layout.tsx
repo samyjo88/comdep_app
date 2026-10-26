@@ -1,81 +1,82 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Jost } from "next/font/google";
 import { Toaster } from "sonner";
-import Link from "next/link";
 import { NotificationBell }    from "@/components/notifications/NotificationBell";
-import { MobileMenuServer }   from "@/components/nav/MobileMenuServer";
-import { ThemeProvider }    from "@/components/providers/ThemeProvider";
-import { ThemeToggle }      from "@/components/nav/ThemeToggle";
-import { UserMenu }             from "@/components/nav/UserMenu";
-import { ConditionalHeader }    from "@/components/nav/ConditionalHeader";
+import { ThemeProvider }       from "@/components/providers/ThemeProvider";
+import { ThemeToggle }         from "@/components/nav/ThemeToggle";
+import { UserMenu }            from "@/components/nav/UserMenu";
+import { AppShell }            from "@/components/nav/AppShell";
+import { getModulesAccessibles, getMyRole } from "@/lib/dashboard/modules-access";
+import { ROLES_ADMIN }         from "@/lib/auth/guards";
+import type { AppRole }        from "@/lib/supabase/types";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Police de titrage : Jost, équivalent libre de Futura (charte graphique)
+const jost = Jost({
+  variable: "--font-jost",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s – ComDept',
-    default:  'ComDept – Gestion de la communication',
+    template: '%s – ComDept Horeb',
+    default:  'ComDept – Horeb Cité SIR',
   },
-  description: "Gestion du département de communication de l'église",
-  icons: {
-    icon: '/favicon.svg',
-  },
+  description: "Comité de communication de l'Église Méthodiste Horeb Cité SIR",
+  applicationName: 'ComDept Horeb',
 };
 
-export default function RootLayout({
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fbfcf8' },
+    { media: '(prefers-color-scheme: dark)',  color: '#0e120d' },
+  ],
+};
+
+async function getContexteNavigation() {
+  try {
+    const [modulesAccessibles, role] = await Promise.all([getModulesAccessibles(), getMyRole()])
+    return { modulesAccessibles, estAdmin: ROLES_ADMIN.includes(role as AppRole) }
+  } catch {
+    // Supabase non configuré (développement) : navigation minimale
+    return { modulesAccessibles: [] as string[], estAdmin: false }
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { modulesAccessibles, estAdmin } = await getContexteNavigation()
+
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${jost.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {/* Barre de navigation globale — masquée sur /login */}
-          <ConditionalHeader>
-            <header className="sticky top-0 z-40 h-12 border-b bg-card/95 backdrop-blur-sm shadow-sm shrink-0">
-              <div className="container mx-auto px-4 max-w-7xl h-full flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <MobileMenuServer />
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center gap-2.5 font-bold text-sm hover:opacity-80 transition-opacity"
-                  >
-                    <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary shrink-0">
-                      <span className="text-primary-foreground text-[11px] font-black tracking-tight">CD</span>
-                    </div>
-                    <span className="hidden sm:inline">ComDept</span>
-                  </Link>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <ThemeToggle />
-                  <NotificationBell />
-                  <UserMenu />
-                </div>
-              </div>
-            </header>
-          </ConditionalHeader>
-
-          {children}
+          <AppShell
+            modulesAccessibles={modulesAccessibles}
+            estAdmin={estAdmin}
+            actions={
+              <>
+                <ThemeToggle />
+                <NotificationBell />
+                <UserMenu />
+              </>
+            }
+          >
+            {children}
+          </AppShell>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

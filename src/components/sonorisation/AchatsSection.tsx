@@ -31,16 +31,16 @@ import type { AchatPlanifie, PrioriteAchat, StatutAchat } from '@/lib/supabase/t
 // ── Config badges ──────────────────────────────────────────────────────────
 
 const PRIORITE_CONFIG: Record<PrioriteAchat, { label: string; className: string }> = {
-  urgent: { label: 'Urgent', className: 'bg-red-100 text-red-800 border-red-200' },
+  urgent: { label: 'Urgent', className: 'bg-danger/15 text-danger border-danger/30' },
   normal: { label: 'Normal', className: 'bg-orange-100 text-orange-800 border-orange-200' },
-  faible: { label: 'Faible', className: 'bg-green-100 text-green-800 border-green-200' },
+  faible: { label: 'Faible', className: 'bg-success/15 text-success border-success/30' },
 }
 
 const STATUT_CONFIG: Record<StatutAchat, { label: string; className: string }> = {
-  en_attente: { label: 'En attente', className: 'bg-gray-100 text-gray-700 border-gray-200' },
-  approuve:   { label: 'Approuvé',   className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  en_attente: { label: 'En attente', className: 'bg-muted text-foreground border-border' },
+  approuve:   { label: 'Approuvé',   className: 'bg-info/15 text-info border-info/30' },
   commande:   { label: 'Commandé',   className: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
-  recu:       { label: 'Reçu',       className: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  recu:       { label: 'Reçu',       className: 'bg-success/15 text-success border-success/30' },
 }
 
 function formatBudget(val: number | null): string {
@@ -317,7 +317,7 @@ export function AchatsSection({ achats }: { achats: AchatPlanifie[] }) {
           <p className="text-sm text-muted-foreground mt-0.5">
             {achats.length} achat{achats.length !== 1 ? 's' : ''} planifié{achats.length !== 1 ? 's' : ''}
             {counts.urgent > 0 && (
-              <span className="ml-2 text-red-600 font-medium">
+              <span className="ml-2 text-danger font-medium">
                 · {counts.urgent} urgent{counts.urgent > 1 ? 's' : ''}
               </span>
             )}

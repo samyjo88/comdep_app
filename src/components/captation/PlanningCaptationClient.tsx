@@ -54,17 +54,17 @@ const ROLE_ICON: Record<RoleCaptation, typeof Camera> = {
 type StatutGlobal = 'incomplet' | 'planifie' | 'confirme' | 'couvert'
 
 const STATUT_GLOBAL_CONFIG: Record<StatutGlobal, { label: string; className: string }> = {
-  incomplet: { label: 'Incomplet', className: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' },
-  planifie:  { label: 'Planifié',  className: 'bg-gray-100 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
-  confirme:  { label: 'Confirmé',  className: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
-  couvert:   { label: 'Couvert',   className: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
+  incomplet: { label: 'Incomplet', className: 'bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30' },
+  planifie:  { label: 'Planifié',  className: 'bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground border-border dark:border-border' },
+  confirme:  { label: 'Confirmé',  className: 'bg-info/10 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30' },
+  couvert:   { label: 'Couvert',   className: 'bg-success/10 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30' },
 }
 
 const STATUT_ASSIGN_CONFIG: Record<StatutPlanning, { label: string; className: string }> = {
-  planifie: { label: 'Planifié',  className: 'bg-gray-100 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
-  confirme: { label: 'Confirmé',  className: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
-  present:  { label: 'Présent',   className: 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800' },
-  absent:   { label: 'Absent',    className: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800' },
+  planifie: { label: 'Planifié',  className: 'bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground border-border dark:border-border' },
+  confirme: { label: 'Confirmé',  className: 'bg-info/10 dark:bg-info/5 text-info dark:text-info border-info/30 dark:border-info/30' },
+  present:  { label: 'Présent',   className: 'bg-success/10 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30' },
+  absent:   { label: 'Absent',    className: 'bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30' },
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -132,7 +132,7 @@ function CelleAssignation({
       <SelectTrigger className={cn(
         'h-8 text-xs border shadow-none focus:ring-0 focus:ring-offset-0',
         currentValue === 'none'
-          ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+          ? 'bg-danger/10 dark:bg-danger/5 border-danger/30 dark:border-danger/30 text-danger dark:text-danger'
           : 'bg-background',
       )}>
         <SelectValue placeholder="Non assigné" />
@@ -288,7 +288,7 @@ function CulteCard({
                       onStatutChange={onStatutChange}
                     />
                   ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 border-red-200 dark:border-red-800">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30">
                       À assigner
                     </Badge>
                   )}
@@ -394,7 +394,7 @@ function VueCalendrier({
               {item && (
                 <div className={cn(
                   'rounded p-1 flex flex-col gap-0.5 text-[10px] leading-tight',
-                  allAssigned ? 'bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-100 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-800',
+                  allAssigned ? 'bg-success/10 dark:bg-success/5 border border-success/30 dark:border-success/30' : 'bg-danger/10 dark:bg-danger/5 border border-danger/30 dark:border-danger/30',
                 )}>
                   {item.assignments.map(a => {
                     const m = membreById[a.membre_id]
@@ -402,14 +402,14 @@ function VueCalendrier({
                     return (
                       <span key={a.id} className={cn(
                         'truncate font-medium',
-                        allAssigned ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300',
+                        allAssigned ? 'text-success dark:text-success' : 'text-danger dark:text-danger',
                       )}>
                         {m.prenom[0]}.{m.nom[0]}. <span className="opacity-70">·</span> {ROLES_CONFIG.find(r => r.code === a.role_du_jour)?.label.slice(0, 3)}
                       </span>
                     )
                   })}
                   {item.assignments.length < 3 && (
-                    <span className="text-red-500 font-medium">
+                    <span className="text-danger font-medium">
                       {3 - item.assignments.length} rôle{3 - item.assignments.length > 1 ? 's' : ''} manquant{3 - item.assignments.length > 1 ? 's' : ''}
                     </span>
                   )}

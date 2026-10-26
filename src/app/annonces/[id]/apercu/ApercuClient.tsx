@@ -290,7 +290,7 @@ export default function ApercuClient({
 
         <span className={cn(
           'text-sm font-semibold tabular-nums px-2',
-          pret === total ? 'text-emerald-600' : 'text-amber-600',
+          pret === total ? 'text-success' : 'text-warning',
         )}>
           {pret}/{total} rubriques prêtes
         </span>
@@ -370,7 +370,7 @@ export default function ApercuClient({
               Valider et publier
             </Button>
           ) : (
-            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1.5 px-3 py-1.5 text-sm">
+            <Badge className="bg-success/15 text-success border-success/30 gap-1.5 px-3 py-1.5 text-sm">
               <CheckCircle2 className="h-3.5 w-3.5" /> Publiée
             </Badge>
           )
@@ -379,18 +379,18 @@ export default function ApercuClient({
 
       {/* ── Alerte rubriques incomplètes ── */}
       {!estPasse && statut !== 'valide' && pret < total && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-4 py-3">
-          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 rounded-xl border border-warning/30 dark:border-warning/30 bg-warning/10 dark:bg-warning/5 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+            <p className="text-sm font-semibold text-warning dark:text-warning">
               {total - pret} rubrique{total - pret > 1 ? 's' : ''} non complétée{total - pret > 1 ? 's' : ''}
             </p>
-            <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+            <p className="text-xs text-warning dark:text-warning mt-0.5">
               Toutes les rubriques doivent avoir un texte final avant de pouvoir valider et publier l&apos;annonce.
             </p>
           </div>
           <Link href={`/annonces/${annonceId}/rubriques`} className="shrink-0">
-            <Button variant="outline" size="sm" className="text-xs h-7 border-amber-300 text-amber-700 hover:bg-amber-100">
+            <Button variant="outline" size="sm" className="text-xs h-7 border-warning/30 text-warning hover:bg-warning/15">
               Compléter les rubriques →
             </Button>
           </Link>
@@ -500,14 +500,14 @@ export default function ApercuClient({
                   {rubrique.texte_final}
                 </p>
               ) : (
-                <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-                  <span className="text-sm text-amber-700 font-medium">
+                <div className="flex items-center gap-2.5 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3">
+                  <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
+                  <span className="text-sm text-warning font-medium">
                     Rubrique non complétée
                   </span>
                   <Link
                     href={`/annonces/${annonceId}/rubriques`}
-                    className="ml-auto text-xs text-amber-600 hover:underline shrink-0"
+                    className="ml-auto text-xs text-warning hover:underline shrink-0"
                   >
                     Compléter →
                   </Link>

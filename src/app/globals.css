@@ -3,59 +3,107 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Identité visuelle — charte graphique de l'Église Méthodiste de Côte d'Ivoire
+ * (version 2024), communauté Horeb Cité SIR.
+ *
+ *   Vert   #9cbd3b → #659e41  espérance, renaissance, joie, modernité
+ *   Doré   #f0c716            royauté et puissance de Dieu
+ *   Marron #a96323            bois de la croix du Golgotha
+ *   Futura (titres, chiffres) → Jost, équivalent libre ; Arial (texte courant)
+ *
+ * Les couleurs sont des triplets HSL utilisés via hsl(var(--token)).
+ */
 :root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
+  /* Couleurs de marque (valeurs de la charte) */
+  --brand-green-light: 75 52% 49%;   /* #9cbd3b */
+  --brand-green:       97 42% 44%;   /* #659e41 */
+  --brand-gold:        49 88% 51%;   /* #f0c716 */
+  --brand-brown:       29 66% 40%;   /* #a96323 */
+
+  --background: 80 20% 98.5%;
+  --foreground: 100 20% 9%;
   --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
+  --card-foreground: 100 20% 9%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 240 10% 3.9%;
-  --radius: 0.5rem;
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  --popover-foreground: 100 20% 9%;
+  /* Vert de la charte assombri pour garantir le contraste du texte blanc */
+  --primary: 97 45% 32%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 85 18% 94%;
+  --secondary-foreground: 100 20% 12%;
+  --muted: 85 15% 94%;
+  --muted-foreground: 100 6% 40%;
+  --accent: 88 32% 93%;
+  --accent-foreground: 97 45% 22%;
+  --destructive: 2 72% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 90 14% 88%;
+  --input: 90 14% 85%;
+  --ring: 97 45% 38%;
+  --radius: 0.75rem;
+
+  /* Couleurs sémantiques (statuts) */
+  --success: 97 50% 28%;
+  --warning: 32 90% 34%;
+  --danger:  2 72% 44%;
+  --info:    212 63% 40%;
+  --gold:    40 85% 34%;   /* doré lisible sur fond clair */
+  --brown:   29 66% 36%;
+
+  /* Une couleur par module, dérivée de la charte et de ses complémentaires */
+  --module-son:        97 45% 34%;
+  --module-projection: 212 63% 42%;
+  --module-annonces:   40 85% 36%;
+  --module-captation:  13 80% 46%;
+  --module-community:  172 55% 30%;
+
+  --chart-1: 97 42% 44%;
+  --chart-2: 49 88% 51%;
+  --chart-3: 29 66% 40%;
+  --chart-4: 212 63% 45%;
+  --chart-5: 172 55% 40%;
 }
 
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 240 5.9% 10%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
+  --background: 110 12% 6%;
+  --foreground: 80 15% 94%;
+  --card: 110 10% 9%;
+  --card-foreground: 80 15% 94%;
+  --popover: 110 10% 9%;
+  --popover-foreground: 80 15% 94%;
+  --primary: 80 52% 52%;
+  --primary-foreground: 100 30% 8%;
+  --secondary: 100 8% 15%;
+  --secondary-foreground: 80 15% 94%;
+  --muted: 100 8% 14%;
+  --muted-foreground: 90 6% 64%;
+  --accent: 97 18% 16%;
+  --accent-foreground: 80 50% 75%;
+  --destructive: 2 65% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 100 8% 17%;
+  --input: 100 8% 20%;
+  --ring: 80 52% 52%;
+
+  --success: 85 50% 60%;
+  --warning: 43 90% 60%;
+  --danger:  2 85% 68%;
+  --info:    212 80% 70%;
+  --gold:    47 90% 58%;
+  --brown:   29 60% 60%;
+
+  --module-son:        85 50% 58%;
+  --module-projection: 212 80% 68%;
+  --module-annonces:   47 90% 58%;
+  --module-captation:  13 90% 66%;
+  --module-community:  170 50% 58%;
+
+  --chart-1: 80 52% 52%;
+  --chart-2: 49 88% 55%;
+  --chart-3: 29 60% 55%;
+  --chart-4: 212 80% 65%;
+  --chart-5: 170 50% 55%;
 }
 
 @theme inline {
@@ -78,21 +126,118 @@
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
+
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-danger: hsl(var(--danger));
+  --color-info: hsl(var(--info));
+  --color-gold: hsl(var(--gold));
+  --color-brown: hsl(var(--brown));
+
+  --color-brand-green: hsl(var(--brand-green));
+  --color-brand-green-light: hsl(var(--brand-green-light));
+  --color-brand-gold: hsl(var(--brand-gold));
+  --color-brand-brown: hsl(var(--brand-brown));
+
+  --color-module: hsl(var(--module));
+  --color-module-son: hsl(var(--module-son));
+  --color-module-projection: hsl(var(--module-projection));
+  --color-module-annonces: hsl(var(--module-annonces));
+  --color-module-captation: hsl(var(--module-captation));
+  --color-module-community: hsl(var(--module-community));
+
   --color-chart-1: hsl(var(--chart-1));
   --color-chart-2: hsl(var(--chart-2));
   --color-chart-3: hsl(var(--chart-3));
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --font-sans: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  --font-display: var(--font-jost), "Futura", "Trebuchet MS", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
 }
 
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* Couleur du module courant : posée par data-module sur un conteneur */
+:root { --module: var(--primary); }
+[data-module="son"]        { --module: var(--module-son); }
+[data-module="projection"] { --module: var(--module-projection); }
+[data-module="annonces"]   { --module: var(--module-annonces); }
+[data-module="captation"]  { --module: var(--module-captation); }
+[data-module="community"]  { --module: var(--module-community); }
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: hsl(var(--brand-green-light) / 0.35);
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Apparition en cascade des enfants directs */
+  .stagger > * {
+    animation: var(--animate-rise);
+  }
+  .stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .stagger > *:nth-child(n + 7) { animation-delay: 240ms; }
+
+  /* Carte interactive : légère élévation au survol */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -12px hsl(var(--foreground) / 0.18);
+    border-color: hsl(var(--module) / 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -54,8 +54,8 @@ const MOMENT_LABELS: Record<string, string> = {
 
 const STATUT_CONFIG: Record<string, { label: string; badge: string }> = {
   brouillon: { label: 'Brouillon', badge: 'bg-muted text-muted-foreground border-border' },
-  valide:    { label: 'Validée',   badge: 'bg-blue-50 text-blue-700 border-blue-200' },
-  utilise:   { label: 'Utilisée',  badge: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  valide:    { label: 'Validée',   badge: 'bg-info/10 text-info border-info/30' },
+  utilise:   { label: 'Utilisée',  badge: 'bg-success/10 text-success border-success/30' },
 }
 
 function formatDateLongue(dateStr: string): string {
@@ -257,12 +257,12 @@ export default function ApercuClient({
         <div className="print-meta text-center border-b pb-4 mb-6 space-y-1">
           <p className="text-lg font-semibold">{dateLabel}</p>
           {culte?.theme && (
-            <p className="text-sm text-muted-foreground print:text-gray-600">
+            <p className="text-sm text-muted-foreground print:text-muted-foreground">
               {culte.theme}
             </p>
           )}
           {culte?.predicateur && (
-            <p className="text-sm text-muted-foreground print:text-gray-600">
+            <p className="text-sm text-muted-foreground print:text-muted-foreground">
               Prédicateur : {culte.predicateur}
             </p>
           )}
@@ -275,7 +275,7 @@ export default function ApercuClient({
 
         {/* ── Setlist table ─────────────────────────────────────────────── */}
         <table className="print-table w-full border-collapse text-sm">
-          <thead className="bg-muted/40 print:bg-gray-100">
+          <thead className="bg-muted/40 print:bg-muted">
             <tr>
               <th className="border px-3 py-2 text-left w-10">#</th>
               <th className="border px-3 py-2 text-left">Cantique</th>
@@ -307,18 +307,18 @@ export default function ApercuClient({
                 const tonalite = item.tonalite_utilisee ?? c.tonalite ?? '—'
 
                 return (
-                  <tr key={item.id} className="print-table-row even:bg-muted/20 print:even:bg-gray-50">
+                  <tr key={item.id} className="print-table-row even:bg-muted/20 print:even:bg-muted">
                     <td className="border px-3 py-2 font-mono text-center text-muted-foreground">
                       {idx + 1}
                     </td>
                     <td className="border px-3 py-2">
                       <span className="font-medium">{titreRef}</span>
                       {!isGad && (
-                        <span className="ml-1 text-amber-700 text-xs">(Chorale)</span>
+                        <span className="ml-1 text-warning text-xs">(Chorale)</span>
                       )}
                     </td>
                     <td className="border px-3 py-2">
-                      <span className={`text-xs font-medium ${isGad ? 'text-blue-700' : 'text-amber-700'}`}>
+                      <span className={`text-xs font-medium ${isGad ? 'text-info' : 'text-warning'}`}>
                         {isGad ? '📘 GAD' : '🎤 Chorale'}
                       </span>
                     </td>
@@ -329,7 +329,7 @@ export default function ApercuClient({
                       {getMomentLabel(item.moment_culte)}
                     </td>
                     {hasNotes && (
-                      <td className="border px-3 py-2 text-sm text-muted-foreground print:text-gray-600 italic">
+                      <td className="border px-3 py-2 text-sm text-muted-foreground print:text-muted-foreground italic">
                         {item.notes_operateur ?? ''}
                       </td>
                     )}
@@ -358,7 +358,7 @@ export default function ApercuClient({
                     </h3>
                     <div className="space-y-0.5 pl-2">
                       {lines.map((line, i) => (
-                        <p key={i} className="text-sm text-muted-foreground print:text-gray-700 leading-snug">
+                        <p key={i} className="text-sm text-muted-foreground print:text-foreground leading-snug">
                           {line}
                         </p>
                       ))}
@@ -429,7 +429,7 @@ export default function ApercuClient({
             onClick={handleCopy}
           >
             {copied
-              ? <Check className="h-3.5 w-3.5 text-emerald-600" />
+              ? <Check className="h-3.5 w-3.5 text-success" />
               : <ClipboardList className="h-3.5 w-3.5" />}
             {copied ? 'Copié !' : 'Copier la liste'}
           </Button>

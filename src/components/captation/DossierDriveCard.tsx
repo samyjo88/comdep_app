@@ -143,7 +143,7 @@ function EtatRempli({
     <div className="space-y-3">
       {/* Dossier principal */}
       <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
-        <FolderOpen className="h-5 w-5 text-amber-500 shrink-0" />
+        <FolderOpen className="h-5 w-5 text-warning shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">Dossier principal</p>
         </div>
@@ -220,7 +220,7 @@ export function DossierDriveCard({ culteId, dossier: initial, onUpdate }: Dossie
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Cloud className={cn('h-4 w-4', dossier ? 'text-blue-500' : 'text-muted-foreground')} />
+            <Cloud className={cn('h-4 w-4', dossier ? 'text-info' : 'text-muted-foreground')} />
             Google Drive
           </CardTitle>
           {dossier && (

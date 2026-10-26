@@ -34,9 +34,9 @@ import type { PlanningCulte, MembreSon, StatutCulte } from '@/lib/supabase/types
 // ── Config ──────────────────────────────────────────────────────────────────
 
 const STATUT_CONFIG: Record<StatutCulte, { label: string; className: string }> = {
-  planifie: { label: 'Planifié',  className: 'bg-gray-100 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700' },
-  confirme: { label: 'Confirmé',  className: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800' },
-  passe:    { label: 'Passé',     className: 'bg-gray-50 dark:bg-gray-800/30 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-700' },
+  planifie: { label: 'Planifié',  className: 'bg-muted dark:bg-muted text-foreground dark:text-muted-foreground border-border dark:border-border' },
+  confirme: { label: 'Confirmé',  className: 'bg-success/15 dark:bg-success/5 text-success dark:text-success border-success/30 dark:border-success/30' },
+  passe:    { label: 'Passé',     className: 'bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground border-border dark:border-border' },
 }
 
 const MOIS_NOMS = [
@@ -113,7 +113,7 @@ function CelleAssignation({
   return (
     <div className="space-y-1 min-w-[140px]">
       {isUnassigned && (
-        <Badge variant="outline" className="text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 font-normal gap-1">
+        <Badge variant="outline" className="text-xs bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 font-normal gap-1">
           <UserX className="h-3 w-3" />
           Non assigné
         </Badge>
@@ -433,7 +433,7 @@ function VueCalendrier({
                     }
                     {hasUnassigned && (
                       <Badge variant="outline"
-                        className="text-xs bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800 font-normal px-1 py-0 h-4 hidden md:flex">
+                        className="text-xs bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border-danger/30 dark:border-danger/30 font-normal px-1 py-0 h-4 hidden md:flex">
                         Incomplet
                       </Badge>
                     )}
@@ -460,7 +460,7 @@ function VueCalendrier({
           Membre assigné
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded border border-red-200 bg-red-50 inline-block" />
+          <span className="w-3 h-3 rounded border border-danger/30 bg-danger/10 inline-block" />
           Rôle(s) manquant(s)
         </span>
         <span className="hidden md:inline">
@@ -756,8 +756,8 @@ export function PlanningClient({ plannings, membres }: {
         <div className={cn(
           'flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium',
           rappelEtat === 'success'
-            ? 'bg-green-50 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800'
-            : 'bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800',
+            ? 'bg-success/10 dark:bg-success/5 text-success dark:text-success border border-success/30 dark:border-success/30'
+            : 'bg-danger/10 dark:bg-danger/5 text-danger dark:text-danger border border-danger/30 dark:border-danger/30',
         )}>
           {rappelEtat === 'success'
             ? <CheckCircle2 className="h-4 w-4 shrink-0" />

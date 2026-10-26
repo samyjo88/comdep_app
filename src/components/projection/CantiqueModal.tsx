@@ -275,9 +275,9 @@ function CantiqueForm({
               className={cn(
                 'flex-1 py-2 px-3 rounded-lg border-2 text-sm font-semibold transition-all',
                 categorie === cat && cat === 'gad'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  ? 'border-info bg-info/10 text-info'
                   : categorie === cat && cat === 'chorale'
-                    ? 'border-amber-500 bg-amber-50 text-amber-700'
+                    ? 'border-warning bg-warning/10 text-warning'
                     : 'border-border text-muted-foreground hover:text-foreground',
               )}
             >
@@ -485,7 +485,7 @@ function CantiqueForm({
 
       {/* Erreur */}
       {err && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2.5">
+        <p className="text-sm text-danger bg-danger/10 border border-danger/30 rounded-lg px-3 py-2.5">
           {err}
         </p>
       )}
@@ -546,8 +546,8 @@ export function CantiqueModal({
                     className={cn(
                       'text-[11px] font-bold px-1.5',
                       cantique.categorie === 'gad'
-                        ? 'bg-blue-100 text-blue-700 border-blue-200'
-                        : 'bg-amber-100 text-amber-700 border-amber-200',
+                        ? 'bg-info/15 text-info border-info/30'
+                        : 'bg-warning/15 text-warning border-warning/30',
                     )}
                   >
                     {cantique.categorie === 'gad' ? 'GAD' : 'CHORALE'}

@@ -285,12 +285,12 @@ function GadCard({
           <div className="flex flex-col items-center gap-1 shrink-0 min-w-[3rem]">
             <Badge
               variant="outline"
-              className="bg-blue-100 text-blue-700 border-blue-200 text-[10px] px-1.5 py-0 h-5 font-bold"
+              className="bg-info/15 text-info border-info/30 text-[10px] px-1.5 py-0 h-5 font-bold"
             >
               GAD
             </Badge>
             {c.numero_gad && (
-              <span className="text-2xl font-black tabular-nums leading-none text-blue-700">
+              <span className="text-2xl font-black tabular-nums leading-none text-info">
                 {c.numero_gad}
               </span>
             )}
@@ -328,7 +328,7 @@ function GadCard({
             <Badge
               key={m}
               variant="outline"
-              className="text-[11px] px-1.5 py-0 h-5 bg-blue-50 text-blue-600 border-blue-200"
+              className="text-[11px] px-1.5 py-0 h-5 bg-info/10 text-info border-info/30"
             >
               {MOMENTS_CULTE.find(mc => mc.value === m)?.label ?? m}
             </Badge>
@@ -420,7 +420,7 @@ function ChoraleCard({
           <div className="shrink-0">
             <Badge
               variant="outline"
-              className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] px-1.5 py-0 h-5 font-bold"
+              className="bg-warning/15 text-warning border-warning/30 text-[10px] px-1.5 py-0 h-5 font-bold"
             >
               CHORALE
             </Badge>
@@ -447,12 +447,12 @@ function ChoraleCard({
             <div className="flex items-center gap-1.5">
               {c.lien_partition && (
                 <a href={c.lien_partition} target="_blank" rel="noopener noreferrer" title="Partition disponible">
-                  <FileText className="h-4 w-4 text-emerald-600 hover:text-emerald-700" />
+                  <FileText className="h-4 w-4 text-success hover:text-success" />
                 </a>
               )}
               {c.lien_audio && (
                 <a href={c.lien_audio} target="_blank" rel="noopener noreferrer" title="Audio disponible">
-                  <FileAudio className="h-4 w-4 text-blue-600 hover:text-blue-700" />
+                  <FileAudio className="h-4 w-4 text-info hover:text-info" />
                 </a>
               )}
             </div>
@@ -471,9 +471,9 @@ function ChoraleCard({
               variant="outline"
               className={cn(
                 'text-[11px] px-1.5 py-0 h-5',
-                c.difficulte === 'facile'    && 'bg-green-50 text-green-700 border-green-200',
-                c.difficulte === 'moyen'     && 'bg-amber-50 text-amber-700 border-amber-200',
-                c.difficulte === 'difficile' && 'bg-red-50 text-red-700 border-red-200',
+                c.difficulte === 'facile'    && 'bg-success/10 text-success border-success/30',
+                c.difficulte === 'moyen'     && 'bg-warning/10 text-warning border-warning/30',
+                c.difficulte === 'difficile' && 'bg-danger/10 text-danger border-danger/30',
               )}
             >
               {DIFFICULTES.find(d => d.value === c.difficulte)?.label ?? c.difficulte}
@@ -483,7 +483,7 @@ function ChoraleCard({
             <Badge
               key={m}
               variant="outline"
-              className="text-[11px] px-1.5 py-0 h-5 bg-amber-50 text-amber-600 border-amber-200"
+              className="text-[11px] px-1.5 py-0 h-5 bg-warning/10 text-warning border-warning/30"
             >
               {MOMENTS_CULTE.find(mc => mc.value === m)?.label ?? m}
             </Badge>
@@ -553,11 +553,11 @@ function ParolesSheet({
         <SheetHeader>
           <div className="flex items-center gap-2">
             {cantique?.categorie === 'gad' ? (
-              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 text-[11px]">
+              <Badge variant="outline" className="bg-info/15 text-info border-info/30 text-[11px]">
                 GAD {cantique.numero_gad && `· ${cantique.numero_gad}`}
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-[11px]">
+              <Badge variant="outline" className="bg-warning/15 text-warning border-warning/30 text-[11px]">
                 CHORALE
               </Badge>
             )}
@@ -938,7 +938,7 @@ function CantiquesForm({
         <Label htmlFor="actif">Cantique actif</Label>
       </div>
 
-      {err && <p className="text-sm text-red-600 bg-red-50 rounded-lg p-2.5">{err}</p>}
+      {err && <p className="text-sm text-danger bg-danger/10 rounded-lg p-2.5">{err}</p>}
 
       <div className="flex gap-2 pt-1">
         <Button type="button" variant="outline" onClick={onDone} className="flex-1">
@@ -1102,13 +1102,13 @@ export default function CantiquesClient({
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all',
               activeTab === 'gad'
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                ? 'border-info bg-info/10 text-info'
                 : 'border-transparent bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80',
             )}
           >
             <Music className="h-4 w-4" />
             📘 Cantiques GAD
-            <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 text-[11px] h-5 px-1.5">
+            <Badge className="bg-info/15 text-info border-info/30 hover:bg-info/15 text-[11px] h-5 px-1.5">
               {gad.length}
             </Badge>
           </button>
@@ -1117,13 +1117,13 @@ export default function CantiquesClient({
             className={cn(
               'flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all',
               activeTab === 'chorale'
-                ? 'border-amber-500 bg-amber-50 text-amber-700'
+                ? 'border-warning bg-warning/10 text-warning'
                 : 'border-transparent bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80',
             )}
           >
             <Users className="h-4 w-4" />
             🎤 Répertoire Chorale
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-100 text-[11px] h-5 px-1.5">
+            <Badge className="bg-warning/15 text-warning border-warning/30 hover:bg-warning/15 text-[11px] h-5 px-1.5">
               {chorale.length}
             </Badge>
           </button>
@@ -1514,7 +1514,7 @@ export default function CantiquesClient({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-xs gap-1 text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="h-7 text-xs gap-1 text-danger hover:text-danger hover:bg-danger/10"
                   onClick={() => handleDelete(editOf)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />

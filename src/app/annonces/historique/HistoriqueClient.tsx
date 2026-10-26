@@ -36,8 +36,8 @@ function today() {
 
 function statutBadge(statut: StatutAnnonce | undefined) {
   switch (statut) {
-    case 'valide':   return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100 text-xs">Validé</Badge>
-    case 'publie':   return <Badge className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-100 text-xs">Publié</Badge>
+    case 'valide':   return <Badge className="bg-success/15 text-success border-success/30 hover:bg-success/15 text-xs">Validé</Badge>
+    case 'publie':   return <Badge className="bg-info/15 text-info border-info/30 hover:bg-info/15 text-xs">Publié</Badge>
     case 'brouillon':return <Badge variant="outline" className="text-xs text-muted-foreground">Brouillon</Badge>
     default:         return <Badge variant="outline" className="text-xs text-muted-foreground">Sans annonce</Badge>
   }

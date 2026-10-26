@@ -37,17 +37,17 @@ interface ProfilClientProps {
 // ── Config ─────────────────────────────────────────────────────────────────
 
 const ROLE_CFG: Record<AppRole, { label: string; cls: string }> = {
-  super_admin: { label: 'Super Admin',  cls: 'bg-red-100    dark:bg-red-900/40    text-red-700    dark:text-red-300    border-red-200    dark:border-red-800'    },
+  super_admin: { label: 'Super Admin',  cls: 'bg-danger/15    dark:bg-danger/5    text-danger    dark:text-danger    border-danger/30    dark:border-danger/30'    },
   admin:       { label: 'Admin',        cls: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
-  responsable: { label: 'Responsable',  cls: 'bg-blue-100   dark:bg-blue-900/40   text-blue-700   dark:text-blue-300   border-blue-200   dark:border-blue-800'   },
-  redacteur:   { label: 'Rédacteur',    cls: 'bg-amber-100  dark:bg-amber-900/40  text-amber-700  dark:text-amber-300  border-amber-200  dark:border-amber-800'  },
-  membre:      { label: 'Membre',       cls: 'bg-slate-100  dark:bg-slate-800/60  text-slate-700  dark:text-slate-300  border-slate-200  dark:border-slate-700'  },
+  responsable: { label: 'Responsable',  cls: 'bg-info/15   dark:bg-info/5   text-info   dark:text-info   border-info/30   dark:border-info/30'   },
+  redacteur:   { label: 'Rédacteur',    cls: 'bg-warning/15  dark:bg-warning/5  text-warning  dark:text-warning  border-warning/30  dark:border-warning/30'  },
+  membre:      { label: 'Membre',       cls: 'bg-muted  dark:bg-muted  text-foreground  dark:text-muted-foreground  border-border  dark:border-border'  },
 }
 
 const MODULE_CFG: Record<string, { icon: React.ElementType; label: string; iconCls: string; bgCls: string }> = {
-  son:       { icon: Volume2,  label: 'Sonorisation',          iconCls: 'text-blue-600   dark:text-blue-400',   bgCls: 'bg-blue-50   dark:bg-blue-950/40'   },
-  captation: { icon: Video,    label: 'Captation Vidéo',       iconCls: 'text-red-600    dark:text-red-400',    bgCls: 'bg-red-50    dark:bg-red-950/40'    },
-  cm:        { icon: Share2,   label: 'Community Management',  iconCls: 'text-green-600  dark:text-green-400',  bgCls: 'bg-green-50  dark:bg-green-950/40'  },
+  son:       { icon: Volume2,  label: 'Sonorisation',          iconCls: 'text-info   dark:text-info',   bgCls: 'bg-info/10   dark:bg-info/5'   },
+  captation: { icon: Video,    label: 'Captation Vidéo',       iconCls: 'text-danger    dark:text-danger',    bgCls: 'bg-danger/10    dark:bg-danger/5'    },
+  cm:        { icon: Share2,   label: 'Community Management',  iconCls: 'text-success  dark:text-success',  bgCls: 'bg-success/10  dark:bg-success/5'  },
   projection:{ icon: Monitor,  label: 'Projection / Proclaim', iconCls: 'text-purple-600 dark:text-purple-400', bgCls: 'bg-purple-50 dark:bg-purple-950/40' },
 }
 
@@ -372,7 +372,7 @@ export function ProfilClient({ profile, role, modules, email }: ProfilClientProp
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2 h-9 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+              className="w-full gap-2 h-9 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60 dark:text-danger dark:border-danger/30 dark:hover:bg-danger/5"
               onClick={handleSignOut}
               disabled={signOutPending}
             >

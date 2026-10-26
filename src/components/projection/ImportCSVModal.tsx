@@ -122,8 +122,8 @@ function Step1({ onNext }: { onNext: () => void }) {
     <div className="space-y-5">
       <div className="rounded-xl border bg-muted/30 p-5 space-y-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 shrink-0">
-            <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/15 shrink-0">
+            <FileSpreadsheet className="h-5 w-5 text-success" />
           </div>
           <div>
             <p className="text-sm font-semibold">Modèle CSV</p>
@@ -155,7 +155,7 @@ function Step1({ onNext }: { onNext: () => void }) {
           ))}
         </ol>
 
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+        <div className="rounded-lg bg-warning/10 border border-warning/30 p-3 text-xs text-warning">
           <strong>Astuce :</strong> Pour les colonnes <code>themes</code> et{' '}
           <code>moment_culte</code>, séparez les valeurs par <code>|</code>{' '}
           (ex : <code>adoration|louange</code>).
@@ -241,7 +241,7 @@ function Step2({
           isDragging
             ? 'border-primary bg-primary/5 scale-[1.01]'
             : preview
-              ? 'border-emerald-400 bg-emerald-50'
+              ? 'border-success bg-success/10'
               : 'border-border hover:border-primary/50 hover:bg-muted/30',
         )}
       >
@@ -255,11 +255,11 @@ function Step2({
 
         {preview ? (
           <>
-            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100">
-              <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-success/15">
+              <CheckCircle2 className="h-6 w-6 text-success" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-emerald-700">
+              <p className="text-sm font-semibold text-success">
                 {preview.total} cantique{preview.total > 1 ? 's' : ''} détecté{preview.total > 1 ? 's' : ''}
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -378,17 +378,17 @@ function Step3({
       {/* Summary */}
       <div className="flex flex-col gap-3">
         {result.imported > 0 && (
-          <div className="flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-            <p className="text-sm font-semibold text-emerald-700">
+          <div className="flex items-center gap-3 rounded-xl bg-success/10 border border-success/30 px-4 py-3">
+            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
+            <p className="text-sm font-semibold text-success">
               {result.imported} cantique{result.imported > 1 ? 's' : ''} importé{result.imported > 1 ? 's' : ''} avec succès
             </p>
           </div>
         )}
         {hasErrors && (
-          <div className="flex items-center gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-            <p className="text-sm font-semibold text-amber-700">
+          <div className="flex items-center gap-3 rounded-xl bg-warning/10 border border-warning/30 px-4 py-3">
+            <AlertTriangle className="h-5 w-5 text-warning shrink-0" />
+            <p className="text-sm font-semibold text-warning">
               {result.errors.length} ligne{result.errors.length > 1 ? 's' : ''} ignorée{result.errors.length > 1 ? 's' : ''}
             </p>
           </div>
@@ -414,7 +414,7 @@ function Step3({
                 <span className="font-mono text-muted-foreground shrink-0 w-12">
                   ligne {e.line}
                 </span>
-                <span className="text-red-600">{e.message}</span>
+                <span className="text-danger">{e.message}</span>
               </div>
             ))}
           </div>
