@@ -937,12 +937,12 @@ function ListeCourriers({
       })
       const json = await res.json()
       if (!res.ok || json.error) {
-        toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+        toast.error(`Erreur lors du résumé : ${json.error ?? res.statusText}`)
         return
       }
       patch(i, { resume_ia: json.resume as string })
     } catch {
-      toast.error('Erreur lors du résumé. Vérifie ta clé API.')
+      toast.error('Erreur réseau lors du résumé.')
     } finally {
       setResumePending(null)
     }
@@ -1371,7 +1371,7 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
       const json = await res.json()
 
       if (!res.ok || json.error) {
-        toast.error('Erreur de génération. Vérifie ta clé API.')
+        toast.error(`Erreur de génération : ${json.error ?? res.statusText}`)
         setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
         return
       }
@@ -1387,7 +1387,7 @@ export default function RubriquesClient({ annonceId: _annonceId, culte, rubrique
         },
       }))
     } catch {
-      toast.error('Erreur de génération. Vérifie ta clé API.')
+      toast.error('Erreur réseau lors de la génération.')
       setIaState(s => ({ ...s, [rubrique.id]: { ...DEFAULT_IA } }))
     }
   }, [])

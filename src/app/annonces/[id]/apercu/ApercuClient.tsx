@@ -177,7 +177,7 @@ export default function ApercuClient({
       })
       const json = await res.json()
       if (!res.ok || json.error) {
-        toast.error('Erreur lors de la génération du texte complet.')
+        toast.error(`Erreur lors de la génération du texte complet : ${json.error ?? res.statusText}`)
         return
       }
       setTexteComplet(json.texte as string)
