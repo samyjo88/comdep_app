@@ -156,3 +156,14 @@ export async function genererTexteRubrique(
 
   return appelerClaude(systemPrompt, userMessage)
 }
+
+// ── Test de connexion ─────────────────────────────────────────────────────────
+
+export async function testerConnexionClaude(): Promise<{ modele: string; reponse: string }> {
+  const { texte } = await appelerClaude(
+    'Tu réponds uniquement par le mot demandé.',
+    'Réponds « OK ».',
+    500,
+  )
+  return { modele: MODELE_CLAUDE, reponse: texte }
+}
