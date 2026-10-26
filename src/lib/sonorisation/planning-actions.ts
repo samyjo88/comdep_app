@@ -1,5 +1,6 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
 import { requireModule } from '@/lib/auth/guards'
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@supabase/ssr'
@@ -44,6 +45,8 @@ export async function creerCulte(date_culte: string): Promise<ActionResult> {
     return { success: false, error: msg }
   }
 
+  // Le culte apparaît aussi dans les autres modules (annonces, cantiques, captation)
+  await rattacherCulte(date_culte)
   revalidatePath('/sonorisation/planning')
   return { success: true }
 }

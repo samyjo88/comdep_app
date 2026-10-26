@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, CalendarDays, Volume2, Monitor, Megaphone, Video, Share2,
+  LayoutDashboard, CalendarDays, Church, Volume2, Monitor, Megaphone, Video, Share2,
   Settings, UserCircle, UsersRound, type LucideIcon,
 } from 'lucide-react'
 import type { ModuleCode } from '@/lib/auth/guards'
@@ -20,6 +20,7 @@ export interface NavModule {
 
 export const NAV_GENERAL = [
   { label: 'Tableau de bord',    href: '/dashboard',                    icon: LayoutDashboard },
+  { label: 'Programme des cultes', href: '/cultes',                    icon: Church },
   { label: 'Planning dimanche',  href: '/dashboard/planning-dimanche',  icon: CalendarDays },
 ] as const
 

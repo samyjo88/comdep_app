@@ -3,6 +3,7 @@
 import { requireModule } from '@/lib/auth/guards'
 import { redirect } from 'next/navigation'
 import { createCulte, createAnnonce } from '@/lib/annonces'
+import { rattacherCulte } from '@/lib/cultes'
 
 export type NouveauCulteState =
   | { error: string }
@@ -35,6 +36,9 @@ export async function preparerCulte(
     }
     return { error: `Erreur lors de la création du culte : ${msg}` }
   }
+
+  // Le culte apparaît aussi dans le planning son (rappels automatiques)
+  await rattacherCulte(dateCulte)
 
   // Créer l'annonce avec ses 7 rubriques
   const annonceResult = await createAnnonce(culteResult.data.id)

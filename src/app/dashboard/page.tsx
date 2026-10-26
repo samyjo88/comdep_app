@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getModulesAccessibles, getMyRole } from '@/lib/dashboard/modules-access'
 import { Button } from '@/components/ui/button'
 import {
-  Volume2, Monitor, Megaphone, Video, Share2, AlertTriangle,
+  Church, CalendarPlus, Volume2, Monitor, Megaphone, Video, Share2, AlertTriangle,
 } from 'lucide-react'
 import type { Metadata } from 'next'
 import { CountdownDimanche } from '@/components/dashboard/CountdownDimanche'
@@ -143,14 +143,24 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
   return (
     <div className="container mx-auto py-7 px-5 max-w-5xl space-y-2">
-      <div className="mb-5">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-          Horeb Cité SIR
-        </p>
-        <h1 className="mt-1 text-3xl font-bold">Tableau de bord</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Vue d&apos;ensemble du comité de communication
-        </p>
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            Horeb Cité SIR
+          </p>
+          <h1 className="mt-1 text-3xl font-bold">Tableau de bord</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Vue d&apos;ensemble du comité de communication
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button asChild variant="outline">
+            <Link href="/cultes"><Church className="h-4 w-4" />Programme des cultes</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/cultes/nouveau"><CalendarPlus className="h-4 w-4" />Programmer un culte</Link>
+          </Button>
+        </div>
       </div>
 
       <Suspense fallback={<Skeleton />}>

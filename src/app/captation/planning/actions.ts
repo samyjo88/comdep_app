@@ -1,5 +1,6 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
 import { requireModule } from '@/lib/auth/guards'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
@@ -42,6 +43,7 @@ export async function creerCulteAction(dateCulte: string): Promise<ActionResult>
       return { success: false, error: msg }
     }
 
+    await rattacherCulte(dateCulte)
     revalidatePath('/captation/planning')
     return { success: true }
   } catch (e) {

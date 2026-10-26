@@ -1,5 +1,6 @@
 'use server'
 
+import { rattacherCulte } from '@/lib/cultes'
 import { requireModule } from '@/lib/auth/guards'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -66,6 +67,7 @@ export async function createCulteAction(payload: {
     statut:      'a_venir',
   })
   if (error) return { error: error.message as string }
+  await rattacherCulte(payload.date_culte)
   revalidatePath('/projection/planning')
   return {}
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard } from 'lucide-react'
+import { Church, LayoutDashboard } from 'lucide-react'
 import { modulesVisibles, estActif } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +15,9 @@ export function MobileBottomNav({ modulesAccessibles }: Props) {
   const pathname = usePathname()
   const items = [
     { key: undefined, label: 'Accueil', href: '/dashboard', icon: LayoutDashboard },
+    ...(modulesAccessibles === null || modulesAccessibles.length > 0
+      ? [{ key: undefined, label: 'Cultes', href: '/cultes', icon: Church }]
+      : []),
     ...modulesVisibles(modulesAccessibles).map(m => ({
       key: m.key as string | undefined, label: m.court, href: m.href, icon: m.icon,
     })),
