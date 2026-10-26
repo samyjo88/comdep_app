@@ -1,7 +1,47 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 import type { CodeRubrique } from '@/types/annonces'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+const MODELE_CLAUDE = 'claude-opus-5-5'
+
+// ── Appel Claude ──────────────────────────────────────────────────────────────
+
+async function appelerClaude(
+  systemPrompt: string,
+  userMessage: string,
+  maxTokens = 4000,
+): Promise<{ texte: string; tokens: number }> {
+  // En cas de refus du modèle, l'API relance la requête sur un modèle de repli
+  const response = await anthropic.beta.messages.create({
+    betas:         ['server-side-fallback-2026-07-01'],
+    fallbacks:     'default',
+    model:         MODELE_CLAUDE,
+    max_tokens:    maxTokens,
+    output_config: { effort: 'medium' },
+    system: [
+      {
+        type: 'text',
+        text: systemPrompt,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages: [{ role: 'user', content: userMessage }],
+  })
+
+  if (response.stop_reason === 'refusal') {
+    throw new Error('Claude a refusé de générer ce texte.')
+  }
+
+  const texte = response.content
+    .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === 'text')
+    .map((block) => block.text)
+    .join('')
+    .trim()
+  const tokens = response.usage.input_tokens + response.usage.output_tokens
+
+  return { texte, tokens }
+}
 
 const NOM_EGLISE = process.env.NEXT_PUBLIC_NOM_EGLISE ?? 'Notre Église'
 
@@ -83,17 +123,7 @@ RÈGLES IMPÉRATIVES :
 export async function genererAnnonceComplete(
   userPrompt: string,
 ): Promise<{ texte: string; tokens: number }> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
-    systemInstruction: SYSTEM_PROMPT_ANNONCE_COMPLETE,
-  })
-
-  const result = await model.generateContent(userPrompt)
-  const texte  = result.response.text()
-  const usage  = result.response.usageMetadata
-  const tokens = (usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0)
-
-  return { texte, tokens }
+  return appelerClaude(SYSTEM_PROMPT_ANNONCE_COMPLETE, userPrompt, 16000)
 }
 
 // ── Résumé de courrier ────────────────────────────────────────────────────────
@@ -108,18 +138,13 @@ export async function resumerCourrier(
   contenu: string,
   objet?: string,
 ): Promise<{ resume: string }> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
-    systemInstruction: SYSTEM_PROMPT_RESUME_COURRIER,
-  })
+  const message   = objet ? `Objet du courrier : ${objet}\n\nContenu :\n${contenu}` : contenu
+  const { texte } = await appelerClaude(SYSTEM_PROMPT_RESUME_COURRIER, message, 1000)
 
-  const message = objet ? `Objet du courrier : ${objet}\n\nContenu :\n${contenu}` : contenu
-  const result  = await model.generateContent(message)
-
-  return { resume: result.response.text().trim() }
+  return { resume: texte }
 }
 
-// ── Appel Gemini ──────────────────────────────────────────────────────────────
+// ── Texte d'une rubrique ──────────────────────────────────────────────────────
 
 export async function genererTexteRubrique(
   codeRubrique: CodeRubrique,
@@ -129,15 +154,5 @@ export async function genererTexteRubrique(
   const systemPrompt = PROMPTS_SYSTEME[codeRubrique]
   const userMessage  = buildUserMessage(codeRubrique, donnees, annoncePrecedente)
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
-    systemInstruction: systemPrompt,
-  })
-
-  const result = await model.generateContent(userMessage)
-  const texte  = result.response.text()
-  const usage  = result.response.usageMetadata
-  const tokens = (usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0)
-
-  return { texte, tokens }
+  return appelerClaude(systemPrompt, userMessage)
 }
