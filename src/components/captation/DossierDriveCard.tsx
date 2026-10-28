@@ -134,10 +134,10 @@ function EtatRempli({
   }
 
   const sous_dossiers = [
-    { icone: Camera,    label: 'Vidéos',      lien: dossier.lien_videos      },
     { icone: ImageIcon, label: 'Photos',      lien: dossier.lien_photos      },
+    { icone: Camera,    label: 'Vidéos',      lien: dossier.lien_videos      },
     { icone: Palette,   label: 'Infographie', lien: dossier.lien_infographie },
-  ]
+  ].filter(d => d.lien)  // Infographie : anciens dossiers uniquement
 
   return (
     <div className="space-y-3">

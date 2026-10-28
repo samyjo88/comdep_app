@@ -5,6 +5,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createAnnonce } from '@/lib/annonces'
+import { assurerDossierDriveCulte } from '@/lib/captation-drive'
 import { insertNotifications, type NotifInput } from '@/lib/cron-notifications'
 import { sendNotificationEmails } from '@/lib/resend'
 import { capitalize, formatDateLong } from '@/lib/utils'
@@ -202,7 +203,8 @@ export async function insererCulte(c: NouveauCulte): Promise<{ id?: string; exis
 
 /**
  * Garantit qu'un culte existe dans tous les modules : ligne `cultes` et
- * ligne de planning sonorisation (rappels automatiques à l'équipe son).
+ * ligne de planning sonorisation (rappels automatiques à l'équipe son)
+ * et dossier Google Drive de la captation.
  * Appelé par chaque module qui crée un culte. Retourne l'id du culte.
  */
 export async function rattacherCulte(dateCulte: string): Promise<string | null> {
@@ -223,6 +225,8 @@ export async function rattacherCulte(dateCulte: string): Promise<string | null> 
     { onConflict: 'date_culte', ignoreDuplicates: true },
   )
   const { data } = await db.from('cultes').select('id').eq('date_culte', dateCulte).maybeSingle()
+  // Dossier Drive de la captation (Photos + Vidéos), créé une seule fois
+  if (data?.id) await assurerDossierDriveCulte(data.id)
   return data?.id ?? null
 }
 
