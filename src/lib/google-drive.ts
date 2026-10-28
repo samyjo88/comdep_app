@@ -60,45 +60,48 @@ function lienDrive(id: string): string {
 
 // ── createDossierCulte ─────────────────────────────────────────────────────
 
+/** Vrai si les variables d'environnement Google Drive sont renseignées. */
+export function driveConfigure(): boolean {
+  return Boolean(
+    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+    process.env.GOOGLE_PRIVATE_KEY &&
+    process.env.GOOGLE_DRIVE_DOSSIER_RACINE_ID
+  )
+}
+
 export interface DossierCulteResult {
   idDossierPrincipal: string
   idVideos:           string
   idPhotos:           string
-  idInfographie:      string
   liens: {
-    principal:  string
-    videos:     string
-    photos:     string
-    infographie: string
+    principal: string
+    videos:    string
+    photos:    string
   }
 }
 
+/** Crée « Culte_AAAA-MM-JJ » dans le dossier racine, avec Photos et Vidéos. */
 export async function createDossierCulte(dateCulte: string): Promise<DossierCulteResult> {
   const drive = initDriveClient()
   const nom   = `Culte_${dateCulte}`
 
-  const idPrincipal  = await creerDossier(drive, nom,          rootId())
-  const idVideos     = await creerDossier(drive, 'Videos',     idPrincipal)
-  const idPhotos     = await creerDossier(drive, 'Photos',     idPrincipal)
-  const idInfographie = await creerDossier(drive, 'Infographie', idPrincipal)
-
-  await Promise.all([
-    rendrePublic(drive, idPrincipal),
-    rendrePublic(drive, idVideos),
-    rendrePublic(drive, idPhotos),
-    rendrePublic(drive, idInfographie),
+  const idPrincipal = await creerDossier(drive, nom, rootId())
+  const [idPhotos, idVideos] = await Promise.all([
+    creerDossier(drive, 'Photos', idPrincipal),
+    creerDossier(drive, 'Vidéos', idPrincipal),
   ])
+
+  // Les sous-dossiers héritent du partage du dossier principal
+  await rendrePublic(drive, idPrincipal)
 
   return {
     idDossierPrincipal: idPrincipal,
     idVideos,
     idPhotos,
-    idInfographie,
     liens: {
-      principal:   lienDrive(idPrincipal),
-      videos:      lienDrive(idVideos),
-      photos:      lienDrive(idPhotos),
-      infographie: lienDrive(idInfographie),
+      principal: lienDrive(idPrincipal),
+      videos:    lienDrive(idVideos),
+      photos:    lienDrive(idPhotos),
     },
   }
 }

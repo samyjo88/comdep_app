@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getDossierInfo, calculerEspaceTotal } from '@/lib/google-drive'
+import { driveErreur } from '@/lib/captation-drive'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,28 +40,6 @@ function getSupabaseAdmin() {
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
-}
-
-// ── Normalisation erreurs Drive ────────────────────────────────────────────
-
-function driveErreur(e: unknown): string {
-  const msg = e instanceof Error ? e.message : String(e)
-  if (msg.includes('invalid_grant') || msg.includes('token') || msg.includes('JWT')) {
-    return 'Impossible de contacter Google Drive. Le token de service est expiré ou invalide — vérifiez GOOGLE_PRIVATE_KEY.'
-  }
-  if (msg.includes('quota') || msg.includes('429') || msg.includes('rateLimitExceeded')) {
-    return 'Impossible de contacter Google Drive. Quota API dépassé — réessayez dans quelques minutes.'
-  }
-  if (msg.includes('ENOTFOUND') || msg.includes('ETIMEDOUT') || msg.includes('network')) {
-    return 'Impossible de contacter Google Drive. Problème réseau — vérifiez la connectivité.'
-  }
-  if (msg.includes('permission') || msg.includes('403') || msg.includes('forbidden')) {
-    return 'Impossible de contacter Google Drive. Permission refusée — partagez le dossier racine avec le compte de service.'
-  }
-  if (msg.includes('GOOGLE_SERVICE_ACCOUNT') || msg.includes('GOOGLE_PRIVATE_KEY') || msg.includes('non configurée')) {
-    return 'Impossible de contacter Google Drive. Vérifiez la configuration (GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_DRIVE_DOSSIER_RACINE_ID).'
-  }
-  return `Impossible de contacter Google Drive. ${msg}`
 }
 
 // ── POST /api/captation/drive/synchroniser ─────────────────────────────────
